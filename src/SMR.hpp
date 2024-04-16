@@ -28,7 +28,7 @@ FLAGS_VALID_CK(int option_num, char* option_str[])
         "--exclude-exposure-probe", "--eqtl-summary", "--ld-upper-limit", "--peqtl-heidi", \
         "--heidi-min-m", "--make-besd", "--out", "--peqtl-smr", "--smr",\
         "--cis-wind", "--peqtl-trans", "--peqtl-cis", "--peqtl-other", "--efile", "--query", \
-        "--heidi-off", "--target-snp", "--extract-trait", "--thread-num", "--besd-flist", \
+        "--heidi-off", "--heidi-skip-thresh", "--target-snp", "--extract-trait", "--thread-num", "--besd-flist", \
         "--trans-wind", "--plot", "--eqtl-flist", "--smr-format", "--merlin-fastassoc-format", \
         "--plink-qassoc-format", "--gemma-format", "--update-freq", "--genes", "--smr-wind", \
         "--smr-file", "--recode", "--probe-var", "--chr", "--probe-chr", "--snp-chr", "--snp", \

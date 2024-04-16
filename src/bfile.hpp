@@ -44,6 +44,8 @@ namespace SMRDATA
         vector<int> _chr;
         vector<string> _snp_name;
         map<string, int> _snp_name_map;
+        //unordered_map<string,int> _snp_name_map;
+
         vector<double> _genet_dst;
         vector<int> _bp;
         vector<string> _allele1;
@@ -92,6 +94,8 @@ namespace SMRDATA
         vector<string> _esi_allele2;
         vector<int> _esi_include;
         map<string,int> _snp_name_map;
+        //unordered_map<string,int> _snp_name_map;
+
         vector<float> _esi_freq;
         
         vector<uint64_t> _cols;

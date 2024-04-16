@@ -7,7 +7,6 @@
 //
 
 #include "bfile.hpp"
-
 namespace SMRDATA
 {
     void read_famfile(bInfo* bdata, string famfile) {
@@ -370,7 +369,14 @@ namespace SMRDATA
                 }
             }
             ldnum += preldnum-1;
+            //注意：这里ldnum有可能是负数，如果为负，需要重新置为0
+            if(ldnum < 0) 
+            {
+                cout << "i:" << i << "ldnum: " << ldnum << endl;
+                //ldnum = 0;
+            }
             preldnum=ldnum;
+            //在这里已经是和第i个snp距离小于window的snp数量之和了
             cols[i+1]=cols[i]+ldnum;
             if(ldnum>maxldnum) maxldnum=ldnum;
         }
@@ -665,6 +671,16 @@ namespace SMRDATA
         if(rs != NULL) extract_snp_kb(&bdata,rs,ldWind);
         if(snplstName != NULL) extract_snp(&bdata, snplstName);
         if(snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+
+        //int mym=getMaxNum(&bdata,ldWind, cols);
+
+        //uint64_t myValnum=cols[bdata._include.size()];
+
+        //cout << "myValnum:" << myValnum << endl;
+        //cout << "return....." << endl;
+        
+        //return;
+
         read_bedfile(&bdata, string(bFileName)+".bed");
         if (bdata._mu.empty()) calcu_mu(&bdata);
         if (maf > 0) filter_snp_maf(&bdata, maf);
@@ -679,6 +695,16 @@ namespace SMRDATA
             m=(int)bdata._include.size();
             bitmod=false;
         }
+
+        //for(int i=0;i<bdata._include.size();i++)
+        // {
+        //     if(cols[i] < 0) 
+        //     {
+        //         cout << "i:" << i << " cols[i]:" << cols[i] << endl;
+        //     }
+        // }
+
+
         write_smr_esi(outFileName, &bdata);
         string bldname=string(outFileName)+".bld";
         FILE* outfile=fopen(bldname.c_str(), "wb");
@@ -716,6 +742,7 @@ namespace SMRDATA
             //clock_t begin_time = clock();
             VectorXf ldv=X.col(start)/(X.rows()-1);
             ldv=X.transpose()*ldv;
+            //ldv是一个snp个数*1的矩阵，表示各个snp和start snp的关系
             if(ldr2) ldv=ldv.array()*ldv.array();
             int st=-9, ed=-9;
             for(int j=1;j<m && i+j<bdata._include.size();j++)
@@ -737,6 +764,9 @@ namespace SMRDATA
                         ed=-9;
                     }
                     vc++;
+                } else {
+                    //应该和getMaxNum一样，没有必要再往下执行
+                    break;
                 }
             }
             if(ed>=0 && st>=0) fwrite(&ldv(st),sizeof(float), ed-st+1, outfile);
@@ -757,6 +787,8 @@ namespace SMRDATA
             exit(EXIT_FAILURE);
             
         }
+        //cout << "vc:" << vc << endl;
+        //cout << "valnum:" << valnum << endl;
         fclose(outfile);
         printf("LD information is saved in the binary file %s.\n",bldname.c_str());
 

@@ -33,6 +33,16 @@ message(STATUS "OS: " ${system})
 message("")
 
 
+message("CUSTORM_INCLUDE_SERACH_PATH: ${CUSTORM_INCLUDE_SERACH_PATH}")
+message("CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES: ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES}")
+message("CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES: ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
+message("CMAKE_C_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}")
+message("CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
+message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message("CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
+
+
 #information of compilation toolchain
 message(STATUS "CMAKE_C_COMPILER:  " ${CMAKE_C_COMPILER} " " ${CMAKE_C_COMPILER_ID} ":" ${CMAKE_C_COMPILER_VERSION} " " ${CMAKE_C_STANDARD})
 message(STATUS "CMAKE_CXX_COMPILER: " ${CMAKE_CXX_COMPILER} " " ${CMAKE_CXX_COMPILER_ID} ":" ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_STANDARD})
@@ -56,6 +66,8 @@ message(STATUS "CMAKE_PROJECT_VERSION: " ${CMAKE_PROJECT_VERSION})
 message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
 message("")
+
+
 
 
 #detect zlib
@@ -90,11 +102,12 @@ else()
     find_path(eigen_dir "eigen3/Eigen" ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES} ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES})
     set(eigen_dir ${eigen_dir}/eigen3)
     if (eigen_dir)
-        message(STATUS "Find Eigen: " ${eigen_dir})
+        message(STATUS "Found Eigen: " ${eigen_dir})
     else()
         message(FATAL_ERROR "can not find eigen, please using -Deigen_path=/where/your/eigen/located to set eigen path")
     endif()
 endif()
+
 
 
 #build

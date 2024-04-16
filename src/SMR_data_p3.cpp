@@ -2905,6 +2905,7 @@ namespace SMRDATA
         } probeinfolst2;*/
         vector<probeinfolst2> probeinfo;
 
+        //cout << "in the combineBesd function..." << endl;
 
         if(genouni) {
             printf("WARNING: --geno-uni is enable. Please ensure the SNPs and their alleles identical across all the text files.\n");

@@ -2653,10 +2653,10 @@ namespace SMRDATA
             double sparsity=1.0*ttlv/(esiNum*epiNum);
             if(sparsity>=0.4)
             {
-                //printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
+                printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
                 save_txts_dbesd(outFileName, esiNum, epiNum,epi2esd, prbiflst,fformat, esi_rs, esi_a1,esi_a2,addn);
             } else {
-                //printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
+                printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
                 save_full_txts_sbesd( outFileName,  esiNum,  epiNum,epi2esd,prbiflst,fformat,esi_rs,esi_a1,esi_a2,addn);
             }
 

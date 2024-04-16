@@ -72,6 +72,7 @@ main(int argc, char** argv)
 void
 option(int option_num, char* option_str[])
 {
+    
     thread_num = 1;
     char * bFileName = NULL;
     char * gwasFileName = NULL;
@@ -141,6 +142,7 @@ option(int option_num, char* option_str[])
 
     char* refSNP=NULL;
     bool heidioffFlag = false;
+    double heidiskipthresh = 1.0;
 
     bool combineFlg = false;
     char* eqtlsmaslstName = NULL;
@@ -556,6 +558,15 @@ option(int option_num, char* option_str[])
         else if (0 == strcmp(option_str[i], "--heidi-off")){
             heidioffFlag = true;
             printf("--heidi-off \n");
+        }
+        else if (0 == strcmp(option_str[i], "--heidi-skip-thresh")){
+            heidiskipthresh = atof(option_str[++i]);
+            printf("--heidi-skip-thresh %10.2e\n", heidiskipthresh);
+            if(heidiskipthresh<0 || heidiskipthresh>1)
+            {
+                fprintf (stderr, "Error: --heidi-skip-thresh should be within the range from 0 to 1.\n");
+                exit (EXIT_FAILURE);
+            }
         }
         else if(0 == strcmp(option_str[i],"--thread-num")){
             thread_num=atoi(option_str[++i]);
@@ -1247,10 +1258,10 @@ option(int option_num, char* option_str[])
             problstName, problst2exclde, genelistName, bFlag);
 
     else if(ssmrflg)
-        smr_multipleSNP(outFileName, bFileName, gwasFileName, eqtlFileName, \
+        smr_multipleSNP(outFileName, bFileName, bldFileName, gwasFileName, eqtlFileName, \
             maf, indilstName, snplstName, problstName, bFlag, p_hetero, \
             ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde, \
-            problst2exclde, p_smr, refSNP, heidioffFlag, cis_itvl, genelistName, \
+            problst2exclde, p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl, genelistName, \
             chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, \
             toprbkb, prbwindFlag, genename, snpchr, snprs, fromsnprs, tosnprs, \
             snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName, \

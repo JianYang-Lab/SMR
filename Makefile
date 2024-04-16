@@ -3,7 +3,7 @@
 EIGEN_PATH := /usr/include
 ZLIB_INCLUDE := /usr/include
 ZLIB_LIB := /usr/lib64
-DEBUG := 
+DEBUG :=
 
 CC = gcc
 CXX = g++
@@ -16,9 +16,9 @@ CFLAGS = -O3 -Wall
 CXXFLAGS = -O3 -Wall
 endif
 
-CPPFLAGS = 
+CPPFLAGS = -fopenmp
 LDFLAGS = 
-LIBS =  -lm -lz -lomp
+LIBS =  -lm -lz -lgomp
 
 objs = $(patsubst %.cpp,%.o,$(wildcard src/*.cpp))
 
@@ -29,7 +29,7 @@ smr: $(objs)
 	$(CXX) $(CXXFLAGS) $(objs) $(LDFLAGS) $(LIBS) -o $@
 
 smr_static: $(objs)
-	$(CXX) $(CXXFLAGS) $(objs) $(LDFLAGS) -static $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) $(objs) $(LDFLAGS) -static $(LIBS) -pthread -ldl -o $@
 
 $(objs): %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@

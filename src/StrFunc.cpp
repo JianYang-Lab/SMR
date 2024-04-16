@@ -11,8 +11,8 @@
 #include "StrFunc.hpp"
 #include <cmath>
 #include <cstdio>
+//#include <unordered_set>
 #include <limits>
-
 
 
 int StrFunc::split_string(const string &str, vector<string> &vec_str, string separator)
@@ -48,6 +48,42 @@ int StrFunc::split_string(const string &str, vector<string> &vec_str, string sep
 
 	return (int)vec_str.size();
 }
+
+
+int StrFunc::split_string_fast(const string &str, vector<string> &vec_str, string separator)
+{
+    if (str.empty()) return 0;
+    vec_str.clear();
+
+    // Record the start position and length of each substring
+    size_t start_pos = 0;
+    size_t len = 0;
+
+    // Traverse the input string
+    for (size_t i = 0; i < str.size(); ++i) {
+        // If the current character is a separator, add the previous substring to the output vector
+        if (separator.find(str[i]) != string::npos) {
+            if (len > 0) {
+                vec_str.push_back(str.substr(start_pos, len));
+                len = 0;
+            }
+        } else {
+            // If the current character is not a separator, update the start position and length of the substring
+            if (len == 0) {
+                start_pos = i;
+            }
+            ++len;
+        }
+    }
+
+    // Add the last substring
+    if (len > 0) {
+        vec_str.push_back(str.substr(start_pos, len));
+    }
+
+    return vec_str.size();
+}
+
 
 string StrFunc::first_string(const string &str, const char separator)
 {

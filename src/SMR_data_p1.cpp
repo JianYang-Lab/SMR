@@ -2251,7 +2251,7 @@ namespace SMRDATA
     }
 
 
-    void ssmr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, bInfo* bdata,gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, double ld_min,int opt_hetero, int expanWind,bool sampleoverlap, double pmecs, int minCor, double ld_top_multi)
+    void ssmr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, bInfo* bdata,gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, double ld_min,int opt_hetero, int expanWind,bool sampleoverlap, double pmecs, int minCor, double ld_top_multi)
     {
         
         vector<string> set_name;
@@ -2522,10 +2522,12 @@ namespace SMRDATA
                 smrwk.snpchrom.swap(slct_snpchr);
                 smrwk.freq.swap(slct_freq);
                 
-                if(!heidioffFlag) {
+                if(!heidioffFlag && pxy_max < heidiskipthresh) {
                     printf("Conducting HEIDI test...\n");
                     pdev= heidi_test_new(bdata,&smrwk, ld_top,  thresh_heidi,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
                     printf("HEIDI test complete.\n");
+                }else {
+                    printf("skip HEIDI test for probe %s\n", probename.c_str());
                 }
                 if(outFileName!=NULL)
                 {
@@ -3110,7 +3112,7 @@ namespace SMRDATA
                     printf("Conducting HEIDI test...\n");
                     pdev= heidi_test_new(&bdata,&smrwk, ld_top,  threshold,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
                 } else {
-                    printf("skip HEIDI test for probe %s\n", probename);
+                    printf("skip HEIDI test for probe %s\n", probename.c_str());
                 }
                 
                 
@@ -3394,7 +3396,7 @@ namespace SMRDATA
                     
                     printf("HEIDI test complete.\n");
                 } else {
-                    printf("skip HEIDI test for probe %s\n", probename);
+                    printf("skip HEIDI test for probe %s\n", probename.c_str());
                 }
 
                 //long int heidiEnd = time(NULL);

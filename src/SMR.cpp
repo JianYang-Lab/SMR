@@ -1162,7 +1162,7 @@ option(int option_num, char* option_str[])
             tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, geneAnnoName, \
             pthres_me2esmr, threshpsmrest, new_het_mth, threshphet, opt_slct_flag, \
             ld_min, sampleoverlap, pmecs, minsnpcor, targetsnpproblstName, \
-            diff_freq, diff_freq_ratio);
+            diff_freq, diff_freq_ratio, heidiskipthresh);
 
     else if(plotflg)
         plot_newheidi(outFileName, bFileName, gwasFileName, eqtlFileName, maf, \
@@ -1180,7 +1180,7 @@ option(int option_num, char* option_str[])
             indilstName, snplstName, problstName, oproblstName, eproblstName, \
             bFlag, p_hetero, ld_prune, m_hetero, opt_hetero, indilst2remove, \
             snplst2exclde, problst2exclde, oproblst2exclde, eproblst2exclde, \
-            p_smr, refSNP, heidioffFlag, cis_itvl, traitlstName, outcomePrbWind, \
+            p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl, traitlstName, outcomePrbWind, \
             oprobe, eprobe, oprobe2rm, eprobe2rm, threshpsmrest, new_het_mth, \
             opt_slct_flag, ld_min, cis2all, sampleoverlap, pmecs, minsnpcor, \
             ssmrflg, setWind, ld_prune_multi, targetsnpproblstName, snpproblstName, \
@@ -1272,7 +1272,7 @@ option(int option_num, char* option_str[])
         smr(outFileName, bFileName,bldFileName, gwasFileName, eqtlFileName, \
             maf, indilstName, snplstName, problstName, bFlag, p_hetero, \
             ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde, \
-            problst2exclde, p_smr, refSNP, heidioffFlag, cis_itvl, genelistName, \
+            problst2exclde, p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl, genelistName, \
             chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, \
             toprbkb, prbwindFlag, genename, snpchr, snprs, fromsnprs, tosnprs, \
             snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, threshpsmrest, \

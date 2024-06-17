@@ -5125,7 +5125,7 @@ namespace SMRDATA
         return numprb;
         
     }
-    void smr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, bInfo* bdata,gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, bool new_heidi_mth, bool opt, double ld_min,int opt_hetero, bool sampleoverlap, double pmecs, int minCor,map<string, string> &prb_snp, bool targetLstFlg)
+    void smr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, bInfo* bdata,gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, bool new_heidi_mth, bool opt, double ld_min,int opt_hetero, bool sampleoverlap, double pmecs, int minCor,map<string, string> &prb_snp, bool targetLstFlg)
     {
         
         uint64_t probNum = esdata->_include.size();
@@ -5366,7 +5366,7 @@ namespace SMRDATA
                 currlt.p_SMR=pxy_val;
             }
             
-            if(heidioffFlag || pxy_val>threshpsmrest)
+            if(heidioffFlag || pxy_val>heidiskipthresh)
             {
               //  printf("INFO: the HEIDI test for probe %s is skipped because HEIDI test is turned off by the --heidi-off option or p_SMR does not pass the %e threshold.\n", probename.c_str(),threshpsmrest);
                 if(smr)
@@ -5473,7 +5473,7 @@ namespace SMRDATA
         }
         
     }
-    void smr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, ldInfo* ldinfo,FILE* ldfptr, gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, bool new_heidi_mth, bool opt, double ld_min,int opt_hetero, bool sampleoverlap, double pmecs, int minCor,map<string, string> &prb_snp, bool targetLstFlg)
+    void smr_heidi_func(vector<SMRRLT> &smrrlts, char* outFileName, ldInfo* ldinfo,FILE* ldfptr, gwasData* gdata,eqtlInfo* esdata, int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP,double p_hetero,double ld_top,int m_hetero , double p_smr,double threshpsmrest, bool new_heidi_mth, bool opt, double ld_min,int opt_hetero, bool sampleoverlap, double pmecs, int minCor,map<string, string> &prb_snp, bool targetLstFlg)
     {
         
         uint64_t probNum = esdata->_include.size();
@@ -5708,7 +5708,7 @@ namespace SMRDATA
         }
         
     }
-    void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,char* indilstName, char* snplstName,char* problstName,bool bFlag,double p_hetero,double ld_top,int m_hetero ,int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde,double p_smr, char* refSNP, bool heidioffFlag, int cis_itvl,char* genelistName, int chr,int prbchr, const char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag,double threshpsmrest, bool new_het_mth,bool opt,char* prbseqregion, double ld_min, bool sampleoverlap, double pmecs, int minCor, char* targetsnpproblstName, char* snpproblstName,double afthresh,double percenthresh)
+    void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,char* indilstName, char* snplstName,char* problstName,bool bFlag,double p_hetero,double ld_top,int m_hetero ,int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde,double p_smr, char* refSNP, bool heidioffFlag, double heidiskipthresh, int cis_itvl,char* genelistName, int chr,int prbchr, const char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag,double threshpsmrest, bool new_het_mth,bool opt,char* prbseqregion, double ld_min, bool sampleoverlap, double pmecs, int minCor, char* targetsnpproblstName, char* snpproblstName,double afthresh,double percenthresh)
     {
         if(ld_min>ld_top) {
             printf("ERROR: --ld-min %f is larger than --ld-top %f.\n",ld_min,ld_top);
@@ -5859,9 +5859,9 @@ namespace SMRDATA
        }
         
        vector<SMRRLT> smrrlts;
-       if(bFileName) smr_heidi_func(smrrlts,  outFileName, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
+       if(bFileName) smr_heidi_func(smrrlts,  outFileName, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
        else {
-           smr_heidi_func(smrrlts,  outFileName, &ldinfo, bld, &gdata,&esdata,  cis_itvl,  heidioffFlag, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
+           smr_heidi_func(smrrlts,  outFileName, &ldinfo, bld, &gdata,&esdata,  cis_itvl,  heidioffFlag,heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
            fclose(bld);
        }
     }
@@ -7257,7 +7257,7 @@ namespace SMRDATA
         char * indilstName, char * snplstName, char * problstName, char * oproblstName, char * eproblstName, \
         bool bFlag, double p_hetero, double ld_top, int m_hetero, int opt_hetero, char * indilst2remove, \
         char * snplst2exclde, char * problst2exclde, char * oproblst2exclde, char * eproblst2exclde, double p_smr, \
-        char * refSNP, bool heidioffFlag, int cis_itvl, char * traitlstName, int op_wind, char * oprobe, \
+        char * refSNP, bool heidioffFlag, double heidiskipthresh, int cis_itvl, char * traitlstName, int op_wind, char * oprobe, \
         char * eprobe, char * oprobe2rm, char * eprobe2rm, double threshpsmrest, bool new_het_mth, bool opt, \
         double ld_min, bool cis2all, bool sampleoverlap, double pmecs, int minCor, bool ssmrflag, \
         int expanWind, double ld_top_multi, char * targetsnpproblstName, char * snpproblstName, \
@@ -7518,8 +7518,8 @@ namespace SMRDATA
            }
             vector<SMRRLT> smrrlts;
             mute = true;
-            if(ssmrflag) ssmr_heidi_func(smrrlts,  NULL, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest, ld_min,opt_hetero,expanWind,sampleoverlap,pmecs, minCor,ld_top_multi);
-            else smr_heidi_func(smrrlts,  NULL, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt,ld_min,opt_hetero,sampleoverlap,pmecs,minCor,prb_snp,targetLstflg);
+            if(ssmrflag) ssmr_heidi_func(smrrlts,  NULL, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest, ld_min,opt_hetero,expanWind,sampleoverlap,pmecs, minCor,ld_top_multi);
+            else smr_heidi_func(smrrlts,  NULL, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt,ld_min,opt_hetero,sampleoverlap,pmecs,minCor,prb_snp,targetLstflg);
             if(smrrlts.size()>0){
                 etraitcount++;
                 itemcount+=smrrlts.size();

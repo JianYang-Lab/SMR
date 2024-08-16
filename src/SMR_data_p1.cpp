@@ -7,6 +7,7 @@
 //
 
 #include "SMR_data_p1.hpp"
+#include "error_codes.hpp"
 namespace SMRDATA
 {
     void get_top_sets(eqtlInfo* eqtlinfo, vector<string> &prbIds, vector<float> &beta, vector<float> &se, vector<string> &rs, float thres)
@@ -2837,7 +2838,7 @@ namespace SMRDATA
         if(esdata._rowid.empty() && esdata._bxz.empty())
         {
             printf("No data included from %s in the analysis.\n",eqtlFileName);
-            exit(EXIT_FAILURE);
+            exit(ERROR_EQTL_NO_DATA);
         }
 
         long int readeQTLEnd = time(NULL);

@@ -1918,7 +1918,9 @@ namespace SMRDATA
         int indicator=readint(ldfptr);
         
         MatrixXd C;
-        cor_calc(C, ldinfo, ldfptr, curId, indicator);
+        //cor_calc(C, ldinfo, ldfptr, curId, indicator);
+        cor_calc_batch(C, ldinfo, ldfptr, curId, indicator);
+
 
         /*long bcrows = C.rows();
         long bccols = C.cols();

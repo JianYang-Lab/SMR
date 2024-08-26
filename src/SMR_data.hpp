@@ -314,6 +314,8 @@ namespace SMRDATA
     void get_square_ldpruning_idxes(vector<int> &sn_ids, VectorXd &zsxz, double threshold, VectorXd &ld_v, long maxid, double ld_top);
     void cor_calc(MatrixXd &LD, MatrixXd &X);
     void cor_calc(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator);
+    void cor_calc_batch(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator);
+
 
     void extract_prob_by_gene(eqtlInfo* eqtlinfo, string genelistName);
     void update_freq(char* eqtlFileName, char* frqfile);

@@ -3763,6 +3763,76 @@ namespace SMRDATA
             }
         }
     }
+
+    //to reduce the file read operation
+    void cor_calc_batch(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator)
+    {
+        LD.resize(curId.size(),curId.size());
+        uint64_t valSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum+1)*sizeof(uint64_t);
+        for(int i=0;i<curId.size();i++)
+        {
+            LD(i,i)=1;
+            int id1=ldinfo->_esi_include[curId[i]]; //id1是snp在esi文件中的行号
+
+            //read all ld values related to current snp
+            //cout << "cur snp position:" << ldinfo->_cols[id1] << endl;
+            //cout << "next snp position:" << ldinfo-> _cols[id1+1] << endl;
+            long id1pos=ldinfo->_cols[id1];
+            long id1nextpos = ldinfo ->_cols[id1+1];
+            long id1valnum = id1nextpos - id1pos;
+            if (id1valnum == 0) {
+                //当前snp距离其他snp很远，或者当前snp是最后一个snp
+                continue;
+            }
+
+            //locate to the beginning postion
+            fseek(ldfprt, id1pos * sizeof(float)+ valSTART, SEEK_SET);
+
+            vector<float> id1values;
+            id1values.resize(id1valnum);
+            if(fread(&id1values[0], sizeof(float),id1valnum, ldfprt)<1)
+            {
+                //cout << "id1: " << id1 << "i: " << i << "curId.size(): " << curId.size() << endl;
+                //cout << "id1 snp name: " << ldinfo->_esi_rs[id1] << endl;
+                //cout << "cur snp position:" << ldinfo->_cols[id1] << endl;
+                //cout << "next snp position:" << ldinfo-> _cols[id1+1] << endl;
+                cout << "fread ld file failed!" << endl;
+                exit(EXIT_FAILURE);
+            }
+
+            //cout << "id1: " << id1 << "i: " << i << "curId.size(): " << curId.size() << endl;
+            //#pragma omp parallel for
+            for(int j=i+1;j<curId.size();j++)
+            {
+                int id2=ldinfo->_esi_include[curId[j]];
+                //cout << "cor_calc, id1:" << id1 << " id2: " << id2 << endl;
+                
+                if(id1>id2)
+                {
+                    cout << "id1 > id2, id1: " << id1 << " id2: " << id2 << endl;
+                    //exit(EXIT_FAILURE);
+                    long poss=ldinfo->_cols[id2];
+                    fseek( ldfprt, (poss+id1-id2-1)*sizeof(float)+valSTART, SEEK_SET );
+                    if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
+                    else LD(i,j)=LD(j,i)=readfloat(ldfprt);
+                }
+                else
+                {
+                    //cout << "id1 < id2, id1: " << id1 << "id2: " << id2 << endl;
+                    //when id1 < id2, get values from id1values vector
+                    float id1id2val = id1values[id2-id1-1];
+                    if(indicator) LD(i,j)=LD(j,i)=sqrt(id1id2val);
+                    else LD(i,j)=LD(j,i)=id1id2val;
+                }
+                if (ldinfo->_esi_gd[id1] != ldinfo->_esi_gd[id2]) {
+                    LD(i,j) = -LD(i,j);
+                    LD(j,i) = -LD(j,i);
+                }
+            }
+        }
+    }
+
+
     void cor_calc(MatrixXd &LD, MatrixXd &X)
     {
         long size=X.cols();

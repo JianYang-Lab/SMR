@@ -7,6 +7,7 @@
 //
 
 #include "SMR_data.hpp"
+#include "error_codes.hpp"
 #include <iterator>
 namespace SMRDATA
 {
@@ -119,7 +120,7 @@ namespace SMRDATA
 	}
 
        
-    void read_gwas_data(gwasData* gdata, char* gwasFileName)
+    void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments)
     {
         bool warnnullfreq=false;
         ifstream gwasFile;
@@ -143,7 +144,8 @@ namespace SMRDATA
         gdata->splSize.clear();    
         
         char buf[MAX_LINE_SIZE];
-        int lineNum(0);
+        int lineNumNoComments(0);
+        int lineNumWithComments(0);
         gwasFile.getline(buf,MAX_LINE_SIZE);// the header
         if(buf[0]=='\0')
         {
@@ -160,6 +162,12 @@ namespace SMRDATA
         while(!gwasFile.eof())
         {
             gwasFile.getline(buf,MAX_LINE_SIZE);
+
+            if(enableGwasComments && buf[0] == '#') {
+                //printf("WARN: comment row %d!\n", lineNumWithComments+2);
+                lineNumWithComments++;
+                continue;
+            }
             
             if(buf[0]!='\0')
             {
@@ -167,31 +175,31 @@ namespace SMRDATA
                 
                 int col_num = split_string_fast(buf, vs_buf, ", \t\n");
                 if(col_num!=8) {
-                    printf("ERROR: column number is not correct in row %d!\n", lineNum+2);
+                    printf("ERROR: column number is not correct in row %d!\n", lineNumWithComments+2);
                     exit(EXIT_FAILURE);
                 }
                 if(vs_buf[0]=="NA" || vs_buf[0]=="na"){
-                    printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum+2);
+                    printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNumWithComments+2);
                     exit(EXIT_FAILURE);
                 }
                 if(gdata->_snp_name_map.find(vs_buf[0]) != gdata->_snp_name_map.end()){
                     cout << "WARNING: Duplicated SNP ID \"" + vs_buf[0] + "\" ";
                     stringstream ss;
-                    ss << vs_buf[0] << "_" << lineNum + 1;
+                    ss << vs_buf[0] << "_" << lineNumNoComments + 1;
                     vs_buf[0] = ss.str();
                     cout<<"has been changed to \"" + vs_buf[0] + "\".\n";
                 }
-                gdata->_snp_name_map.insert(pair<string, int>(vs_buf[0], lineNum));
+                gdata->_snp_name_map.insert(pair<string, int>(vs_buf[0], lineNumNoComments));
                 gdata->snpName.push_back(vs_buf[0]);
                 if(vs_buf[1]=="NA" || vs_buf[1]=="na"){
-                    printf("ERROR: allele1 is \'NA\' in row %d.\n", lineNum+2);
+                    printf("ERROR: allele1 is \'NA\' in row %d.\n", lineNumWithComments+2);
                     exit(EXIT_FAILURE);
                 }
                 to_upper(vs_buf[1]);
                 gdata->allele_1.push_back(vs_buf[1]);
                 
                 if(vs_buf[2]=="NA" || vs_buf[2]=="na"){
-                    printf("ERROR: allele2 is \'NA\' in row %d.\n", lineNum+2);
+                    printf("ERROR: allele2 is \'NA\' in row %d.\n", lineNumWithComments+2);
                     exit(EXIT_FAILURE);
                 }
                 to_upper(vs_buf[2]);
@@ -213,13 +221,13 @@ namespace SMRDATA
                
                 
                 if(vs_buf[4]=="NA" || vs_buf[4]=="na"){
-                    printf("WARNING: effect size is \'NA\' in row %d.\n", lineNum+2);
+                    printf("WARNING: effect size is \'NA\' in row %d.\n", lineNumWithComments+2);
                     gdata->byz.push_back(0);
                 } else {
                     gdata->byz.push_back(atof(vs_buf[4].c_str()));
                 }
                 if(vs_buf[5]=="NA" || vs_buf[5]=="na"){
-                    printf("WARNING: standard error is \'NA\' in row %d.\n", lineNum+2);
+                    printf("WARNING: standard error is \'NA\' in row %d.\n", lineNumWithComments+2);
                     gdata->seyz.push_back(-9);
                 } else {
                     gdata->seyz.push_back(atof(vs_buf[5].c_str()));
@@ -227,8 +235,9 @@ namespace SMRDATA
 
                 gdata->pvalue.push_back(atof(vs_buf[6].c_str()));
                 gdata->splSize.push_back(atoi(vs_buf[7].c_str()));
-                gdata->_include.push_back(lineNum);
-                lineNum++;
+                gdata->_include.push_back(lineNumNoComments);
+                lineNumNoComments++;
+                lineNumWithComments++;
             }
         }
         gdata->snpNum=gdata->_include.size();
@@ -978,8 +987,7 @@ namespace SMRDATA
         }
         else if(gflag == DENSE_FILE_TYPE_1 || gflag == DENSE_FILE_TYPE_3)
         {
-            cout << "DENSE_FILE_TYPE_1 || DENSE_FILE_TYPE_3" << endl;
-
+            
             // clear datastruct for sparse befor read dense
             if(gflag==DENSE_FILE_TYPE_3)
             {
@@ -1273,8 +1281,6 @@ namespace SMRDATA
         
         else if (gflag == SPARSE_FILE_TYPE_3F || gflag == SPARSE_FILE_TYPE_3)
         {
-            
-            cout << "SPARSE_FILE_TYPE_3F || SPARSE_FILE_TYPE_3" << endl;
             // clear datastruct for dense befor read sparse
             eqtlinfo->_bxz.clear();
             eqtlinfo->_sexz.clear();
@@ -1314,7 +1320,7 @@ namespace SMRDATA
             besd.read(SIGN, sizeof(uint64_t));
             valNum=*(uint64_t *)SIGN;
 
-            cout << "valNum: " << valNum << endl;
+            //cout << "valNum: " << valNum << endl;
 
             if(gflag==SPARSE_FILE_TYPE_3F) {
                 if( lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
@@ -1337,11 +1343,11 @@ namespace SMRDATA
                 
             }
             
-            cout << "eqtlinfo->_include.size: " << eqtlinfo->_include.size() << endl;
-            cout << "eqtlinfo->_probNum: " << eqtlinfo->_probNum << endl;
-            cout << "eqtlinfo->_esi_include.size: " << eqtlinfo->_esi_include.size() << endl;
-            cout << "eqtlinfo->_snpNum: " << eqtlinfo->_snpNum << endl;
-            cout << "sorted: " << sorted << endl;
+            //cout << "eqtlinfo->_include.size: " << eqtlinfo->_include.size() << endl;
+            //cout << "eqtlinfo->_probNum: " << eqtlinfo->_probNum << endl;
+            //cout << "eqtlinfo->_esi_include.size: " << eqtlinfo->_esi_include.size() << endl;
+            //cout << "eqtlinfo->_snpNum: " << eqtlinfo->_snpNum << endl;
+            //cout << "sorted: " << sorted << endl;
 
             if(eqtlinfo->_include.size()<eqtlinfo->_probNum || eqtlinfo->_esi_include.size()<eqtlinfo->_snpNum || !sorted)
             {
@@ -1357,8 +1363,8 @@ namespace SMRDATA
                 eqtlinfo->_cols.resize((eqtlinfo->_include.size()<<1)+1);
                 eqtlinfo->_cols[0]=*ptr;
 
-                cout << "eqtlinfo->_include.size(): " << eqtlinfo->_include.size() << endl;
-                cout << "eqtlinfo->_cols.size: " << eqtlinfo->_cols.size() << endl;
+                //cout << "eqtlinfo->_include.size(): " << eqtlinfo->_include.size() << endl;
+                //cout << "eqtlinfo->_cols.size: " << eqtlinfo->_cols.size() << endl;
              
                 map<int, int > _incld_id_map;
                 long size = 0;
@@ -1369,7 +1375,7 @@ namespace SMRDATA
                     size = _incld_id_map.size();
                 }
 
-                cout << "_incld_id_map.size():" << _incld_id_map.size() << endl;
+                //cout << "_incld_id_map.size():" << _incld_id_map.size() << endl;
 
                 uint64_t rowSTART=0;
                 uint64_t valSTART=0;
@@ -1447,7 +1453,7 @@ namespace SMRDATA
                 }
                 eqtlinfo->_valNum = eqtlinfo->_val.size();
 
-                cout << "eqtlinfo->_valNum: " << eqtlinfo->_valNum << endl;
+                //cout << "eqtlinfo->_valNum: " << eqtlinfo->_valNum << endl;
                
                 if(prtscr)  cout<<"eQTL summary data of "<<eqtlinfo->_include.size()<<" Probes to be included from [" + besdfile + "]." <<endl;
                  update_epi(eqtlinfo);
@@ -1456,7 +1462,7 @@ namespace SMRDATA
             else
             {
 
-                cout << "lSize: " << lSize << endl;
+                //cout << "lSize: " << lSize << endl;
                 buffer = (char*) malloc (sizeof(char)*(lSize));
                 if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
                 besd.read(buffer,lSize);
@@ -1483,8 +1489,8 @@ namespace SMRDATA
                 eqtlinfo->_val.resize(valNum);
                 
 
-                cout << "colNum: " << colNum << endl;
-                cout << "valNum: " << valNum << endl;
+                //cout << "colNum: " << colNum << endl;
+                //cout << "valNum: " << valNum << endl;
 
 
                 for(int i=0;i<colNum;i++) eqtlinfo->_cols[i]=*ptr++;
@@ -1493,9 +1499,9 @@ namespace SMRDATA
                 float* val_ptr=(float*)ptr4B;
                 for(int i=0;i<valNum;i++) eqtlinfo->_val[i]=*val_ptr++;
 
-                cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << endl; 
-                cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << endl; 
-                cout << "eqtlinfo->_val[0]: " << eqtlinfo->_val[0] << endl; 
+                //cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << endl; 
+                //cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << endl; 
+                //cout << "eqtlinfo->_val[0]: " << eqtlinfo->_val[0] << endl; 
                 
 
                 eqtlinfo->_valNum = valNum;
@@ -3732,6 +3738,9 @@ namespace SMRDATA
     {
         LD.resize(curId.size(),curId.size());
         uint64_t valSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum+1)*sizeof(uint64_t);
+
+        //int fseekCnt = 0;
+
         for(int i=0;i<curId.size();i++)
         {
             LD(i,i)=1;
@@ -3746,6 +3755,7 @@ namespace SMRDATA
                 {
                     long poss=ldinfo->_cols[id2];
                     fseek( ldfprt, (poss+id1-id2-1)*sizeof(float)+valSTART, SEEK_SET );
+                    //fseekCnt++;
                     if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
                     else LD(i,j)=LD(j,i)=readfloat(ldfprt);
                 }
@@ -3753,6 +3763,7 @@ namespace SMRDATA
                 {
                     long poss=ldinfo->_cols[id1];
                     fseek( ldfprt, (poss+id2-id1-1)*sizeof(float)+valSTART, SEEK_SET );
+                    //fseekCnt++;
                     if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
                     else LD(i,j)=LD(j,i)=readfloat(ldfprt);
                 }
@@ -3762,6 +3773,8 @@ namespace SMRDATA
                 }
             }
         }
+        //cout << "cor_calc fseekCnt:" << fseekCnt << endl;
+
     }
 
     //to reduce the file read operation
@@ -3769,14 +3782,17 @@ namespace SMRDATA
     {
         LD.resize(curId.size(),curId.size());
         uint64_t valSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum+1)*sizeof(uint64_t);
+
+        //int fseekCnt = 0;
         for(int i=0;i<curId.size();i++)
         {
             LD(i,i)=1;
-            int id1=ldinfo->_esi_include[curId[i]]; //id1是snp在esi文件中的行号
+            uint64_t id1=ldinfo->_esi_include[curId[i]]; //id1是snp在esi文件中的行号
 
             //read all ld values related to current snp
             //cout << "cur snp position:" << ldinfo->_cols[id1] << endl;
             //cout << "next snp position:" << ldinfo-> _cols[id1+1] << endl;
+
             long id1pos=ldinfo->_cols[id1];
             long id1nextpos = ldinfo ->_cols[id1+1];
             long id1valnum = id1nextpos - id1pos;
@@ -3785,12 +3801,22 @@ namespace SMRDATA
                 continue;
             }
 
+            //cout << "id1: " << id1 << "i: " << i << "curId.size(): " << curId.size() << endl;
+            //cout << "id1 snp name: " << ldinfo->_esi_rs[id1] << endl;
+            //cout << "cur snp position:" << ldinfo->_cols[id1] << endl;
+            //cout << "next snp position:" << ldinfo-> _cols[id1+1] << endl;
+            //cout << "id1valnum: " << id1valnum << endl;
+
             //locate to the beginning postion
             fseek(ldfprt, id1pos * sizeof(float)+ valSTART, SEEK_SET);
+            //fseekCnt++;
 
             vector<float> id1values;
             id1values.resize(id1valnum);
-            if(fread(&id1values[0], sizeof(float),id1valnum, ldfprt)<1)
+            uint64_t readCnt = fread(&id1values[0], sizeof(float),id1valnum, ldfprt);
+            //cout << "fread readCnt: " << readCnt << endl;
+            //cout << "id1values size: " << id1values.size() << endl;
+            if(readCnt<1)
             {
                 //cout << "id1: " << id1 << "i: " << i << "curId.size(): " << curId.size() << endl;
                 //cout << "id1 snp name: " << ldinfo->_esi_rs[id1] << endl;
@@ -3804,22 +3830,30 @@ namespace SMRDATA
             //#pragma omp parallel for
             for(int j=i+1;j<curId.size();j++)
             {
-                int id2=ldinfo->_esi_include[curId[j]];
+                uint64_t id2=ldinfo->_esi_include[curId[j]];
                 //cout << "cor_calc, id1:" << id1 << " id2: " << id2 << endl;
                 
                 if(id1>id2)
                 {
-                    cout << "id1 > id2, id1: " << id1 << " id2: " << id2 << endl;
+                    //cout << "id1 > id2, id1: " << id1 << " id2: " << id2 << endl;
                     //exit(EXIT_FAILURE);
                     long poss=ldinfo->_cols[id2];
                     fseek( ldfprt, (poss+id1-id2-1)*sizeof(float)+valSTART, SEEK_SET );
+                    //fseekCnt++;
                     if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
                     else LD(i,j)=LD(j,i)=readfloat(ldfprt);
                 }
                 else
                 {
-                    //cout << "id1 < id2, id1: " << id1 << "id2: " << id2 << endl;
+                    //cout << "id1 < id2, id1: " << id1 << " id2: " << id2 << endl;
                     //when id1 < id2, get values from id1values vector
+                    if(id2-id1-1 >= id1values.size()) {
+                        cout << "cor_calc_batch out of index error" << endl;
+                        //cout << "id1 < id2, id1: " << id1 << " id2: " << id2 << endl;
+                        //cout << "id2-id1-1: " << id2-id1-1 << endl;
+                        //cout << "id1values.size: " << id1values.size() << endl;
+                        exit(ERROR_BAD_DATA);
+                    }
                     float id1id2val = id1values[id2-id1-1];
                     if(indicator) LD(i,j)=LD(j,i)=sqrt(id1id2val);
                     else LD(i,j)=LD(j,i)=id1id2val;
@@ -3830,6 +3864,8 @@ namespace SMRDATA
                 }
             }
         }
+
+        //cout << "cor_calc_batch fseekCnt:" << fseekCnt << endl;
     }
 
 
@@ -5925,14 +5961,16 @@ namespace SMRDATA
        if(esdata._rowid.empty() && esdata._bxz.empty())
        {
            printf("ERROR: no data are included in the analysis.\n");
-           exit(EXIT_FAILURE);
+           exit(ERROR_EQTL_NO_DATA);
        }
         
        vector<SMRRLT> smrrlts;
        if(bFileName) smr_heidi_func(smrrlts,  outFileName, &bdata,&gdata,&esdata,  cis_itvl,  heidioffFlag, heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
        else {
            smr_heidi_func(smrrlts,  outFileName, &ldinfo, bld, &gdata,&esdata,  cis_itvl,  heidioffFlag,heidiskipthresh, refSNP,p_hetero,ld_top, m_hetero , p_smr, threshpsmrest,new_het_mth,opt, ld_min,opt_hetero, sampleoverlap,pmecs, minCor,prb_snp,targetLstflg);
-           fclose(bld);
+           if(bld) {
+            fclose(bld);
+           }
        }
     }
     double heidi_test_ref_new(bInfo* bdata,SMRWK* smrwk,double ldr2_top, double threshold, int m_hetero,long &nsnp, int refid , double ld_min, int opt_hetero , bool sampleoverlap, double theta)
@@ -6211,7 +6249,9 @@ namespace SMRDATA
         int m = (int)smrwk_heidi.bxz.size();
         vector<int> rm_ID1;
         MatrixXd C;
-        cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
+        //cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
+        cor_calc_batch(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
+
 
         /*long crows = C.rows();
         long ccols = C.cols();

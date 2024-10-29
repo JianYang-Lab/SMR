@@ -2163,7 +2163,7 @@ namespace SMRDATA
     int smr_setbased_test(ldInfo* ldinfo, FILE* ldfptr, eqtlInfo* esdata, vector<uint32_t> &slctId, vector<double> &slct_bxz,vector<double> &slct_sexz,vector<double> &slct_byz,vector<double> &slct_seyz, double p_smr, double ld_top,double &set_pval_smr, double &set_pval_gwas,double &set_pval_eqtl, vector<string> &snp4msmr)
     {
         /* step4: Filter out the SNPs with p-smr threshold and ld-pruning */
-        printf("Conducting multi-SNP SMR test...\n");
+        //printf("Conducting multi-SNP SMR test...\n");
         vector<uint32_t> Id4smr;
         vector<double> bxz4smr;
         vector<double> sexz4smr;
@@ -2187,7 +2187,7 @@ namespace SMRDATA
             }
         }
         int snp_count=(int)Id4smr.size();
-        printf("%ld SNPs passed the p-value threshold %6.2e and %ld SNPs are excluded.\n",Id4smr.size(), p_smr,slctId.size()-Id4smr.size());
+        //printf("%ld SNPs passed the p-value threshold %6.2e and %ld SNPs are excluded.\n",Id4smr.size(), p_smr,slctId.size()-Id4smr.size());
         if(snp_count==0) return -9;
         /* step5: multiple-SNP SMR test */
         
@@ -2197,7 +2197,7 @@ namespace SMRDATA
         double sbat_ld_cutoff=sqrt(ld_top);
 
         sbat_calcu_lambda(ldinfo, ldfptr, Id4smr, eigenval, eigenvalxy, snp_count,  sbat_ld_cutoff, sub_indx, zxz4smr, zyz4smr);
-        printf("%ld SNPs passed LD-square threshold %6.2f and %ld SNPs are excluded.\n",sub_indx.size(), ld_top,Id4smr.size()-sub_indx.size());
+        //printf("%ld SNPs passed LD-square threshold %6.2f and %ld SNPs are excluded.\n",sub_indx.size(), ld_top,Id4smr.size()-sub_indx.size());
         vector<double> zsxysq_slct(sub_indx.size());
         double chisq_zy=0;
         double chisq_zx=0;
@@ -2237,7 +2237,7 @@ namespace SMRDATA
         xh++;
          */
         /* end of saving*/
-        printf("%ld SNPs are included in the multi-SNP SMR test.\n",sub_indx.size());
+        //printf("%ld SNPs are included in the multi-SNP SMR test.\n",sub_indx.size());
         if(sub_indx.size() == 1)
         {
             set_pval_smr = pchisq(chisq_o, 1.0);
@@ -2583,7 +2583,7 @@ namespace SMRDATA
         free_gwas_data(gdata);
         
     }
-    void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,char* indilstName, char* snplstName,char* problstName,bool bFlag,double p_hetero,double ld_top,int m_hetero ,int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde,double p_smr, char* refSNP, bool heidioffFlag, double heidiskipthresh, int cis_itvl,char* genelistName, int chr,int prbchr, char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag,char* setlstName, char* geneAnnoFileName, int expanWind, double ld_min,double threshpsmrest, bool sampleoverlap, double pmecs, int minCor, double ld_top_multi,double afthresh,double percenthresh)
+    void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,char* indilstName, char* snplstName,char* problstName,bool bFlag,double p_hetero,double ld_top,int m_hetero ,int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde,double p_smr, char* refSNP, bool heidioffFlag, double heidiskipthresh, int cis_itvl,char* genelistName, int chr,int prbchr, char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag,char* setlstName, char* geneAnnoFileName, int expanWind, double ld_min,double threshpsmrest, bool sampleoverlap, double pmecs, int minCor, double ld_top_multi,double afthresh,double percenthresh, bool enableGwasComments)
     {
         double theta=0;
         setNbThreads(thread_num);
@@ -2605,7 +2605,7 @@ namespace SMRDATA
         long int readGwasStart = time(NULL);
         
 
-        read_gwas_data( &gdata, gwasFileName);
+        read_gwas_data( &gdata, gwasFileName, enableGwasComments);
 
         long int readGwasEnd = time(NULL);
         long int readGwasUsed = readGwasEnd - readGwasStart;
@@ -3143,7 +3143,6 @@ namespace SMRDATA
 
                 //long int ciseQTLStart = time(NULL);
                 
-                
                 progr1=1.0*i/probNum;
                 if(progr1-progr0-0.05>1e-6 || i+1==probNum)
                 {
@@ -3155,8 +3154,13 @@ namespace SMRDATA
                 int probebp=esdata._epi_bp[i];
                 int probechr=esdata._epi_chr[i];
 
+
                 string probename=esdata._epi_prbID[i];
                 string probegene=esdata._epi_gene[i];
+
+                //if(probename == "ENSG00000211934.3") {
+                //    cout << "current probe name is ENSG00000211934.3" << endl;
+                //}
 
                 /*if (probechr != curchr) {
                     //printf("WARNING: skip probe %s , expect chr %d,  but the chr of probe is %d.\n", probename.c_str(), curchr, probechr);
@@ -3166,7 +3170,7 @@ namespace SMRDATA
                 init_smr_wk(&smrwk);
                 smrwk.cur_prbidx=i;
                 // step1: get cis-eQTLs
-                printf("\nInitiating the workspace of probe %s for multi-SNP SMR analysis....\n",probename.c_str());
+                //printf("\nInitiating the workspace of probe %s for multi-SNP SMR analysis....\n",probename.c_str());
                 //long maxid =fill_smr_wk(&bdata, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
                 long maxid;
@@ -3200,14 +3204,14 @@ namespace SMRDATA
                     printf("WARNING: no SNP fetched for probe %s.\n", probename.c_str());
                     continue;
                 }
-                printf("%ld SNPs are included from the cis-region of the probe %s.\n",smrwk.bxz.size(),probename.c_str());
+                //printf("%ld SNPs are included from the cis-region of the probe %s.\n",smrwk.bxz.size(),probename.c_str());
                 //now if you sepcify reference SNP, maxid point to this SNP, otherwise maxid is -9
 
                 //long int topSNPStart = time(NULL);
                 
 
                 // step2: get top-SNP
-                printf("Checking the top-SNP in the region....\n");
+                //printf("Checking the top-SNP in the region....\n");
                 Map<VectorXd> ei_bxz(&smrwk.bxz[0],smrwk.bxz.size());
                 Map<VectorXd> ei_sexz(&smrwk.sexz[0],smrwk.sexz.size());
                 VectorXd zsxz;
@@ -3223,9 +3227,9 @@ namespace SMRDATA
                     }
                 }
                 string topsnpname=smrwk.rs[maxid];
-                printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(),pxz_val);
+                //printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(),pxz_val);
                 if(refSNP==NULL && pxz_val>p_smr){
-                    printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n", p_smr, probename.c_str());
+                    //printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n", p_smr, probename.c_str());
                     continue;
                 } else {
                    // printf("Conducting multi-SNP SMR and HEIDI test for probe %s...\n", probename.c_str());
@@ -3241,8 +3245,8 @@ namespace SMRDATA
                 //cout << "maxid: " << maxid << endl; 
                 
                 // step3: extract SNPs around the --set-wind around sig (or ref) SNP
-                if(expanWind!=-9) printf("Extracting SNPs in a specified window around top-SNP/ref-SNP....\n");
-                else printf("Extracting SNPs in the cis-region....\n");
+                //if(expanWind!=-9) printf("Extracting SNPs in a specified window around top-SNP/ref-SNP....\n");
+                //else printf("Extracting SNPs in the cis-region....\n");
                 vector<uint32_t> slctId;
                 vector<int> slct_bpsnp,slct_snpchr;
                 vector<double> slct_bxz, slct_sexz, slct_byz, slct_seyz, slct_zsxz,slct_zxz, slct_pyz,slct_freq; //slct_zsxz,slct_zxz would be removed one of them
@@ -3389,7 +3393,7 @@ namespace SMRDATA
                 //cout << "heidiskipthresh:" << heidiskipthresh << endl;
 
                 if(!heidioffFlag && pxy_max < heidiskipthresh) {
-                    printf("Conducting HEIDI test...\n");
+                    //printf("Conducting HEIDI test...\n");
                     if(bFileName) {
                         pdev= heidi_test_new(&bdata,&smrwk, ld_top,  threshold,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
                     } else {
@@ -3397,7 +3401,7 @@ namespace SMRDATA
                         pdev=heidi_test_new(&ldinfo,bld,&smrwk, ld_top,  threshold,  m_hetero, nsnp, ld_min,opt_hetero,sampleoverlap, theta);
                     }
                     
-                    printf("HEIDI test complete.\n");
+                    //printf("HEIDI test complete.\n");
                 } else {
                     printf("skip HEIDI test for probe %s\n", probename.c_str());
                 }

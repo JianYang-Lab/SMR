@@ -236,6 +236,9 @@ option(int option_num, char* option_str[])
     char* bldFileName = NULL;
     bool make_bld_flag = false;
 
+    //for gwas comments
+    bool enableGwasComments = false;
+
     /* parsing options and arguments, using flage to indicat whether the
      * options is show up, and some flags have a argument followed it.
      */
@@ -1071,6 +1074,10 @@ option(int option_num, char* option_str[])
             gctaflag = false;
             printf("--qtltools-permu-format \n" );
         }
+        else if (0 == strcmp(option_str[i], "--enable-gwas-comments")){
+            enableGwasComments = true;
+            printf("--enable-gwas-comments \n" );
+        }
     }
 #ifndef __APPLE__
 #if defined _WIN64 || defined _WIN32
@@ -1266,7 +1273,7 @@ option(int option_num, char* option_str[])
             toprbkb, prbwindFlag, genename, snpchr, snprs, fromsnprs, tosnprs, \
             snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName, \
             geneAnnoName, setWind, ld_min, threshpsmrest, sampleoverlap, \
-            pmecs, minsnpcor, ld_prune_multi, diff_freq, diff_freq_ratio);
+            pmecs, minsnpcor, ld_prune_multi, diff_freq, diff_freq_ratio, enableGwasComments);
 
     else if(smr_flag && !smr_trans_flag)
         smr(outFileName, bFileName,bldFileName, gwasFileName, eqtlFileName, \

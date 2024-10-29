@@ -214,7 +214,7 @@ namespace SMRDATA
     void read_bimfile(bInfo* bdata,string bimfile);
     void read_famfile(bInfo* bdata,string famfile);
     void read_bedfile(bInfo* bdata,string bedfile);
-    void read_gwas_data(gwasData* gdata, char* gwasFileName);
+    void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments=false);
     void read_esifile(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);
     void read_esifile_just(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);
     void read_esifile_fast(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);

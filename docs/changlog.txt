@@ -1,0 +1,27 @@
+# Change Log
+
+## v1.3.1
+
+* fix a print index error @cd8a0be91c2febacf19583bc08a5cfdc12995962
+
+    Should be vs_buf[6] rather than vs_buf[5]
+
+* fix --outcome-wind flag check error @921733c2bcd6d5df29a9d079bbff40ff459f66e2
+
+* explicitly covert bxz and sexz from float to double @e9b0feca4bc7685c54df1645f8a89706e414d5cc @44cb9d9b29003f3e7966fb128c5d69faf8bd090f
+
+    explicitly covert bxz and sexz from float to double, and if not covert
+
+    those to double first, the bxz/sexz may not pass condition.
+
+    fabs(zsxz(tid)-smrwk.zxz[tid])>1e-3. for example 0.0081608295440673828/1.7902499394040206e-07
+
+* fix Windows platform ftell returned result overflow problem @1c945021b778a2baca20bd916049235683bb8d68 @fb2253842ae0598e81b7afc9c498153fba2d817f
+    
+    Under Windows platform using _ftelli64(return int64) instead of ftell(return int32).
+
+* change bxy_hetero3 returns form float to double @ec604567c02b82ee902bf08515c72bd17ce9abad
+
+* rewrite Makefile
+
+* add CMakeList.txt

@@ -136,8 +136,8 @@ elseif (CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
         target_include_directories(smr PRIVATE ${zlib_include_dir} PRIVATE ${eigen_dir} PRIVATE ${CMAKE_SOURCE_DIR}/include)
         target_link_directories(smr PRIVATE ${zlib_lib_dir})
         target_link_libraries(smr m
-            -force_load /opt/homebrew/Cellar/zlib/1.3/lib/libz.a
-            -force_load /opt/homebrew/Cellar/libomp/17.0.6/lib/libomp.a
+            -force_load /opt/homebrew/Cellar/zlib/1.3.1/lib/libz.a
+            -force_load /opt/homebrew/Cellar/libomp/19.1.5/lib/libomp.a
         )
     elseif (system STREQUAL "Windows")
     else()

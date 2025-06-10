@@ -714,19 +714,14 @@ namespace SMRDATA
                         double se=eqtlinfo._val[pos+j+num];
                         double zsxz=beta/se;
                         double pxz=pchisq(zsxz*zsxz, 1);
-                        // if(pxz<=plookup)
-                        // {
-                        //     out_esi_id.push_back(eqtlinfo._rowid[pos+j]);
-                        //     out_epi_id.push_back(i);
-                        //     out_beta.push_back(beta);
-                        //     out_se.push_back(se);
-                        //     out_pval.push_back(pxz);
-                        // }
-                        out_esi_id.push_back(eqtlinfo._rowid[pos+j]);
-                        out_epi_id.push_back(i);
-                        out_beta.push_back(beta);
-                        out_se.push_back(se);
-                        out_pval.push_back(pxz);
+                        if(pxz<=plookup)
+                        {
+                            out_esi_id.push_back(eqtlinfo._rowid[pos+j]);
+                            out_epi_id.push_back(i);
+                            out_beta.push_back(beta);
+                            out_se.push_back(se);
+                            out_pval.push_back(pxz);
+                        }
                     }
                     
                 }

@@ -13,6 +13,13 @@ namespace SMRDATA
     double
     adjSE(double beta,double p)
     {
+        const double min_p = 1e-300;
+
+        // 防止 p 为 0 
+        if (p == 0.0) {
+            p = min_p;
+        }
+        
         if(p == 1){
             return 1e10;
         }

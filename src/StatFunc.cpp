@@ -600,8 +600,7 @@ double StatFunc::pchisq(double x, double df) {
 
     // Check status
     if (st != 0) return -9;
-
-    // Return p-value
+    
     return q;
 }
 

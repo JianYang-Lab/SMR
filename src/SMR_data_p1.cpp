@@ -667,8 +667,18 @@ namespace SMRDATA
                         double beta=eqtlinfo._bxz[i][j];
                         double se=eqtlinfo._sexz[i][j];
                         if(fabs(se+9)<1e-6) continue;
-                        double zsxz=beta/se;
-                        double pxz=pchisq(zsxz*zsxz, 1);
+                        double zsxz, pxz;
+                        if (beta == 0.0 && se == 0.0) {
+                            pxz = 1.0;
+                        } else {
+                            zsxz=beta/se;
+                            pxz=pchisq(zsxz*zsxz, 1);
+                            if (pxz == 0.0){
+                                printf("WARNING: p-value of 0 found in the query format and changed to min double value %e.\n", __DBL_MIN__);
+                                pxz= __DBL_MIN__;
+                            } 
+                        }
+
                         if(pxz<=plookup)
                         {
                             out_esi_id.push_back(j);
@@ -712,8 +722,17 @@ namespace SMRDATA
                     {
                         double beta=eqtlinfo._val[pos+j];
                         double se=eqtlinfo._val[pos+j+num];
-                        double zsxz=beta/se;
-                        double pxz=pchisq(zsxz*zsxz, 1);
+                        double zsxz, pxz;
+                        if (beta == 0.0 && se == 0.0) {
+                            pxz = 1.0;
+                        } else {
+                            zsxz=beta/se;
+                            pxz=pchisq(zsxz*zsxz, 1);
+                            if (pxz == 0.0){
+                                printf("WARNING: p-value of 0 found in the query format and changed to min double value %e.\n", __DBL_MIN__);
+                                pxz= __DBL_MIN__;
+                            }
+                        }
                         if(pxz<=plookup)
                         {
                             out_esi_id.push_back(eqtlinfo._rowid[pos+j]);

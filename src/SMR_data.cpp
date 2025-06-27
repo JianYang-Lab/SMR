@@ -7,6 +7,8 @@
 //
 
 #include "SMR_data.hpp"
+
+extern int MAX_NUM_LD;
 namespace SMRDATA
 {
    

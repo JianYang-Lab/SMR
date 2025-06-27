@@ -32,7 +32,7 @@
 #define FNAMESIZE 4096
 
 //#define BEST_NUM_HEIDI 41
-#define MAX_NUM_LD 500
+// #define MAX_NUM_LD 500
 
 #define MIN_PVAL_ADJUSTED 1e-150
 //typedef unsigned long long         uint64_t;

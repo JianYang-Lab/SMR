@@ -40,7 +40,7 @@ FLAGS_VALID_CK(int option_num, char* option_str[])
         "--bolt-assoc-format", "--geno-uni", "--psmr", "--beqtl-qc", "--z-thresh", \
         "--heidi-mtd", "--phet", "--descriptive-trans", "--descriptive-cis", "--meta", \
         "--trans", "--extract-cis", "--rm-technical", "--p-technical", "--ld-lower-limit", \
-        "--heidi-max-m", "--extract-snp-p", "--exclude-snp-p", "--matrix-eqtl-format", \
+        "--max_num_ld", "--heidi-max-m", "--extract-snp-p", "--exclude-snp-p", "--matrix-eqtl-format", \
         "--fastqtl-nominal-format", "--fastqtl-permu-format", "--add-n", "--show-n", "--update-epi", \
         "--update-esi", "--cis-to-all", "--mecs", "--pmecs", "--mmecs", "--sample-overlap", \
         "--ld-multi-snp", "--extract-target-snp-probe", "--extract-snp-probe", "--disable-freq-ck", \

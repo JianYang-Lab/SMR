@@ -23,6 +23,7 @@ bool mute = false;
 int xh=0;
 bool forcefrqck = true;
 char* outFileName=NULL;
+int MAX_NUM_LD = 500;
 
 std::string getOSName()
 {
@@ -1081,6 +1082,27 @@ option(int option_num, char* option_str[])
             gctaflag = false;
             printf("--qtltools-permu-format \n" );
         }
+        else if (0 == strcmp(option_str[i], "--max_num_ld")){
+            const char* val_str = option_str[++i];
+
+            // 检查是否是纯整数
+            char* endptr;
+            long val = strtol(val_str, &endptr, 10);
+            if (*endptr != '\0') {
+                printf ("ERROR: --max_num_ld must be an integer.\n");
+                exit (EXIT_FAILURE);
+            }
+
+            // 检查是否在合法范围内
+            if (val < 500 || val > 10000) {
+                printf ("ERROR: --max_num_ld must be between 500 and 10000.\n");
+                exit (EXIT_FAILURE);
+            }
+
+            MAX_NUM_LD = (int)val;
+            printf("--max_num_ld %d\n", MAX_NUM_LD);
+        }
+        
     }
 #ifndef __APPLE__
 #if defined _WIN64 || defined _WIN32

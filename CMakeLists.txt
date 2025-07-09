@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
+
 #information of CPU architecture
 message(STATUS "CPU_ARCH: " ${CMAKE_HOST_SYSTEM_PROCESSOR})
 message("")
@@ -49,6 +53,19 @@ message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
 message("")
 
+if(LINUX)
+    set(OMP_LIBRARY "/usr/lib/libgomp.so")
+    set(MKL_DIR "/opt/intel/mkl/lib/intel64/cmake/mkl")
+    set(MKL_THREADING "gnu_thread")
+    set(MKL_INTERFACE "lp64")
+endif()
+
+
+# APPLE use Apple Accelerate
+if(NOT APPLE)
+    find_package(MKL REQUIRED)
+endif()
+
 find_package(OpenMP REQUIRED)
 
 # Fetch 3rd parties
@@ -77,6 +94,18 @@ file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(${PROJECT_NAME} ${SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib)
+
+target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
+
+if(NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} MKL::MKL)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE EIGEN_USE_MKL_ALL)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        EIGEN_USE_BLAS
+        EIGEN_USE_LAPACKE)
+endif()
 
 # List targets
 get_property(imported_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)

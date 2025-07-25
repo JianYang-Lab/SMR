@@ -181,6 +181,7 @@ namespace SMRDATA
         }
         Bim.close();
         bdata->_snp_num = bdata->_chr.size();
+        // by default, allele1 is ref allele
         bdata->_ref_A = bdata->_allele1;
         bdata->_other_A = bdata->_allele2;
         cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << endl;
@@ -257,6 +258,8 @@ namespace SMRDATA
                 while (k < 7 && i < bdata->_indi_num) { // change code: 11 for AA; 00 for BB;
                     if (!rindi[i]) k += 2;
                     else {
+                        // Flip the bit to change code: 11 for AA, 00 for BB, 10 for heterozygote and 01 for missing.
+                        // As a result, we also need to swap snp_1 and snp_2 to keep 10 for missing and 01 for heterozygote.
                         bdata->_snp_2[snp_indx][indi_indx] = (!b[k++]);
                         bdata->_snp_1[snp_indx][indi_indx] = (!b[k++]);
                         indi_indx++;
@@ -712,6 +715,10 @@ namespace SMRDATA
             printf("Error: Failed to open file %s.\n",bldname.c_str());
             exit(EXIT_FAILURE);
         }
+        // Write header
+        // reserved 16 * int: ldr2, individual size, snp size, ld window size
+        // uint64_t: valnum
+        // uint64_t * (snip size + 1): each uint64_t is the accumulated ldnum, ldnum[i] = cols[i] - cols[i-1]
         vector<int> reserved(RESERVEDUNITS);
         if(ldr) reserved[0]=0;
         else if(ldr2) reserved[0]=1;
@@ -729,6 +736,7 @@ namespace SMRDATA
         {
             progress(i, cr, (int)bdata._include.size());
 
+            // X shape: individual size * (max snp size within ldwin)
             if(X.size()==0) initX(&bdata, X,m);
             int start =-9;
             if(bitmod) start = (i & (m-1));

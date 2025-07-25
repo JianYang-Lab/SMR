@@ -43,7 +43,7 @@ namespace SMRDATA
         int _autosome_num;
         vector<int> _chr;
         vector<string> _snp_name;
-        map<string, int> _snp_name_map;
+        map<string, int> _snp_name_map; // snp name to snp index
         //unordered_map<string,int> _snp_name_map;
 
         vector<double> _genet_dst;
@@ -54,19 +54,19 @@ namespace SMRDATA
         vector<string> _other_A; // the other allele
         int _snp_num;
         vector<double> _rc_rate;
-        vector<int> _include; // initialized in the read_bimfile()
+        vector<int> _include; // snps indices, initialized in the read_bimfile()
         VectorXd _maf;
         
         // fam file
         vector<string> _fid;
         vector<string> _pid;
-        map<string, int> _id_map;
+        map<string, int> _id_map; // "<fam_id>:<iid>" to individual index
         vector<string> _fa_id;
         vector<string> _mo_id;
         vector<int> _sex;
         vector<double> _pheno;
         int _indi_num;
-        vector<int> _keep; // initialized in the read_famfile()
+        vector<int> _keep; // individual indices, initialized in the read_famfile()
         MatrixXd _varcmp_Py; // BLUP solution to the total genetic effects of individuals
         
         // bed file

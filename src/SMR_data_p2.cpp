@@ -2998,6 +2998,10 @@ namespace SMRDATA
                     printf("ERROR: failed to open file %s.\n",esdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
+                // header
+                // 16 * int: filetype, addn, esiNum, epiNum, ... padding
+                // uint64_t: valNum
+                // uint64_t[(epiNum << 1) + 1]
                 uint32_t filetype=SPARSE_FILE_TYPE_3;
                 vector<int> ten_ints(RESERVEDUNITS);
                 ten_ints[0]=filetype;

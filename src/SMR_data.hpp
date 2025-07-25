@@ -54,7 +54,7 @@ namespace SMRDATA
         vector<int> _esi_bp;
         vector<string> _esi_allele1;
         vector<string> _esi_allele2;
-		vector<int> _esi_include; // initialized in the readesi
+		vector<int> _esi_include; // snp indices (lineNum in *.esi file), initialized in the readesi
         //map<string,int> _snp_name_map;
         unordered_map<string,int> _snp_name_map;
 
@@ -78,7 +78,7 @@ namespace SMRDATA
         
         //for sparse
         vector<uint64_t> _cols;
-        vector<uint32_t> _rowid;
+        vector<uint32_t> _rowid; // index of snp in _esi_include
         vector<float> _val;
         // for dense
         vector< vector<float> > _bxz; // first dimension is probe, second is snp

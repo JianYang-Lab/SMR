@@ -2721,6 +2721,8 @@ namespace SMRDATA
         else 
         {
 
+            // Read "<inputname>.esi" and "<inputname>.bld"
+
             //long int readBldStart = time(NULL);
 
             char inputname[FNAMESIZE];

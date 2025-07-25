@@ -1365,7 +1365,8 @@ namespace SMRDATA
 
                 //cout << "eqtlinfo->_include.size(): " << eqtlinfo->_include.size() << endl;
                 //cout << "eqtlinfo->_cols.size: " << eqtlinfo->_cols.size() << endl;
-             
+
+                // snp indices to index in _esi_include
                 map<int, int > _incld_id_map;
                 long size = 0;
                 for (int i = 0; i<eqtlinfo->_esi_include.size(); i++)

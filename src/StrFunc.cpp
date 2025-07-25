@@ -233,6 +233,8 @@ void StrFunc::match_only(const vector<string> &VecA, const vector<string> &VecB,
     }
     
 }
+
+/// Get intersection of `VecA` and `VecB`. `VecC` store the index of intersection in `VecB`.
 void StrFunc::match_only(const vector<string> &VecA, const vector<string> &VecB, vector<int> &VecC)
 {
 	int i = 0;

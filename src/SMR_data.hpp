@@ -216,10 +216,7 @@ namespace SMRDATA
     void read_bedfile(bInfo* bdata,string bedfile);
     void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments=false);
     void read_esifile(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);
-    void read_esifile_just(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);
-    void read_esifile_fast(eqtlInfo * eqtlinfo, string esifile, bool prtscr=true);
     void read_esifile_by_chr(eqtlInfo * eqtlinfo, string esifile, int snpchr, bool prtscr=true);
-
 
     void read_epifile(eqtlInfo * eqtlinfo, string epifile , bool prtscr=true);
     void read_besdfile(eqtlInfo * eqtlinfo, string besdfile, bool prtscr=true);
@@ -314,8 +311,6 @@ namespace SMRDATA
     void get_square_ldpruning_idxes(vector<int> &sn_ids, VectorXd &zsxz, double threshold, VectorXd &ld_v, long maxid, double ld_top);
     void cor_calc(MatrixXd &LD, MatrixXd &X);
     void cor_calc(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator);
-    void cor_calc_batch(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator);
-
 
     void extract_prob_by_gene(eqtlInfo* eqtlinfo, string genelistName);
     void update_freq(char* eqtlFileName, char* frqfile);

@@ -3,7 +3,9 @@
 # You should cd to the project root
 CWD=$(pwd)
 
-BUILD_TYPE=Release
+# BUILD_TYPE=Release
+# BUILD_TYPE=Debug
+BUILD_TYPE=RelWithDebInfo
 APP_NAME=smr
 
 # You should set the linuxdeploy and appimagetool path.
@@ -24,12 +26,14 @@ cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 cmake --build build/${BUILD_TYPE}
 
 # Install
-cmake --install build/${BUILD_TYPE}
+# cmake --install build/${BUILD_TYPE}
 
-# Packaging
-${LINUX_DEPLOY_BIN} --appdir build/${BUILD_TYPE}/installed \
-    --executable build/${BUILD_TYPE}/installed/usr/bin/${APP_NAME} \
-    --desktop-file build/${BUILD_TYPE}/installed/usr/share/applications/${APP_NAME}.desktop \
-    --icon-file build/${BUILD_TYPE}/installed/usr/share/icons/hicolor/256x256/apps/${APP_NAME}.png
+# cp -v /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_*.so.* build/${BUILD_TYPE}/installed/usr/lib/
 
-${APP_IMAGE_TOOL_BIN} build/${BUILD_TYPE}/installed --runtime-file ${APP_IMAGE_RUNTIME_FILE}
+# # Packaging
+# ${LINUX_DEPLOY_BIN} --appdir build/${BUILD_TYPE}/installed \
+#     --executable build/${BUILD_TYPE}/installed/usr/bin/${APP_NAME} \
+#     --desktop-file build/${BUILD_TYPE}/installed/usr/share/applications/${APP_NAME}.desktop \
+#     --icon-file build/${BUILD_TYPE}/installed/usr/share/icons/hicolor/256x256/apps/${APP_NAME}.png
+
+# ${APP_IMAGE_TOOL_BIN} build/${BUILD_TYPE}/installed --runtime-file ${APP_IMAGE_RUNTIME_FILE}

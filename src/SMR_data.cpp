@@ -6250,8 +6250,8 @@ namespace SMRDATA
         int m = (int)smrwk_heidi.bxz.size();
         vector<int> rm_ID1;
         MatrixXd C;
-        //cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
-        cor_calc_batch(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
+        cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
+        //cor_calc_batch(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
 
 
         /*long crows = C.rows();

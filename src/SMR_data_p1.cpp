@@ -1918,8 +1918,8 @@ namespace SMRDATA
         int indicator=readint(ldfptr);
         
         MatrixXd C;
-        //cor_calc(C, ldinfo, ldfptr, curId, indicator);
-        cor_calc_batch(C, ldinfo, ldfptr, curId, indicator);
+        cor_calc(C, ldinfo, ldfptr, curId, indicator);
+        //cor_calc_batch(C, ldinfo, ldfptr, curId, indicator);
 
 
         /*long bcrows = C.rows();
@@ -3203,7 +3203,7 @@ namespace SMRDATA
                     continue;
                 } //ref heidi SNP is not in selected SNPs
                 if (smrwk.bxz.size() == 0) {
-                    printf("WARNING: no SNP fetched for probe %s.\n", probename.c_str());
+                    // printf("WARNING: no SNP fetched for probe %s.\n", probename.c_str());
                     continue;
                 }
                 //printf("%ld SNPs are included from the cis-region of the probe %s.\n",smrwk.bxz.size(),probename.c_str());

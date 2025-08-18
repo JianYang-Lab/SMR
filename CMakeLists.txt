@@ -69,7 +69,7 @@ message("")
 if(LINUX)
     set(OMP_LIBRARY "/usr/lib/libgomp.so")
     if(NOT MKL_DIR)
-        set(MKL_DIR "/opt/intel/mkl/lib/intel64/cmake/mkl")
+        set(MKL_DIR "/opt/intel/oneapi/mkl/latest/lib/cmake/mkl")
     endif()
     set(MKL_THREADING "gnu_thread")
     set(MKL_INTERFACE "lp64")
@@ -84,31 +84,18 @@ endif()
 find_package(OpenMP REQUIRED)
 
 # Fetch 3rd parties
-include(FetchContent)
-
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+include(cmake/CPM.cmake)
 set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
-FetchContent_Declare(
-    eigen
-    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-    GIT_TAG 3.4.0
-    GIT_SHALLOW TRUE)
-
-set(ZLIB_USE_STATIC_LIBS OFF)
-set(ZLIB_ROOT "")
-FetchContent_Declare(
-    ZLIB
-    GIT_REPOSITORY https://github.com/madler/zlib.git
-    GIT_TAG v1.3.1
-    GIT_SHALLOW TRUE)
-
-FetchContent_MakeAvailable(Eigen ZLIB)
+CPMAddPackage("gh:eigen-mirror/eigen#3.4.0")
+CPMAddPackage("gh:madler/zlib@1.3.1")
+CPMAddPackage("gh:gabime/spdlog@1.15.3")
 
 file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(${PROJECT_NAME} ${SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib)
+target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
 

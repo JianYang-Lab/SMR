@@ -77,6 +77,8 @@ option(int option_num, char* option_str[])
     char * bFileName = NULL;
     char * gwasFileName = NULL;
     char * eqtlFileName = NULL;
+    char * eqtllistFileName = NULL;
+    int eqtllistIndex = 0;
     char * indilstName = NULL;
     char * snplstName = NULL;
     char * indilst2remove = NULL;
@@ -296,6 +298,21 @@ option(int option_num, char* option_str[])
                 eqtlFileName2 = option_str[++i];
                 FLAG_VALID_CK("--beqtl-summary", eqtlFileName2);
                 printf("--beqtl-summary %s\n", eqtlFileName2);
+            }
+        }
+        else if (strcmp(option_str[i], "--beqtl-list") == 0) {
+            if (eqtllistFileName == NULL) {
+                eqtllistFileName = option_str[++i];
+                FLAG_VALID_CK("--beqtl-list", eqtllistFileName);
+                printf("--beqtl-list %s\n", eqtllistFileName);
+            }
+        }
+        else if (strcmp(option_str[i], "--beqtl-list-index") == 0) {
+            if (eqtllistIndex == 0) {
+                char* str = option_str[++i];
+                FLAG_VALID_CK("--beqtl-list", str);
+                printf("--beqtl-list %s\n", str);
+                eqtllistIndex = std::stoi(str);
             }
         }
         else if(strcmp(option_str[i],"--keep")==0){
@@ -1264,7 +1281,7 @@ option(int option_num, char* option_str[])
         make_cojo(outFileName, eqtlFileName, snplstName, snplst2exclde, \
             problstName, problst2exclde, genelistName, bFlag);
 
-    else if(ssmrflg)
+    else if(ssmrflg && eqtlFileName) {
         smr_multipleSNP(outFileName, bFileName, bldFileName, gwasFileName, eqtlFileName, \
             maf, indilstName, snplstName, problstName, bFlag, p_hetero, \
             ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde, \
@@ -1274,6 +1291,19 @@ option(int option_num, char* option_str[])
             snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName, \
             geneAnnoName, setWind, ld_min, threshpsmrest, sampleoverlap, \
             pmecs, minsnpcor, ld_prune_multi, diff_freq, diff_freq_ratio, enableGwasComments);
+    }
+
+    else if(ssmrflg && eqtllistFileName) {
+        smr_multipleSNP_v2(outFileName, bFileName, bldFileName, gwasFileName, eqtllistFileName, eqtllistIndex, \
+            maf, indilstName, snplstName, problstName, bFlag, p_hetero, \
+            ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde, \
+            problst2exclde, p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl, genelistName, \
+            chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, \
+            toprbkb, prbwindFlag, genename, snpchr, snprs, fromsnprs, tosnprs, \
+            snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName, \
+            geneAnnoName, setWind, ld_min, threshpsmrest, sampleoverlap, \
+            pmecs, minsnpcor, ld_prune_multi, diff_freq, diff_freq_ratio, enableGwasComments);
+    }
 
     else if(smr_flag && !smr_trans_flag)
         smr(outFileName, bFileName,bldFileName, gwasFileName, eqtlFileName, \

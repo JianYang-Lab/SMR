@@ -14,7 +14,7 @@ echo "Path of linuxdeploy ${LINUX_DEPLOY_BIN}"
 echo "Path of appimagetool ${APP_IMAGE_TOOL_BIN}"
 echo "Path of appimagetool ${APP_IMAGE_RUNTIME_FILE}"
 
-module load gcc/8.4.0 cmake intelmkl gsl
+module load gcc cmake intelmkl
 
 # Generate cmake
 cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \

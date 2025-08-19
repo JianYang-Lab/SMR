@@ -5178,7 +5178,8 @@ namespace SMRDATA
       // perf_timer.elapsed("read esi");
 
 
-      #pragma omp parallel for
+      // With more threads more memory is required
+      #pragma omp parallel for num_threads(2)
       for (int i = 1; i <= 22; ++i) {
         if (chr_specific_qtl) {
           qtl_data = qtl_data + std::to_string(i);
@@ -5188,7 +5189,7 @@ namespace SMRDATA
         bld_filename += std::to_string(i);
 
         std::string out_filename(outFileName);
-        out_filename += std::to_string(i);
+        out_filename += ("_" + qtl_name + "_" + std::to_string(i));
 
         smr_multipleSNP_for_each_chr(
             out_filename.c_str(), bFileName, bld_filename.c_str(), gdata,

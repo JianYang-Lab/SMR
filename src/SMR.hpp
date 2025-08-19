@@ -22,9 +22,9 @@ static inline void
 FLAGS_VALID_CK(int option_num, char* option_str[])
 {
     const char *flgs[] = {
-        "--bfile", "--gwas-summary", "--beqtl-summary", "--maf", "--keep", "--remove", \
-        "--extract-snp", "--exclude-snp", "--extract-probe", "--extract-outcome-probe", \
-        "--extract-exposure-probe", "--exclude-probe", "--exclude-outcome-probe", \
+        "--bfile", "--gwas-summary", "--beqtl-summary", "--beqtl-list", "--beqtl-list-index", \
+        "--maf", "--keep", "--remove", "--extract-snp", "--exclude-snp", "--extract-probe", \
+        "--extract-outcome-probe", "--extract-exposure-probe", "--exclude-probe", "--exclude-outcome-probe", \
         "--exclude-exposure-probe", "--eqtl-summary", "--ld-upper-limit", "--peqtl-heidi", \
         "--heidi-min-m", "--make-besd", "--out", "--peqtl-smr", "--smr",\
         "--cis-wind", "--peqtl-trans", "--peqtl-cis", "--peqtl-other", "--efile", "--query", \

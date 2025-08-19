@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 # You should cd to the project root
 CWD=$(pwd)
 

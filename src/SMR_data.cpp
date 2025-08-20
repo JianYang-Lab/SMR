@@ -48,8 +48,8 @@ namespace SMRDATA
 			prbID_buf.push_back(eqtlinfo->_epi_prbID[eqtlinfo->_include[i]]);
 			gene_buf.push_back(eqtlinfo->_epi_gene[eqtlinfo->_include[i]]);
 			orien_buf.push_back(eqtlinfo->_epi_orien[eqtlinfo->_include[i]]);
-            if(eqtlinfo->_epi_start.size()>0) start.push_back(eqtlinfo->_epi_start[eqtlinfo->_include[i]]);
-            if(eqtlinfo->_epi_end.size()>0) start.push_back(eqtlinfo->_epi_end[eqtlinfo->_include[i]]);
+            if(eqtlinfo->_epi_start.size() > 0) start.push_back(eqtlinfo->_epi_start[eqtlinfo->_include[i]]);
+            if(eqtlinfo->_epi_end.size() > 0) start.push_back(eqtlinfo->_epi_end[eqtlinfo->_include[i]]);
 		}
 		eqtlinfo->_epi_chr.clear();
 		eqtlinfo->_epi_gd.clear();
@@ -73,7 +73,7 @@ namespace SMRDATA
         for (int i = 0; i < eqtlinfo->_probNum; i++)
         {
             eqtlinfo->_include.push_back(i);
-            eqtlinfo->_probe_name_map.insert(pair<string,int>(eqtlinfo->_epi_prbID[i],i));
+            eqtlinfo->_probe_name_map.emplace(eqtlinfo->_epi_prbID[i], i);
         }
 	}
 
@@ -115,7 +115,7 @@ namespace SMRDATA
         for (int i = 0; i < eqtlinfo->_snpNum; i++)
         {
             eqtlinfo->_esi_include.push_back(i);
-            eqtlinfo->_snp_name_map.insert(pair<string, int>(eqtlinfo->_esi_rs[i], i));
+            eqtlinfo->_snp_name_map.emplace(eqtlinfo->_esi_rs[i], i);
         }
 	}
 
@@ -514,20 +514,18 @@ namespace SMRDATA
     void
     read_epifile(eqtlInfo * eqtlinfo, string epifile, bool prtscr)
     {
-        ifstream epi(epifile.c_str());
-        if (!epi)
-            throw ("ERROR: can not open the file [" + epifile + "] to read.");
-        if(prtscr)
-            cout << "Reading eQTL probe information from [" + epifile + "]." << endl;
+        std::ifstream epi(epifile.c_str());
+        if (!epi) throw ("ERROR: can not open the file [" + epifile + "] to read.");
+        if(prtscr) cout << "Reading eQTL probe information from [" + epifile + "]." << endl;
 
-        eqtlinfo -> _epi_chr.clear();
-        eqtlinfo -> _epi_prbID.clear();
-        eqtlinfo -> _epi_gd.clear();
-        eqtlinfo -> _epi_bp.clear();
-        eqtlinfo -> _epi_gene.clear();
-        eqtlinfo -> _epi_orien.clear();
-		eqtlinfo -> _include.clear();
-        eqtlinfo -> _probe_name_map.clear();
+        eqtlinfo->_epi_chr.clear();
+        eqtlinfo->_epi_prbID.clear();
+        eqtlinfo->_epi_gd.clear();
+        eqtlinfo->_epi_bp.clear();
+        eqtlinfo->_epi_gene.clear();
+        eqtlinfo->_epi_orien.clear();
+		eqtlinfo->_include.clear();
+        eqtlinfo->_probe_name_map.clear();
 
         char buf[MAX_LINE_SIZE];
         int lineNum(0);
@@ -538,81 +536,75 @@ namespace SMRDATA
             lineNum++;
         }
 
-        if(buf[0] == '\0')
-            lineNum--;
-        eqtlinfo -> _probNum=lineNum;
-        if(prtscr)
-            cout << eqtlinfo -> _probNum << " Probes to be included from [" + epifile + "]." << endl;
+        if(buf[0] == '\0') lineNum--;
+        eqtlinfo->_probNum=lineNum;
 
+        if(prtscr) cout << eqtlinfo->_probNum << " Probes to be included from [" + epifile + "]." << endl;
 
-
-        eqtlinfo -> _epi_chr.resize(lineNum);
-        eqtlinfo -> _epi_prbID.resize(lineNum);
-        eqtlinfo -> _epi_gd.resize(lineNum);
-        eqtlinfo -> _epi_bp.resize(lineNum);
-        eqtlinfo -> _epi_gene.resize(lineNum);
-        eqtlinfo -> _epi_orien.resize(lineNum);
-        eqtlinfo -> _include.resize(lineNum);
+        eqtlinfo->_epi_chr.resize(lineNum);
+        eqtlinfo->_epi_prbID.resize(lineNum);
+        eqtlinfo->_epi_gd.resize(lineNum);
+        eqtlinfo->_epi_bp.resize(lineNum);
+        eqtlinfo->_epi_gene.resize(lineNum);
+        eqtlinfo->_epi_orien.resize(lineNum);
+        eqtlinfo->_include.resize(lineNum);
 
         //reset file stream to begin.
         epi.clear(ios::goodbit);
-        epi.seekg (0, ios::beg);
+        epi.seekg(0, ios::beg);
 
         for(int i = 0; i < lineNum; i++)
         {
-            string tmpStr;
+            string field;
             epi.getline(buf, MAX_LINE_SIZE);
             istringstream iss(buf);
 
             //read first field, chromsome, and it cann't be NA.
-            iss >> tmpStr;
-            if(tmpStr == "NA" || tmpStr == "na" || tmpStr == "-9") {
+            iss >> field;
+            if(field == "NA" || field == "na" || field == "-9") {
                 printf("ERROR: chromosome is \"NA\" in row %d.\n", i + 1);
                 exit(EXIT_FAILURE);
             }
 
             int tmpchr;
-            if(tmpStr == "X" || tmpStr == "x")
-                tmpchr=23;
-            else if(tmpStr=="Y" || tmpStr=="y")
-                tmpchr=24;
-            else
-                tmpchr=atoi(tmpStr.c_str());
-            eqtlinfo -> _epi_chr[i] = tmpchr;
+            if(field == "X" || field == "x") tmpchr = 23;
+            else if(field=="Y" || field=="y") tmpchr = 24;
+            else tmpchr = atoi(field.c_str());
+            eqtlinfo->_epi_chr[i] = tmpchr;
 
             //read second field. the probe id.
-            iss >> tmpStr;
-            eqtlinfo -> _include[i] = i; //record probe line be parsed in data structure.
+            iss >> field;
+            eqtlinfo->_include[i] = i; //record probe line be parsed in data structure.
             //check probe id duplication.
-            if(eqtlinfo -> _probe_name_map.find(tmpStr) != eqtlinfo -> _probe_name_map.end()){
-                cout << "Warning: Duplicated probe ID \"" + tmpStr + "\" ";
+            if (eqtlinfo->_probe_name_map.find(field) != eqtlinfo->_probe_name_map.end()){
+                cout << "Warning: Duplicated probe ID \"" + field + "\" ";
                 stringstream ss;
-                ss << tmpStr << "_" << i + 1;
-                tmpStr = ss.str();
-                cout<<"has been changed to \"" + tmpStr + "\".\n";
+                ss << field << "_" << i + 1;
+                field = ss.str();
+                cout << "has been changed to \"" + field + "\".\n";
             }
-            eqtlinfo -> _probe_name_map.insert(pair<string, int>(tmpStr, i));
-            eqtlinfo -> _epi_prbID[i] = tmpStr;
+            eqtlinfo->_probe_name_map.emplace(field, i);
+            eqtlinfo->_epi_prbID[i] = field;
 
             //read third field, which is add by smr make-besd function, the value is 0.
-            iss >> tmpStr;
-            eqtlinfo -> _epi_gd[i] = atoi(tmpStr.c_str());
+            iss >> field;
+            eqtlinfo->_epi_gd[i] = atoi(field.c_str());
 
             //read fourth field, probe location by bp.
-            iss >> tmpStr;
-            if(tmpStr == "NA" || tmpStr == "na" || tmpStr == "0") {
+            iss >> field;
+            if(field == "NA" || field == "na" || field == "0") {
                 printf("ERROR: probe BP is \"NA\" in row %d.\n", i+1);
                 exit(EXIT_FAILURE);
             }
-            eqtlinfo->_epi_bp[i] = atoi(tmpStr.c_str());
+            eqtlinfo->_epi_bp[i] = atoi(field.c_str());
 
             //read fifth field, gene name.
-            iss >> tmpStr;
-            eqtlinfo -> _epi_gene[i] = tmpStr.c_str();
+            iss >> field;
+            eqtlinfo->_epi_gene[i] = field.c_str();
 
             //read sixth field. orientation.
-            iss >> tmpStr;
-            eqtlinfo -> _epi_orien[i] = tmpStr.c_str()[0];
+            iss >> field;
+            eqtlinfo->_epi_orien[i] = field.c_str()[0];
 
         }
         epi.close();
@@ -661,31 +653,27 @@ namespace SMRDATA
     void
     read_besdfile(eqtlInfo * eqtlinfo, string besdfile, bool prtscr)
     {
-        if (eqtlinfo -> _include.size() == 0)
-            throw ("Error: No probe is retained for analysis.");
-        if (eqtlinfo -> _esi_include.size() == 0)
-            throw ("Error: No SNP is retained for analysis.");
-        bool sorted = is_sorted(eqtlinfo -> _esi_include.begin(), eqtlinfo -> _esi_include.end()) \
-            && is_sorted(eqtlinfo -> _include.begin(), eqtlinfo -> _include.end());
+        if (eqtlinfo->_include.empty()) throw ("Error: No probe is retained for analysis.");
+        if (eqtlinfo->_esi_include.empty()) throw ("Error: No SNP is retained for analysis.");
+        bool sorted = is_sorted(eqtlinfo->_esi_include.begin(), eqtlinfo->_esi_include.end()) &&
+            is_sorted(eqtlinfo->_include.begin(), eqtlinfo->_include.end());
 
-        eqtlinfo -> _cols.clear();
-        eqtlinfo -> _rowid.clear();
-        eqtlinfo -> _val.clear();
-        eqtlinfo -> _valNum = 0;
-        eqtlinfo -> _bxz.clear();
-        eqtlinfo -> _sexz.clear();
+        eqtlinfo->_cols.clear();
+        eqtlinfo->_rowid.clear();
+        eqtlinfo->_val.clear();
+        eqtlinfo->_valNum = 0;
+        eqtlinfo->_bxz.clear();
+        eqtlinfo->_sexz.clear();
 
         // the fastest way is using malloc and memcpy
         char SIGN[sizeof(uint64_t) + 8];
         ifstream besd(besdfile.c_str(), ios::in|ios::binary);
-        if(!besd){
-            fprintf (stderr, "%s: Couldn't open file %s\n",
-                     besdfile.c_str(), strerror (errno));
+        if (!besd) {
+            fprintf(stderr, "%s: Couldn't open file %s\n", besdfile.c_str(), strerror(errno));
             exit (EXIT_FAILURE);
         }
 
-        if(prtscr)
-            cout << "Reading eQTL summary data from [" + besdfile + "]." << endl;
+        if (prtscr) cout << "Reading eQTL summary data from [" + besdfile + "]." << endl;
 
         besd.read(SIGN, 4);
         uint32_t gflag = *(uint32_t *)SIGN;
@@ -1142,31 +1130,31 @@ namespace SMRDATA
             eqtlinfo->_bxz.clear();
             eqtlinfo->_sexz.clear();
             char* buffer;
-            uint64_t colNum=(eqtlinfo->_probNum<<1)+1;
+            uint64_t colNum = (eqtlinfo->_probNum << 1)+1;
             uint64_t valNum;
             uint64_t lSize;
 
-            besd.seekg(0,besd.end);
+            besd.seekg(0, besd.end);
             lSize = besd.tellg();
 
             besd.seekg(4); // same as besd.seekg(4, besd.beg);
             if(gflag == SPARSE_FILE_TYPE_3)
             {
-                int length=(RESERVEDUNITS-1)*sizeof(int);
-                char* indicators=new char[length];
-                besd.read(indicators,length);
-                int* tmp=(int *)indicators;
-                int ss=*tmp++;
-                if(ss!=-9)
+                int length = (RESERVEDUNITS - 1) * sizeof(int);
+                char* indicators = new char[length];
+                besd.read(indicators, length);
+                int* tmp = (int *)indicators;
+                int ss = *tmp++;
+                if(ss != -9)
                 {
                     printf("The sample size is %d.\n",ss);
                 }
-                if(*tmp++!=eqtlinfo->_snpNum)
+                if(*tmp++ != eqtlinfo->_snpNum)
                 {
                     printf("ERROR: The SNPs in your .esi file are not in consistency with the one in .besd file %s.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
-                if(*tmp++!=eqtlinfo->_probNum)
+                if(*tmp++ != eqtlinfo->_probNum)
                 {
                     printf("ERROR: The probes in your .epi file are not in consistency with the one in .besd file %s.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
@@ -1179,93 +1167,81 @@ namespace SMRDATA
 
             //cout << "valNum: " << valNum << endl;
 
-            if(gflag==SPARSE_FILE_TYPE_3F) {
-                if( lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
+            if(gflag == SPARSE_FILE_TYPE_3F) {
+                if(lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu",lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n",sizeof(uint32_t),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %llu", lSize);
+                    printf(" %zu + %zu + %lld + %lld + %lld \n", sizeof(uint32_t),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
-                    exit (EXIT_FAILURE);
+                    exit(EXIT_FAILURE);
                 }
             }
             else
             {
-                if( lSize - (RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
+                if(lSize - (RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu",lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n",RESERVEDUNITS*sizeof(int),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %llu", lSize);
+                    printf(" %zu + %zu + %lld + %lld + %lld \n", RESERVEDUNITS*sizeof(int),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
-                    exit (EXIT_FAILURE);
+                    exit(EXIT_FAILURE);
                 }
 
             }
 
-            //cout << "eqtlinfo->_include.size: " << eqtlinfo->_include.size() << endl;
-            //cout << "eqtlinfo->_probNum: " << eqtlinfo->_probNum << endl;
-            //cout << "eqtlinfo->_esi_include.size: " << eqtlinfo->_esi_include.size() << endl;
-            //cout << "eqtlinfo->_snpNum: " << eqtlinfo->_snpNum << endl;
-            //cout << "sorted: " << sorted << endl;
-
             if(eqtlinfo->_include.size()<eqtlinfo->_probNum || eqtlinfo->_esi_include.size()<eqtlinfo->_snpNum || !sorted)
             {
+                uint64_t colsize = colNum * sizeof(uint64_t);
+                buffer = (char*) malloc (sizeof(char) * (colsize));
+                if (buffer == NULL) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
+                besd.read(buffer, colsize);
 
-                uint64_t colsize=colNum*sizeof(uint64_t);
-                buffer = (char*) malloc (sizeof(char)*(colsize));
-                if (buffer == NULL) {fputs ("Memory error when reading sparse BESD file.",stderr); exit (1);}
-                besd.read(buffer,colsize);
-
-                uint64_t* ptr;
-                ptr=(uint64_t *)buffer;
+                uint64_t* ptr = (uint64_t *)buffer;
 
                 eqtlinfo->_cols.resize((eqtlinfo->_include.size()<<1)+1);
-                eqtlinfo->_cols[0]=*ptr;
-
-                //cout << "eqtlinfo->_include.size(): " << eqtlinfo->_include.size() << endl;
-                //cout << "eqtlinfo->_cols.size: " << eqtlinfo->_cols.size() << endl;
+                eqtlinfo->_cols[0] = *ptr;
 
                 // snp indices to index in _esi_include
                 map<int, int > _incld_id_map;
                 long size = 0;
-                for (int i = 0; i<eqtlinfo->_esi_include.size(); i++)
+                for (int i = 0; i< eqtlinfo->_esi_include.size(); i++)
                 {
-                    _incld_id_map.insert(pair<int, int>(eqtlinfo->_esi_include[i], i));
-                    if (size == _incld_id_map.size()) throw ("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+                    _incld_id_map.emplace(eqtlinfo->_esi_include[i], i);
+                    if (size == _incld_id_map.size()) throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
                     size = _incld_id_map.size();
                 }
 
                 //cout << "_incld_id_map.size():" << _incld_id_map.size() << endl;
 
-                uint64_t rowSTART=0;
-                uint64_t valSTART=0;
-                if(gflag==SPARSE_FILE_TYPE_3F)
+                uint64_t rowSTART = 0;
+                uint64_t valSTART = 0;
+                if(gflag == SPARSE_FILE_TYPE_3F)
                 {
-                    rowSTART=sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t);
-                    valSTART=sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t)+valNum*sizeof(uint32_t);
+                    rowSTART = sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t);
+                    valSTART = sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum * sizeof(uint32_t);
                 } else {
-                    rowSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t);
-                    valSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t)+valNum*sizeof(uint32_t);
+                    rowSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t);
+                    valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum * sizeof(uint32_t);
                 }
-                for(int i=0;i<eqtlinfo->_include.size();i++)
+                for(int i=0; i<eqtlinfo->_include.size(); i++)
                 {
                     //cout << "eqtlinfo->_include[i]: " << eqtlinfo->_include[i] << endl;
-                    uint32_t pid=eqtlinfo->_include[i];
-                    uint64_t pos=*(ptr+(pid<<1)); //BETA START
-                    uint64_t pos1=*(ptr+(pid<<1)+1); //SE START
-                    uint64_t num=pos1-pos;
+                    uint32_t pid = eqtlinfo->_include[i];
+                    uint64_t pos = *(ptr+(pid<<1)); //BETA START
+                    uint64_t pos1 = *(ptr+(pid<<1)+1); //SE START
+                    uint64_t num = pos1-pos;
 
                     //cout << "pid: " << pid << endl;
                     //cout << "pos: " << pos << endl;
                     //cout << "pos1: " << pos1 << endl;
 
-                    uint64_t real_num=0;
-                    if(num==0) {
+                    uint64_t real_num = 0;
+                    if(num == 0) {
                         eqtlinfo->_cols[(i<<1)+1]=eqtlinfo->_cols[i<<1];
                         eqtlinfo->_cols[i+1<<1]=eqtlinfo->_cols[i<<1];
                         //printf("WARNING: Probe %s with no eQTL found.\n",eqtlinfo->_epi_prbID[pid].c_str());
                         continue;
-
                     }
-                    char* row_char_ptr;
+                    char* row_char_ptr = NULL;
                     row_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(uint32_t));
                     if (row_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
                     char* val_char_ptr;
@@ -1279,9 +1255,9 @@ namespace SMRDATA
                     besd.seekg(valSTART+pos*sizeof(float));
                     besd.read(val_char_ptr, 2*num*sizeof(float));
                     float* val_ptr=(float*)val_char_ptr;
-                    for(int j=0;j<num<<1;j++)
+                    for(int j = 0; j < num<<1; j++)
                     {
-                        uint32_t rid=*(row_ptr+j);
+                        uint32_t rid = *(row_ptr + j);
 
                         map<int, int>::iterator iter;
                         iter=_incld_id_map.find(rid);
@@ -1313,7 +1289,7 @@ namespace SMRDATA
 
                 //cout << "eqtlinfo->_valNum: " << eqtlinfo->_valNum << endl;
 
-                if(prtscr)  cout<<"eQTL summary data of "<<eqtlinfo->_include.size()<<" Probes to be included from [" + besdfile + "]." <<endl;
+                if(prtscr) cout << "eQTL summary data of "<<eqtlinfo->_include.size()<<" Probes to be included from [" + besdfile + "]." <<endl;
                  update_epi(eqtlinfo);
                  update_esi(eqtlinfo);
             }
@@ -2329,25 +2305,24 @@ namespace SMRDATA
     {
         string logstr;
         long idx=find(eqtlinfo->_epi_prbID.begin(), eqtlinfo->_epi_prbID.end(), prbname)-eqtlinfo->_epi_prbID.begin();
-        if(idx==eqtlinfo->_epi_prbID.size())
-        {
-            logstr="ERROR: Can't find probe "+prbname+" in the dataset. Please check.\n";
+        if(idx==eqtlinfo->_epi_prbID.size()) {
+            logstr = "ERROR: Can't find probe " + prbname + " in the dataset. Please check.\n";
             fputs(logstr.c_str(),stdout);
             exit(1);
         }
-        int prbbp=eqtlinfo->_epi_bp[idx];
-        int prbchr=eqtlinfo->_epi_chr[idx];
-        int upbound=prbbp+prbWind*1000;
-        int tmpint=prbbp-prbWind*1000;
-        int lowbound=tmpint>0?tmpint:0;
+        int prbbp = eqtlinfo->_epi_bp[idx];
+        int prbchr = eqtlinfo->_epi_chr[idx];
+        int upbound = prbbp + prbWind * 1000;
+        int tmpint = prbbp - prbWind * 1000;
+        int lowbound = tmpint > 0 ? tmpint : 0;
         vector<int> newIcld;
-        for(int i=0;i<eqtlinfo->_include.size();i++)
-        {
-            tmpint=eqtlinfo->_include[i];
-            if(eqtlinfo->_epi_chr[tmpint]==prbchr && eqtlinfo->_epi_bp[tmpint]>=lowbound && eqtlinfo->_epi_bp[tmpint]<=upbound) newIcld.push_back(tmpint);
+        newIcld.reserve(eqtlinfo->_include.size());
+        for(int i=0;i < eqtlinfo->_include.size(); i++) {
+            tmpint = eqtlinfo->_include[i];
+            if(eqtlinfo->_epi_chr[tmpint] == prbchr && eqtlinfo->_epi_bp[tmpint] >= lowbound && eqtlinfo->_epi_bp[tmpint] <= upbound) newIcld.push_back(tmpint);
         }
         eqtlinfo->_include.clear();
-        eqtlinfo->_include=newIcld;
+        eqtlinfo->_include = std::move(newIcld);
         cout << eqtlinfo->_include.size() << " probes are extracted from the region: " +atos(prbWind)+" Kb around [" + prbname + "]." << endl;
     }
 
@@ -2637,32 +2612,29 @@ namespace SMRDATA
     void allele_check(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, double maf,double &freqthresh, double &percenthresh)
     {
         printf("Checking the consistency of the alleles of each SNP between pairwise data sets (including the GWAS summary data, the eQTL summary data and the LD reference data).\n");
-        vector<int> binc,einc,ginc;
-        //map<string, int> bmap,emap,gmap;
-        //map<string, int> bmap,emap;
+        vector<int> binc, einc, ginc;
         map<string, int> bmap;
-        unordered_map<string,int> emap,gmap;
+        unordered_map<string,int> emap, gmap;
         binc.reserve(ldinfo->_esi_include.size());
         einc.reserve(esdata->_esi_include.size());
-        einc.reserve(gdata->_include.size());
-        //map<string, int>::iterator iter0, iter1;
+        ginc.reserve(gdata->_include.size());
 
-        map<string, int>::iterator iter1;
-        unordered_map<string, int>::iterator iter0;
-        int comm_count=0, fail_maf=0,fail_allele=0,fail_frq=0;
-        for(int i=0;i<esdata->_esi_include.size();i++)
+        int comm_count = 0, fail_maf = 0, fail_allele = 0, fail_frq = 0;
+
+        #pragma omp parallel for
+        for(int i = 0; i < esdata->_esi_include.size(); i++)
         {
-            int eid=esdata->_esi_include[i];
-            string rs=esdata->_esi_rs[eid];
-            iter0=gdata->_snp_name_map.find(rs);
-            iter1=ldinfo->_snp_name_map.find(rs);
+            int eid = esdata->_esi_include[i];
+            string rs = esdata->_esi_rs[eid];
+            auto iter0 = gdata->_snp_name_map.find(rs);
+            auto iter1 = ldinfo->_snp_name_map.find(rs);
             if(iter0 != gdata->_snp_name_map.end() && iter1 != ldinfo->_snp_name_map.end())
             {
                 comm_count++;
                 int gid=iter0->second;
                 int bid=iter1->second;
                 string a1, a2, ga1, ga2, ea1, ea2;
-                double efrq,gfrq,bfrq;
+                double efrq, gfrq, bfrq;
                 a1 = ldinfo->_esi_allele1[bid];
                 a2 = ldinfo->_esi_allele2[bid];
                 bfrq = ldinfo->_esi_freq[bid];
@@ -2672,35 +2644,33 @@ namespace SMRDATA
                 ea1 = esdata->_esi_allele1[eid];
                 ea2 = esdata->_esi_allele2[eid];
                 efrq = esdata->_esi_freq[eid];
-                if(bfrq>0 && (bfrq<maf || (1.0-bfrq)<maf)){fail_maf++; continue;}
+                if(bfrq > 0 && (bfrq < maf || (1.0 - bfrq) < maf)) { fail_maf++; continue; }
                 if(ea1 == a1 &&  ea2 == a2)
                 {
                     if(ea1 == ga1 && ea2 == ga2)
                     {
-                        if(freq_ck_fail( bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
+                        if(freq_ck_fail(bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
                         binc.push_back(bid);
                         ginc.push_back(gid);
                         einc.push_back(eid);
-                        bmap.insert(pair<string,int>(rs,bid));
-                        emap.insert(pair<string,int>(rs,eid));
-                        gmap.insert(pair<string,int>(rs,gid));
+                        bmap.emplace(rs, bid);
+                        emap.emplace(rs, eid);
+                        gmap.emplace(rs, gid);
                     }
                     else if(ea1 == ga2 && ea2 == ga1)
                     {
-                        if(gfrq>0) gfrq=1-gfrq;
-                        if(freq_ck_fail( bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
+                        if(gfrq > 0) gfrq = 1 - gfrq;
+                        if(freq_ck_fail(bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
                         binc.push_back(bid);
                         ginc.push_back(gid);
                         einc.push_back(eid);
-                        bmap.insert(pair<string,int>(rs,bid));
-                        emap.insert(pair<string,int>(rs,eid));
-                        gmap.insert(pair<string,int>(rs,gid));
+                        bmap.emplace(rs, bid);
+                        emap.emplace(rs, eid);
+                        gmap.emplace(rs, gid);
 
-                        gdata->byz[gid]=-1.0*gdata->byz[gid];
-                        string tmpch=gdata->allele_1[gid];
-                        gdata->allele_1[gid] = gdata->allele_2[gid];
-                        gdata->allele_2[gid] = tmpch;
-                        if(gdata->freq[gid]>0) gdata->freq[gid] = 1 - gdata->freq[gid];
+                        gdata->byz[gid] = -1.0 * gdata->byz[gid];
+                        std::swap(gdata->allele_1[gid], gdata->allele_2[gid]);
+                        if(gdata->freq[gid] > 0) gdata->freq[gid] = 1 - gdata->freq[gid];
                     }
                     else fail_allele++;
 
@@ -2709,43 +2679,37 @@ namespace SMRDATA
                 {
                     if(ea1 == ga1 && ea2 == ga2)
                     {
-                        if(bfrq>0) bfrq=1-bfrq;
-                        if(freq_ck_fail( bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
+                        if(bfrq > 0) bfrq = 1 - bfrq;
+                        if(freq_ck_fail(bfrq,  gfrq,  efrq,  freqthresh)) { fail_frq++; continue; }
                         binc.push_back(bid);
                         ginc.push_back(gid);
                         einc.push_back(eid);
-                        bmap.insert(pair<string,int>(rs,bid));
-                        emap.insert(pair<string,int>(rs,eid));
-                        gmap.insert(pair<string,int>(rs,gid));
+                        bmap.emplace(rs, bid);
+                        emap.emplace(rs, eid);
+                        gmap.emplace(rs, gid);
 
-                        ldinfo->_esi_gd[bid]=-1;
-                        string tmpch=ldinfo->_esi_allele1[bid];
-                        ldinfo->_esi_allele1[bid]=ldinfo->_esi_allele2[bid];
-                        ldinfo->_esi_allele2[bid]=tmpch;
-                        if(ldinfo->_esi_freq[bid]>0) ldinfo->_esi_freq[bid] = 1 - ldinfo->_esi_freq[bid];
+                        ldinfo->_esi_gd[bid] = -1;
+                        std::swap(ldinfo->_esi_allele1[bid], ldinfo->_esi_allele2[bid]);
+                        if(ldinfo->_esi_freq[bid] > 0) ldinfo->_esi_freq[bid] = 1 - ldinfo->_esi_freq[bid];
                     }
                     else if(ea1 == ga2 && ea2 == ga1)
                     {
-                        if(bfrq>0) bfrq=1-bfrq;
-                        if(gfrq>0) gfrq=1-gfrq;
-                        if(freq_ck_fail( bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue;}
+                        if(bfrq > 0) bfrq = 1 - bfrq;
+                        if(gfrq > 0) gfrq = 1 - gfrq;
+                        if(freq_ck_fail(bfrq,  gfrq,  efrq,  freqthresh)){ fail_frq++; continue; }
                         binc.push_back(bid);
                         ginc.push_back(gid);
                         einc.push_back(eid);
-                        bmap.insert(pair<string,int>(rs,bid));
-                        emap.insert(pair<string,int>(rs,eid));
-                        gmap.insert(pair<string,int>(rs,gid));
+                        bmap.emplace(rs, bid);
+                        emap.emplace(rs, eid);
+                        gmap.emplace(rs, gid);
 
-                        ldinfo->_esi_gd[bid]=-1;
-                        string tmpch=ldinfo->_esi_allele1[bid];
-                        ldinfo->_esi_allele1[bid]=ldinfo->_esi_allele2[bid];
-                        ldinfo->_esi_allele2[bid]=tmpch;
+                        ldinfo->_esi_gd[bid] = -1;
+                        std::swap(ldinfo->_esi_allele1[bid], ldinfo->_esi_allele2[bid]);
                         if(ldinfo->_esi_freq[bid]>0) ldinfo->_esi_freq[bid] = 1 - ldinfo->_esi_freq[bid];
 
-                        gdata->byz[gid]=-1.0*gdata->byz[gid];
-                        tmpch=gdata->allele_1[gid];
-                        gdata->allele_1[gid] = gdata->allele_2[gid];
-                        gdata->allele_2[gid] = tmpch;
+                        gdata->byz[gid] = -1.0 * gdata->byz[gid];
+                        std::swap(gdata->allele_1[gid], gdata->allele_2[gid]);
                         if(gdata->freq[gid]>0) gdata->freq[gid] = 1 - gdata->freq[gid];
                     }
                     else fail_allele++;
@@ -3532,7 +3496,7 @@ namespace SMRDATA
         vector<uint32_t> splSize(gdata->_include.size());
 
         gdata->snpNum=gdata->_include.size();
-        for(int i=0;i<gdata->_include.size();i++ )
+        for(int i=0; i<gdata->_include.size(); i++)
         {
             snpName[i]=gdata->snpName[gdata->_include[i]];
             allele_1[i]=gdata->allele_1[gdata->_include[i]];
@@ -3564,9 +3528,9 @@ namespace SMRDATA
 
         if(hasBP) gdata->snpBp=snpBp;
         gdata->_snp_name_map.clear();
-        for(int i=0;i<gdata->snpNum;i++){
-            gdata->_include[i]=i;
-            gdata->_snp_name_map.insert(pair<string,int>(gdata->snpName[i],i));
+        for(int i = 0; i < gdata->snpNum; i++){
+            gdata->_include[i] = i;
+            gdata->_snp_name_map.emplace(gdata->snpName[i], i);
         }
 
     }
@@ -3592,47 +3556,40 @@ namespace SMRDATA
             }
         }
     }
-    void cor_calc(MatrixXd &LD, ldInfo* ldinfo,FILE* ldfprt, vector<uint32_t> &curId, int indicator)
+    void cor_calc(MatrixXd &LD, ldInfo* ldinfo, FILE* ldfprt, const vector<uint32_t> &curId, int indicator)
     {
-        LD.resize(curId.size(),curId.size());
-        uint64_t valSTART=RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum+1)*sizeof(uint64_t);
+        LD.resize(curId.size(), curId.size());
+        uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum + 1) * sizeof(uint64_t);
 
-        //int fseekCnt = 0;
-
-        for(int i=0;i<curId.size();i++)
+        for(int i = 0; i < curId.size(); i++)
         {
-            LD(i,i)=1;
-            int id1=ldinfo->_esi_include[curId[i]];
+            LD(i, i) = 1;
+            int id1 = ldinfo->_esi_include[curId[i]];
 
-            for(int j=i+1;j<curId.size();j++)
+            for(int j = i + 1; j < curId.size(); j++)
             {
-                int id2=ldinfo->_esi_include[curId[j]];
-                //cout << "cor_calc, id1:" << id1 << " id2: " << id2 << endl;
+                int id2 = ldinfo->_esi_include[curId[j]];
 
-                if(id1>id2)
+                if(id1 > id2)
                 {
-                    long poss=ldinfo->_cols[id2];
-                    fseek( ldfprt, (poss+id1-id2-1)*sizeof(float)+valSTART, SEEK_SET );
-                    //fseekCnt++;
-                    if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
-                    else LD(i,j)=LD(j,i)=readfloat(ldfprt);
+                    long poss = ldinfo->_cols[id2];
+                    fseek(ldfprt, (poss + id1 - id2 - 1) * sizeof(float) + valSTART, SEEK_SET);
+                    if (indicator) LD(i, j) = LD(j, i) = sqrt(readfloat(ldfprt));
+                    else LD(i, j) = LD(j, i) = readfloat(ldfprt);
                 }
                 else
                 {
-                    long poss=ldinfo->_cols[id1];
-                    fseek( ldfprt, (poss+id2-id1-1)*sizeof(float)+valSTART, SEEK_SET );
-                    //fseekCnt++;
-                    if(indicator) LD(i,j)=LD(j,i)=sqrt(readfloat(ldfprt));
-                    else LD(i,j)=LD(j,i)=readfloat(ldfprt);
+                    long poss = ldinfo->_cols[id1];
+                    fseek(ldfprt, (poss + id2 - id1 - 1) * sizeof(float) + valSTART, SEEK_SET);
+                    if (indicator) LD(i, j) = LD(j, i) = sqrt(readfloat(ldfprt));
+                    else LD(i, j) = LD(j, i) = readfloat(ldfprt);
                 }
                 if (ldinfo->_esi_gd[id1] != ldinfo->_esi_gd[id2]) {
-                    LD(i,j) = -LD(i,j);
-                    LD(j,i) = -LD(j,i);
+                    LD(i, j) = -LD(i, j);
+                    LD(j, i) = -LD(j, i);
                 }
             }
         }
-        //cout << "cor_calc fseekCnt:" << fseekCnt << endl;
-
     }
 
     void cor_calc(MatrixXd &LD, MatrixXd &X)
@@ -7857,10 +7814,10 @@ namespace SMRDATA
         int flags4prb=0;
         if(problstName != NULL) flags4prb++;
         if(prbname != NULL) flags4prb++;
-        if(fromprbname!=NULL) flags4prb++;
-        if(fromprbkb>=0) flags4prb++;
+        if(fromprbname != NULL) flags4prb++;
+        if(fromprbkb >= 0) flags4prb++;
         if(genename != NULL) flags4prb++;
-        if(flags4prb>1)
+        if(flags4prb > 1)
         {
             logstr="WARNING: Flags for probes in this section are mutual exclusive. \
                 The priority order (from high to low) is: --extract-probe, \

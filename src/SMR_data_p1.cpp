@@ -2814,21 +2814,15 @@ namespace SMRDATA
 
         long int readeQTLStart = time(NULL);
 
-        cout<<"Reading eQTL summary data..."<<endl;
-        read_epifile(&esdata, string(eqtlFileName)+".epi");
+        cout << "Reading eQTL summary data..." << endl;
+        read_epifile(&esdata, string(eqtlFileName) + ".epi");
 
-        //prbchr = curchr;
-
-        //cout << "after read_epifile function.." << endl;
         epi_man(&esdata, problstName, genelistName,  chr, prbchr,  prbname,  fromprbname,  toprbname, prbWind, fromprbkb,  toprbkb, prbwindFlag,  genename);
 
-        //cout << "after epi_man function.." << endl;
         if(problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
-        read_besdfile(&esdata, string(eqtlFileName)+".besd");
+        read_besdfile(&esdata, string(eqtlFileName) + ".besd");
 
-        //cout << "after read_besdfile function.." << endl;
-        if(esdata._rowid.empty() && esdata._bxz.empty())
-        {
+        if(esdata._rowid.empty() && esdata._bxz.empty()) {
             printf("No data included from %s in the analysis.\n",eqtlFileName);
             exit(ERROR_EQTL_NO_DATA);
         }
@@ -5169,15 +5163,6 @@ namespace SMRDATA
 
       const bool chr_specific_qtl = qtl_chr == "TRUE";
 
-      // read *.esi
-      // if (snpchr != 0) {
-      //   read_esifile_by_chr(&esdata, string(eqtlFileName) + ".esi", snpchr);
-      // } else {
-      //   read_esifile(&esdata, string(eqtlFileName) + ".esi");
-      // }
-      // perf_timer.elapsed("read esi");
-
-
       // With more threads more memory is required
       #pragma omp parallel for num_threads(2)
       for (int i = 1; i <= 22; ++i) {
@@ -5229,7 +5214,7 @@ namespace SMRDATA
         ldInfo ldinfo;
         FILE* bld = NULL;
         eqtlInfo esdata;
-        double threshold= chi_val(1,p_hetero);
+        double threshold = chi_val(1, p_hetero);
         //if(bFileName == NULL ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
         if(eqtlFileName==NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
         if(ld_min>ld_top) {
@@ -5351,61 +5336,41 @@ namespace SMRDATA
             //cout << "ldinfo->_esi_rs[0]: " << ldinfo._esi_rs[0] << endl;
             //cout << "ldinfo->_esi_freq[0]: " << ldinfo._esi_freq[0] << endl;
 
-            memcpy(suffix,".bld",5);
+            memcpy(suffix, ".bld", 5);
             vector<int> headers;
             headers.resize(RESERVEDUNITS);
-            bld=fopen(inputname,"rb");
-            if(bld == NULL)
-            {
+            bld=fopen(inputname, "rb");
+            if(bld == NULL) {
                 printf("Error: can't open file %s.\n",inputname);
                 exit(EXIT_FAILURE);
             }
-            if(fread(&headers[0], sizeof(int),RESERVEDUNITS, bld)<1)
-            {
+            if(fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) < 1) {
                 printf("ERROR: File %s read failed!\n", inputname);
                 exit(EXIT_FAILURE);
             }
             int indicator = headers[0];
-            if(indicator==0) printf("\nReading ld r from binary file %s...\n", inputname);
+            if(indicator == 0) printf("\nReading ld r from binary file %s...\n", inputname);
             else printf("\nReading ld r-squared from binary file %s...\n", inputname);
-            uint64_t valnum=readuint64(bld), colNum=ldinfo._snpNum+1;
-            uint64_t cur_pos = ftell( bld );
-            fseek( bld, 0L, SEEK_END );
-            uint64_t size_file = ftell( bld );
-            fseek( bld, cur_pos, SEEK_SET );
-            if( size_file - (RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valnum*sizeof(float)) != 0) {
+            uint64_t valnum = readuint64(bld), colNum = ldinfo._snpNum + 1;
+            uint64_t cur_pos = ftell(bld);
+
+            fseek(bld, 0L, SEEK_END);
+            uint64_t size_file = ftell(bld);
+
+            fseek(bld, cur_pos, SEEK_SET);
+            uint64_t expected_file_size = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valnum*sizeof(float);
+            if(size_file != expected_file_size) {
                 printf("ERROR: File %s is broken!\n", inputname);
                 exit(EXIT_FAILURE);
             }
             ldinfo._cols.resize(colNum);
-            if(fread(&ldinfo._cols[0], sizeof(uint64_t),colNum, bld)<1)
-            {
+            if(fread(&ldinfo._cols[0], sizeof(uint64_t), colNum, bld) < 1) {
                 printf("ERROR: File %s read failed!\n", inputname);
                 exit(EXIT_FAILURE);
             }
-
-            //long int readBldEnd = time(NULL);
-            //long int bldTimeUsed = readBldEnd - readBldStart;
-
-            //cout << "read bld computation time:" << bldTimeUsed << endl;
-
-            //if(ldinfo._esi_chr.size() > 0) {
-            //    curchr = ldinfo._esi_chr[0];
-            //}
-
         }
 
-        //cout << "curchr: " << curchr << endl;
-
-        //long int updateGwasStart = time(NULL);
-
         update_gwas(&gdata);
-
-        //long int updateGwasEnd = time(NULL);
-        //long int updateGwasUsed = updateGwasEnd - updateGwasStart;
-
-        //cout << "update gwas computation time:" << updateGwasUsed << endl;
-
 
         /*
         //print bdata
@@ -5435,18 +5400,12 @@ namespace SMRDATA
         cout<<"Reading eQTL summary data..."<<endl;
         read_epifile(&esdata, string(eqtlFileName)+".epi");
 
-        //prbchr = curchr;
-
-        //cout << "after read_epifile function.." << endl;
         epi_man(&esdata, problstName, genelistName,  chr, prbchr,  prbname,  fromprbname,  toprbname, prbWind, fromprbkb,  toprbkb, prbwindFlag,  genename);
 
-        //cout << "after epi_man function.." << endl;
         if(problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
         read_besdfile(&esdata, string(eqtlFileName)+".besd");
 
-        //cout << "after read_besdfile function.." << endl;
-        if(esdata._rowid.empty() && esdata._bxz.empty())
-        {
+        if(esdata._rowid.empty() && esdata._bxz.empty()) {
             printf("No data included from %s in the analysis.\n",eqtlFileName);
             exit(ERROR_EQTL_NO_DATA);
         }
@@ -5482,10 +5441,10 @@ namespace SMRDATA
 
 
         vector<string> set_name;
-        vector< vector<string> > snpset;
-        vector<int> gene_chr,gene_bp1,gene_bp2;
-        if(setlstName!=NULL) sbat_read_snpset(&bdata,setlstName,set_name,gene_chr, gene_bp1,gene_bp2, snpset );
-        else if(geneAnnoFileName!=NULL) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
+        vector<vector<string>> snpset;
+        vector<int> gene_chr, gene_bp1, gene_bp2;
+        if (setlstName != NULL) sbat_read_snpset(&bdata, setlstName, set_name, gene_chr, gene_bp1, gene_bp2, snpset );
+        else if (geneAnnoFileName != NULL) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
 
 
         unsigned int probNum = esdata._probNum;
@@ -5542,7 +5501,7 @@ namespace SMRDATA
 
         long int calSMRStart = time(NULL);
 
-        if(set_name.size()>0)
+        if(!set_name.empty())
         {
             //gene list based or set list based
             for(int ii=0;ii<set_name.size();ii++)
@@ -5746,25 +5705,25 @@ namespace SMRDATA
 
             cout << "before probeNum, esdata.esi_include.size(): " << esdata._esi_include.size() << endl;
             // top-SNP (/ ref-SNP) based
-            for(int i=0;i<probNum;i++)
+            for(int i = 0; i < probNum; i++)
             {
 
                 //long int ciseQTLStart = time(NULL);
 
-                progr1=1.0*i/probNum;
-                if(progr1-progr0-0.05>1e-6 || i+1==probNum)
+                progr1= 1.0 * i / probNum;
+                if (progr1 - progr0 - 0.05 > 1e-6 || i + 1 == probNum)
                 {
-                    if(i+1==probNum) progr1=1.0;
+                    if(i + 1 == probNum) progr1 = 1.0;
                     progress_print(progr1);
                     progr0=progr1;
                 }
 
-                int probebp=esdata._epi_bp[i];
-                int probechr=esdata._epi_chr[i];
+                int probebp = esdata._epi_bp[i];
+                int probechr = esdata._epi_chr[i];
 
 
-                string probename=esdata._epi_prbID[i];
-                string probegene=esdata._epi_gene[i];
+                string probename = esdata._epi_prbID[i];
+                string probegene = esdata._epi_gene[i];
 
                 //if(probename == "ENSG00000211934.3") {
                 //    cout << "current probe name is ENSG00000211934.3" << endl;
@@ -5804,7 +5763,7 @@ namespace SMRDATA
                 //cout << "curId: " << smrwk.curId.size() << endl;
 
 
-                if(refSNP!=NULL && maxid==-9) {
+                if (refSNP != NULL && maxid == -9) {
                     printf("WARNING: can't find target SNP %s for probe %s.\n",refSNP, probename.c_str());
                     continue;
                 } //ref heidi SNP is not in selected SNPs
@@ -5820,23 +5779,23 @@ namespace SMRDATA
 
                 // step2: get top-SNP
                 //printf("Checking the top-SNP in the region....\n");
-                Map<VectorXd> ei_bxz(&smrwk.bxz[0],smrwk.bxz.size());
-                Map<VectorXd> ei_sexz(&smrwk.sexz[0],smrwk.sexz.size());
+                Map<VectorXd> ei_bxz(&smrwk.bxz[0], smrwk.bxz.size());
+                Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
                 VectorXd zsxz;
-                zsxz=ei_bxz.array()/ei_sexz.array();
-                if(refSNP==NULL) maxid=max_abs_id(zsxz); // now maxid point to the sig eQTL SNP or ref SNP in the new datastruct(not the raw).
-                double pxz_val = pchisq(zsxz[maxid]*zsxz[maxid], 1);
+                zsxz = ei_bxz.array() / ei_sexz.array();
+                if (refSNP == NULL) maxid = max_abs_id(zsxz); // now maxid point to the sig eQTL SNP or ref SNP in the new datastruct(not the raw).
+                double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
                 //double computing, consistency should be checked
-                for(int tid=0;tid<zsxz.size();tid++) {
-                    if(fabs(zsxz(tid)-smrwk.zxz[tid])>1e-3)
+                for (int tid = 0; tid < zsxz.size(); tid++) {
+                    if (fabs(zsxz(tid) - smrwk.zxz[tid]) > 1e-3)
                     {
-                        printf("ERROR: zxz not consistent %f vs %f. please report this.\n",zsxz(tid),smrwk.zxz[tid]);
+                        printf("ERROR: zxz not consistent %f vs %f. please report this.\n", zsxz(tid), smrwk.zxz[tid]);
                         exit(EXIT_FAILURE);
                     }
                 }
-                string topsnpname=smrwk.rs[maxid];
+                string topsnpname = smrwk.rs[maxid];
                 //printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(),pxz_val);
-                if(refSNP==NULL && pxz_val>p_smr){
+                if (refSNP == NULL && pxz_val > p_smr) {
                     //printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n", p_smr, probename.c_str());
                     continue;
                 } else {

@@ -14,6 +14,7 @@
 #include "error_codes.hpp"
 
 #include "perf_timer.hpp"
+#include "mmap_read.hpp"
 
 namespace SMRDATA
 {
@@ -1921,8 +1922,8 @@ namespace SMRDATA
         int qi = 0; //alternate index
 
         //get indicator
-        fseek(ldfptr,0L,SEEK_SET);
-        int indicator=readint(ldfptr);
+        fseek(ldfptr, 0L, SEEK_SET);
+        int indicator = readint(ldfptr);
 
         MatrixXd C;
         cor_calc(C, ldinfo, ldfptr, curId, indicator);
@@ -1936,20 +1937,20 @@ namespace SMRDATA
 
         if (sbat_ld_cutoff < 1) rm_cor_sbat(C, R_cutoff, m, rm_ID1,zxz4smr);
         //Create new index
-        for (int i=0 ; i<m ; i++) {
-            if (rm_ID1.size() == 0) sub_indx.push_back(i);
+        for (int i = 0; i < m; i++) {
+            if (rm_ID1.empty()) sub_indx.push_back(i);
             else {
-                if (qi<rm_ID1.size() && rm_ID1[qi] == i) qi++; //Skip removed snp
+                if (qi < rm_ID1.size() && rm_ID1[qi] == i) qi++; //Skip removed snp
                 else sub_indx.push_back(i);
             }
         }
 
         snp_count = (int)sub_indx.size();
         if (sub_indx.size() < C.size()) { //Build new matrix
-            MatrixXd D(sub_indx.size(),sub_indx.size());
+            MatrixXd D(sub_indx.size(), sub_indx.size());
             for (int i = 0 ; i < sub_indx.size() ; i++) {
                 for (int j = 0 ; j < sub_indx.size() ; j++) {
-                    D(i,j) = C(sub_indx[i],sub_indx[j]);
+                    D(i, j) = C(sub_indx[i], sub_indx[j]);
                 }
             }
             C = D;
@@ -1996,18 +1997,18 @@ namespace SMRDATA
         */
          /* end of saving*/
 
-        VectorXd zs_xz(sub_indx.size()),zs_yz(sub_indx.size());
-        for (int i = 0 ; i < sub_indx.size() ; i++){
-            zs_xz(i)=zxz4smr[sub_indx[i]];
-            zs_yz(i)=zyz4smr[sub_indx[i]];
+        VectorXd zs_xz(sub_indx.size()), zs_yz(sub_indx.size());
+        for (int i = 0; i < sub_indx.size(); i++){
+            zs_xz(i) = zxz4smr[sub_indx[i]];
+            zs_yz(i) = zyz4smr[sub_indx[i]];
         }
-        MatrixXd xtx=zs_xz*zs_xz.transpose();
-        MatrixXd yty=zs_yz*zs_yz.transpose();
-        MatrixXd zz=yty.array()/xtx.array();
-        MatrixXd numerator=C.array()*(xtx+yty).array()-zz.array();
-        VectorXd zsq=zs_xz.array()*zs_xz.array()+zs_yz.array()*zs_yz.array();
-        MatrixXd denominator=(zsq*zsq.transpose()).array().sqrt();
-        C=numerator.array()/denominator.array();
+        MatrixXd xtx = zs_xz * zs_xz.transpose();
+        MatrixXd yty = zs_yz * zs_yz.transpose();
+        MatrixXd zz = yty.array() / xtx.array();
+        MatrixXd numerator = C.array() * (xtx + yty).array() - zz.array();
+        VectorXd zsq = zs_xz.array() * zs_xz.array() + zs_yz.array() * zs_yz.array();
+        MatrixXd denominator = (zsq * zsq.transpose()).array().sqrt();
+        C = numerator.array() / denominator.array();
         SelfAdjointEigenSolver<MatrixXd> saesxy(C);
         eigenvalxy = saesxy.eigenvalues().cast<double>();
     }
@@ -2176,10 +2177,10 @@ namespace SMRDATA
         vector<double> seyz4smr;
         vector<double> zxz4smr;
         vector<double> zyz4smr;
-        double z_smr=sqrt(qchisq(p_smr,1));
-        for(int j=0;j<slctId.size();j++)
+        double z_smr = sqrt(qchisq(p_smr,1));
+        for(int j = 0; j < slctId.size(); j++)
         {
-            double ztmp=fabs(slct_bxz[j]/slct_sexz[j]);
+            double ztmp = fabs(slct_bxz[j]/slct_sexz[j]);
             if(ztmp>=z_smr)
             {
                 Id4smr.push_back(slctId[j]);
@@ -2191,32 +2192,34 @@ namespace SMRDATA
                 zyz4smr.push_back(slct_byz[j]/slct_seyz[j]);
             }
         }
-        int snp_count=(int)Id4smr.size();
+        int snp_count = (int)Id4smr.size();
         //printf("%ld SNPs passed the p-value threshold %6.2e and %ld SNPs are excluded.\n",Id4smr.size(), p_smr,slctId.size()-Id4smr.size());
-        if(snp_count==0) return -9;
+        if(snp_count == 0) return -9;
         /* step5: multiple-SNP SMR test */
 
         VectorXd eigenval;
         VectorXd eigenvalxy;
         vector<int> sub_indx;
-        double sbat_ld_cutoff=sqrt(ld_top);
+        double sbat_ld_cutoff = sqrt(ld_top);
 
         sbat_calcu_lambda(ldinfo, ldfptr, Id4smr, eigenval, eigenvalxy, snp_count,  sbat_ld_cutoff, sub_indx, zxz4smr, zyz4smr);
         //printf("%ld SNPs passed LD-square threshold %6.2f and %ld SNPs are excluded.\n",sub_indx.size(), ld_top,Id4smr.size()-sub_indx.size());
         vector<double> zsxysq_slct(sub_indx.size());
-        double chisq_zy=0;
-        double chisq_zx=0;
-        for(int j=0;j<sub_indx.size();j++)
+        double chisq_zy = 0;
+        double chisq_zx = 0;
+        for(int j = 0; j < sub_indx.size(); j++)
         {
-            double z1=byz4smr[sub_indx[j]]/seyz4smr[sub_indx[j]];
-            double z2=bxz4smr[sub_indx[j]]/sexz4smr[sub_indx[j]];
-            chisq_zy += z1*z1;
-            chisq_zx += z2*z2;
-            zsxysq_slct[j]=z1*z1*z2*z2/(z1*z1+z2*z2);
+            double z1 = byz4smr[sub_indx[j]] / seyz4smr[sub_indx[j]];
+            double z2 = bxz4smr[sub_indx[j]] / sexz4smr[sub_indx[j]];
+            chisq_zy += z1 * z1;
+            chisq_zx += z2 * z2;
+            zsxysq_slct[j] = z1 * z1 * z2 * z2 / (z1 * z1 + z2 * z2);
         }
         double chisq_o = 0;
-        for (int j = 0; j < sub_indx.size(); j++)  chisq_o += zsxysq_slct[j];
-        for (int j = 0; j < sub_indx.size(); j++) snp4msmr.push_back(esdata->_esi_rs[Id4smr[sub_indx[j]]]);
+        for (int j = 0; j < sub_indx.size(); j++) {
+          chisq_o += zsxysq_slct[j];
+          snp4msmr.push_back(esdata->_esi_rs[Id4smr[sub_indx[j]]]);
+        }
 
         /* save out byz,seyz,bxz,sexz*/
         /*
@@ -2245,15 +2248,15 @@ namespace SMRDATA
         //printf("%ld SNPs are included in the multi-SNP SMR test.\n",sub_indx.size());
         if(sub_indx.size() == 1)
         {
-            set_pval_smr = pchisq(chisq_o, 1.0);
-            set_pval_gwas= pchisq(chisq_zy, 1.0);
-            set_pval_eqtl= pchisq(chisq_zx, 1.0);
+            set_pval_smr  = pchisq(chisq_o, 1.0);
+            set_pval_gwas = pchisq(chisq_zy, 1.0);
+            set_pval_eqtl = pchisq(chisq_zx, 1.0);
 
         }
         else {
-            set_pval_smr = chisq_o<1e-8?1:pchisqsum(chisq_o, eigenval);
-            set_pval_gwas= chisq_zy<1e-8?1:pchisqsum(chisq_zy, eigenval);
-            set_pval_eqtl= chisq_zx<1e-8?1:pchisqsum(chisq_zx, eigenval);
+            set_pval_smr  = chisq_o < 1e-8 ? 1 : pchisqsum(chisq_o, eigenval);
+            set_pval_gwas = chisq_zy < 1e-8 ? 1 : pchisqsum(chisq_zy, eigenval);
+            set_pval_eqtl = chisq_zx < 1e-8 ? 1 : pchisqsum(chisq_zx, eigenval);
         }
         return snp_count;
     }
@@ -5140,7 +5143,7 @@ namespace SMRDATA
       PerfTimer perf_timer;
 
       gwasData gdata;
-      eqtlInfo esdata;
+      MappedFile shared_besd_mapped;
 
       // read GWAS
       read_gwas_data(&gdata, gwasFileName, enableGwasComments);
@@ -5163,11 +5166,21 @@ namespace SMRDATA
 
       const bool chr_specific_qtl = qtl_chr == "TRUE";
 
+      if (!chr_specific_qtl) {
+        std::string besd_filename = qtl_data +".besd";
+        shared_besd_mapped = mmap_file(besd_filename.c_str());
+      }
+
       // With more threads more memory is required
       #pragma omp parallel for num_threads(2)
       for (int i = 1; i <= 22; ++i) {
+        MappedFile besd_mapped;
         if (chr_specific_qtl) {
           qtl_data = qtl_data + std::to_string(i);
+          std::string besd_filename = qtl_data +".besd";
+          besd_mapped = mmap_file(besd_filename.c_str());
+        } else {
+          besd_mapped = shared_besd_mapped;
         }
 
         std::string bld_filename(bldFileName);
@@ -5178,8 +5191,8 @@ namespace SMRDATA
 
         smr_multipleSNP_for_each_chr(
             out_filename.c_str(), bFileName, bld_filename.c_str(), gdata,
-            qtl_data.c_str(), maf, indilstName, snplstName, problstName, bFlag,
-            p_hetero, ld_top, m_hetero, opt_hetero, indilst2remove,
+            qtl_data.c_str(), besd_mapped, maf, indilstName, snplstName, problstName,
+            bFlag, p_hetero, ld_top, m_hetero, opt_hetero, indilst2remove,
             snplst2exclde, problst2exclde, p_smr, refSNP, heidioffFlag,
             heidiskipthresh, cis_itvl, genelistName, chr, prbchr, prbname,
             fromprbname, toprbname, prbWind, fromprbkb, toprbkb, prbwindFlag,
@@ -5192,11 +5205,11 @@ namespace SMRDATA
 
     void smr_multipleSNP_for_each_chr(
         const char *outFileName, char *bFileName, const char *bldFileName,
-        gwasData gdata, const char *eqtlFileName, double maf, char *indilstName,
-        char *snplstName, char *problstName, bool bFlag, double p_hetero,
-        double ld_top, int m_hetero, int opt_hetero, char *indilst2remove,
-        char *snplst2exclde, char *problst2exclde, double p_smr, char *refSNP,
-        bool heidioffFlag, double heidiskipthresh, int cis_itvl,
+        gwasData gdata, const char *eqtlFileName, MappedFile besd_mapped,
+        double maf, char *indilstName, char *snplstName, char *problstName,
+        bool bFlag, double p_hetero, double ld_top, int m_hetero, int opt_hetero,
+        char *indilst2remove, char *snplst2exclde, char *problst2exclde, double p_smr,
+        char *refSNP, bool heidioffFlag, double heidiskipthresh, int cis_itvl,
         char *genelistName, int chr, int prbchr, char *prbname,
         char *fromprbname, char *toprbname, int prbWind, int fromprbkb,
         int toprbkb, bool prbwindFlag, char *genename, int snpchr, char *snprs,
@@ -5216,8 +5229,8 @@ namespace SMRDATA
         eqtlInfo esdata;
         double threshold = chi_val(1, p_hetero);
         //if(bFileName == NULL ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-        if(eqtlFileName==NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-        if(ld_min>ld_top) {
+        if(eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+        if(ld_min > ld_top) {
             printf("ERROR: --ld-min %f is larger than --ld-top %f.\n",ld_min,ld_top);
             exit(EXIT_FAILURE);
         }
@@ -5902,23 +5915,23 @@ namespace SMRDATA
 
                 if(snp_count==-9) continue;
                 // output snp set list
-                string setstr=probename+'\n';
+                string setstr = probename+'\n';
                 if(fputs_checked(setstr.c_str(),setlst))
                 {
                     printf("ERROR: in writing file %s .\n", setlstfile.c_str());
                     exit(EXIT_FAILURE);
                 }
-                for(int j=0;j<snp4msmr.size();j++)
+                for(int j = 0; j < snp4msmr.size(); j++)
                 {
                     setstr=snp4msmr[j]+'\n';
-                    if(fputs_checked(setstr.c_str(),setlst))
+                    if(fputs_checked(setstr.c_str(), setlst))
                     {
                         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
                         exit(EXIT_FAILURE);
                     }
                 }
-                setstr="end\n";
-                if(fputs_checked(setstr.c_str(),setlst))
+                setstr = "end\n";
+                if(fputs_checked(setstr.c_str(), setlst))
                 {
                     printf("ERROR: in writing file %s .\n", setlstfile.c_str());
                     exit(EXIT_FAILURE);
@@ -5926,10 +5939,10 @@ namespace SMRDATA
                 // end of output
 
                 // output gene list
-                int Lbp= *min_element(slct_bpsnp.begin(),slct_bpsnp.end());
-                int Rbp= *max_element(slct_bpsnp.begin(),slct_bpsnp.end());
-                string gstr=atos(probechr) + "\t" + atos(Lbp) + "\t" + atos(Rbp)+"\t"+ probename + "\n";
-                if(fputs_checked(gstr.c_str(),glst))
+                int Lbp = *min_element(slct_bpsnp.begin(), slct_bpsnp.end());
+                int Rbp = *max_element(slct_bpsnp.begin(), slct_bpsnp.end());
+                string gstr = atos(probechr) + "\t" + atos(Lbp) + "\t" + atos(Rbp)+"\t"+ probename + "\n";
+                if(fputs_checked(gstr.c_str(), glst))
                 {
                     printf("ERROR: in writing file %s .\n", genelstfile.c_str());
                     exit(EXIT_FAILURE);
@@ -5940,8 +5953,8 @@ namespace SMRDATA
 
 
                 // step6: HEIDI test
-                long nsnp=-9;
-                double pdev=-9;
+                long nsnp = -9;
+                double pdev = -9;
                 smrwk.curId.swap(slctId);
                 smrwk.bxz.swap(slct_bxz);
                 smrwk.sexz.swap(slct_sexz);
@@ -5962,10 +5975,10 @@ namespace SMRDATA
                 if(!heidioffFlag && pxy_max < heidiskipthresh) {
                     //printf("Conducting HEIDI test...\n");
                     if(bFileName) {
-                        pdev= heidi_test_new(&bdata,&smrwk, ld_top,  threshold,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
+                        pdev = heidi_test_new(&bdata,&smrwk, ld_top,  threshold,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
                     } else {
                         //pdev=heidi_test_ref_new(&ldinfo,bld,&smrwk, ld_top,  threshold,  m_hetero, nsnp,(int)maxid, ld_min,opt_hetero,sampleoverlap, theta);
-                        pdev=heidi_test_new(&ldinfo,bld,&smrwk, ld_top,  threshold,  m_hetero, nsnp, ld_min,opt_hetero,sampleoverlap, theta);
+                        pdev = heidi_test_new(&ldinfo,bld,&smrwk, ld_top,  threshold,  m_hetero, nsnp, ld_min,opt_hetero,sampleoverlap, theta);
                     }
 
                     //printf("HEIDI test complete.\n");
@@ -6014,6 +6027,6 @@ namespace SMRDATA
         fclose(smr);
         fclose(setlst);
         fclose(glst);
-        free_gwas_data( &gdata);
+        free_gwas_data(&gdata);
     }
 } // namespace SMRDATA

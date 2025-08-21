@@ -807,10 +807,10 @@ namespace SMRDATA
     {
         vector<string> strlist;
         uint32_t line_idx = 0;
-        int colnum=7;
-        FILE* esifile=fopen(esiFileName, "r");
+        int colnum = 7;
+        FILE* esifile = fopen(esiFileName, "r");
         if (!(esifile)) {
-            printf("Error: Failed to open file %s.\n",esiFileName);
+            printf("Error: Failed to open file %s.\n", esiFileName);
             exit(EXIT_FAILURE);
         }
         printf("Reading SNP information from %s ...\n", esiFileName);
@@ -824,85 +824,85 @@ namespace SMRDATA
         ldinfo->_snp_name_map.clear();
         ldinfo->_esi_freq.clear();
         
-        bool chrwarning=false;
-        bool feqwarning=false, allele1warning=false, allele2warning=false;
-        bool orienwarning=false;
+        bool chrwarning = false;
+        bool feqwarning = false, allele1warning = false, allele2warning = false;
+        bool orienwarning = false;
         char Tbuf[MAX_LINE_SIZE];
         while(fgets(Tbuf, MAX_LINE_SIZE, esifile))
         {
             split_string(Tbuf, strlist, ", \t\n");
-            if(Tbuf[0]=='\0') {
+            if(Tbuf[0] == '\0') {
                 printf("ERROR: Line %u is blank.\n", line_idx);
                 exit(EXIT_FAILURE);
             }
-            if(strlist.size()<colnum-1)
+            if(strlist.size() < colnum - 1)
             {
-                printf("ERROR: Line %u has less than %d items.\n", line_idx,colnum-1);
+                printf("ERROR: Line %u has less than %d items.\n", line_idx, colnum - 1);
                 exit(EXIT_FAILURE);
-            } else if(strlist.size()==colnum-1) {
+            } else if(strlist.size() == colnum - 1) {
                 if(!feqwarning) {
                     printf("WARNING: Maybe this is an old .esi file which doesn't contain frequency information. \n");
-                    feqwarning=true;
+                    feqwarning = true;
                 }
-            } else if(strlist.size()>colnum) {
+            } else if(strlist.size() > colnum) {
                 //printf("WARNING: Line %u has more than %d items. The first %d columns would be used. \n", line_idx,colnum,colnum);
             }
             
-            ldinfo->_snp_name_map.insert(pair<string,int>(strlist[1],line_idx));
-            if(ldinfo->_snp_name_map.size()==line_idx)
+            ldinfo->_snp_name_map.emplace(strlist[1], line_idx);
+            if(ldinfo->_snp_name_map.size() == line_idx)
             {
                 printf("ERROR: Duplicate SNP : %s.\n", strlist[1].c_str());
                 exit(EXIT_FAILURE);
             }
-            if(strlist[0]=="X" || strlist[0]=="x") ldinfo->_esi_chr.push_back(23);
-            else if(strlist[0]=="Y" || strlist[0]=="y") ldinfo->_esi_chr.push_back(24);
-            else if(strlist[0]=="NA" || strlist[0]=="na"){
+            if(strlist[0] == "X" || strlist[0] == "x") ldinfo->_esi_chr.push_back(23);
+            else if(strlist[0] == "Y" || strlist[0] == "y") ldinfo->_esi_chr.push_back(24);
+            else if(strlist[0] == "NA" || strlist[0] == "na") {
                 ldinfo->_esi_chr.push_back(-9);
                 if(!chrwarning) {
                     printf("WARNING: At least one SNP chr is missing.\n");
-                    chrwarning=true;
+                    chrwarning = true;
                 }
-            } else if (atoi(strlist[0].c_str())==0 ) {
+            } else if (atoi(strlist[0].c_str()) == 0) {
                 //printf("WARNING: unrecongized chromosome found. This chromosome is set to 0:\n");
                 //printf("%s\n",Tbuf);
                 ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
-            } else if ( atoi(strlist[0].c_str())>24 || atoi(strlist[0].c_str())<0) {
+            } else if (atoi(strlist[0].c_str()) > 24 || atoi(strlist[0].c_str()) < 0) {
                 //printf("WARNING: abmormal chromosome found:\n");
                 //printf("%s\n",Tbuf);
                 ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
             } else ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
             
-            if(strlist[1]=="NA" || strlist[1]=="na") {
+            if(strlist[1] == "NA" || strlist[1] == "na") {
                 printf("ERROR: NA SNP ID found:\n");
-                printf("%s\n",Tbuf);
+                printf("%s\n", Tbuf);
                 exit(EXIT_FAILURE);
             }
             ldinfo->_esi_rs.push_back(strlist[1]);
             ldinfo->_esi_gd.push_back(atoi(strlist[2].c_str()));
-            if(strlist[3]=="NA" || strlist[3]=="na") ldinfo->_esi_bp.push_back(-9);
+            if(strlist[3] == "NA" || strlist[3] == "na") ldinfo->_esi_bp.push_back(-9);
             else ldinfo->_esi_bp.push_back(atoi(strlist[3].c_str()));
-            if(strlist[4]=="NA" || strlist[4]=="na") {
+            if(strlist[4] == "NA" || strlist[4] == "na") {
                 if(!allele1warning) {
                     //printf("WARNING: At least one reference allele is missing.\n");
-                    allele1warning=true;
+                    allele1warning = true;
                 }
             }
             to_upper(strlist[4]);
             ldinfo->_esi_allele1.push_back(strlist[4].c_str());
-            if(strlist[5]=="NA" || strlist[5]=="na") {
-                if(!allele2warning) {
+            if(strlist[5] == "NA" || strlist[5] == "na") {
+                if (!allele2warning) {
                     //printf("WARNING: At least one alternative allele is missing.\n");
-                    allele2warning=true;
+                    allele2warning = true;
                 }
             }
             to_upper(strlist[5]);
             ldinfo->_esi_allele2.push_back(strlist[5].c_str());
-            if(strlist.size()==colnum)
+            if(strlist.size() == colnum)
             {
-                if(strlist[6]=="NA" || strlist[6]=="na"){
+                if(strlist[6] == "NA" || strlist[6] == "na"){
                     if(!orienwarning){
                         //printf("WARNING: frequency is \"NA\" in one or more rows.\n");
-                        orienwarning=true;
+                        orienwarning = true;
                     }
                     ldinfo->_esi_freq.push_back(-9);
                 } else {
@@ -914,9 +914,9 @@ namespace SMRDATA
             ldinfo->_esi_include.push_back(line_idx);
             line_idx++;
         }
-        ldinfo->_snpNum =line_idx;
+        ldinfo->_snpNum = line_idx;
         fclose(esifile);
-        printf("%llu SNPs to be included from  %s .\n", ldinfo->_snpNum, esiFileName);
+        printf("%lu SNPs to be included from  %s .\n", ldinfo->_snpNum, esiFileName);
     }
 
 

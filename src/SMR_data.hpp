@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 #include "bfile.hpp"
+#include "mmap_read.hpp"
 
 #define MAX_LEN_PRBNAME 40
 #define MAX_LEN_GENENAME 40
@@ -220,6 +221,7 @@ namespace SMRDATA
 
     void read_epifile(eqtlInfo * eqtlinfo, string epifile , bool prtscr=true);
     void read_besdfile(eqtlInfo * eqtlinfo, string besdfile, bool prtscr=true);
+    void read_besdfile_mmap(eqtlInfo * eqtlinfo, string besdfile, bool prtscr=true);
    
     bool has_prefix(const std::string &str, const std::string &prefix);
     bool has_suffix(const std::string &str, const std::string &suffix);

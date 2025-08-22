@@ -5140,14 +5140,11 @@ namespace SMRDATA
         exit(EXIT_FAILURE);
       }
 
-      PerfTimer perf_timer;
-
       gwasData gdata;
       MappedFile shared_besd_mapped;
 
       // read GWAS
       read_gwas_data(&gdata, gwasFileName, enableGwasComments);
-      perf_timer.elapsed("read GWAS");
 
       std::string line;
       std::string qtl_name, qtl_data, qtl_chr;
@@ -5258,6 +5255,9 @@ namespace SMRDATA
         //记录当前chr，用于后面过滤probe
         //long int curchr = 0;
 
+
+        PerfTimer perf_timer(__FUNCTION__);
+
         if(bFileName) {
 
             long int readBFileStart = time(NULL);
@@ -5334,6 +5334,7 @@ namespace SMRDATA
             char* suffix=inputname+strlen(bldFileName);
             memcpy(suffix,".esi",5);
             read_ld_esifile(&ldinfo, inputname);
+            perf_timer.elapsed("read ld esifile");
             ld_esi_man(&ldinfo, snplstName, snplst2exclde,chr,  snprs,  fromsnprs,  tosnprs, snpWind, false, fromsnpkb,  tosnpkb,NULL);
             if(ldinfo._esi_include.size()==0)
             {
@@ -5341,6 +5342,7 @@ namespace SMRDATA
                 exit(EXIT_FAILURE);
             }
             allele_check(&ldinfo, &gdata, &esdata, maf, afthresh, percenthresh);
+            perf_timer.elapsed("allele check");
 
             //cout << "after allele_check, ldinfo status:" << endl;
             //cout << "ldinfo->_esi_include.size(): " << ldinfo._esi_include.size() << endl;
@@ -5413,13 +5415,22 @@ namespace SMRDATA
         cout<<"Reading eQTL summary data..."<<endl;
         read_epifile(&esdata, string(eqtlFileName)+".epi");
 
+        perf_timer.elapsed("read epi file");
+
+        //prbchr = curchr;
+
+        //cout << "after read_epifile function.." << endl;
         epi_man(&esdata, problstName, genelistName,  chr, prbchr,  prbname,  fromprbname,  toprbname, prbWind, fromprbkb,  toprbkb, prbwindFlag,  genename);
 
         if(problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
         // read_besdfile(&esdata, string(eqtlFileName)+".besd");
         read_besdfile_mmap(&esdata, besd_mapped);
 
-        if(esdata._rowid.empty() && esdata._bxz.empty()) {
+        perf_timer.elapsed("read besd file");
+
+        //cout << "after read_besdfile function.." << endl;
+        if(esdata._rowid.empty() && esdata._bxz.empty())
+        {
             printf("No data included from %s in the analysis.\n",eqtlFileName);
             exit(ERROR_EQTL_NO_DATA);
         }
@@ -5749,7 +5760,7 @@ namespace SMRDATA
                 }*/
 
                 init_smr_wk(&smrwk);
-                smrwk.cur_prbidx=i;
+                smrwk.cur_prbidx = i;
                 // step1: get cis-eQTLs
                 //printf("\nInitiating the workspace of probe %s for multi-SNP SMR analysis....\n",probename.c_str());
                 //long maxid =fill_smr_wk(&bdata, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
@@ -6017,6 +6028,8 @@ namespace SMRDATA
 
 
         }
+
+        perf_timer.elapsed("read probenum finished");
 
         long int calSMREnd = time(NULL);
         long int calSMRUsed = calSMREnd - calSMRStart;

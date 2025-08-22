@@ -8241,8 +8241,8 @@ namespace SMRDATA
                 // besd.read(indicators, length);
 
                 int length = (RESERVEDUNITS - 1) * sizeof(int);
-                read_offset += length;
                 char* indicators = mapped.offset<char*>(read_offset);
+                read_offset += length;
 
                 int* tmp = (int *)indicators;
                 int ss = *tmp++;

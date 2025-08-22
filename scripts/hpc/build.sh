@@ -19,7 +19,7 @@ echo "Path of appimagetool ${APP_IMAGE_RUNTIME_FILE}"
 module load gcc cmake intelmkl
 
 # Generate cmake
-cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+cmake --fresh -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
     -DCMAKE_TOOLCHAIN_FILE=cmake/hpc-toolchain.cmake \
     -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
     -B build/${BUILD_TYPE} -S .

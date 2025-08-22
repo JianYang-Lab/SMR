@@ -1,5 +1,7 @@
 #include "perf_timer.hpp"
 
+#include <sys/resource.h>
+
 #include <spdlog/spdlog.h>
 
 /// PerfTimer
@@ -60,4 +62,8 @@ PerfTimer::elapsed_to(
   return {time_str, end_time};
 }
 
-
+size_t get_memory_usage() {
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    return usage.ru_maxrss * 1024; // Returns bytes
+}

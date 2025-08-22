@@ -21,3 +21,5 @@ private:
   std::chrono::high_resolution_clock::time_point elapsed_time_;
   bool stopped_;
 };
+
+size_t get_memory_usage();

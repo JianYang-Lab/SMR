@@ -101,7 +101,8 @@ add_executable(${PROJECT_NAME} ${SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog)
 
-target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
+# -march=native require rebuild it on AMD/Intel
+target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64)
 
 if(NOT APPLE AND BUILD_WITH_MKL)
     target_link_libraries(${PROJECT_NAME} MKL::MKL)

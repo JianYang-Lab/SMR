@@ -5128,6 +5128,8 @@ namespace SMRDATA
         double ld_top_multi, double afthresh, double percenthresh,
         bool enableGwasComments) {
 
+      auto start_mem = get_memory_usage();
+
       // flags check
       if (gwasFileName == NULL)
         throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
@@ -5171,10 +5173,11 @@ namespace SMRDATA
       // With more threads more memory is required
       #pragma omp parallel for num_threads(2)
       for (int i = 1; i <= 22; ++i) {
+        std::string qtl_basename = qtl_data;
         MappedFile besd_mapped;
         if (chr_specific_qtl) {
-          qtl_data = qtl_data + std::to_string(i);
-          std::string besd_filename = qtl_data +".besd";
+          qtl_basename = qtl_data + std::to_string(i);
+          std::string besd_filename = qtl_basename +".besd";
           besd_mapped = mmap_file(besd_filename.c_str());
         } else {
           besd_mapped = shared_besd_mapped;
@@ -5184,11 +5187,11 @@ namespace SMRDATA
         bld_filename += std::to_string(i);
 
         std::string out_filename(outFileName);
-        out_filename += ("_" + qtl_name + "_" + std::to_string(i));
+        out_filename += ("_" + qtl_name + "_chr" + std::to_string(i));
 
         smr_multipleSNP_for_each_chr(
             out_filename.c_str(), bFileName, bld_filename.c_str(), gdata,
-            qtl_data.c_str(), besd_mapped, maf, indilstName, snplstName, problstName,
+            qtl_basename.c_str(), besd_mapped, maf, indilstName, snplstName, problstName,
             bFlag, p_hetero, ld_top, m_hetero, opt_hetero, indilst2remove,
             snplst2exclde, problst2exclde, p_smr, refSNP, heidioffFlag,
             heidiskipthresh, cis_itvl, genelistName, chr, prbchr, prbname,
@@ -5197,7 +5200,13 @@ namespace SMRDATA
             tosnpkb, snpwindFlag, cis_flag, setlstName, geneAnnoFileName,
             expanWind, ld_min, threshpsmrest, sampleoverlap, pmecs, minCor,
             ld_top_multi, afthresh, percenthresh, enableGwasComments);
+
+        if (chr_specific_qtl) {
+          besd_mapped.unmap();
+        }
       }
+
+      spdlog::info("max memory used: {} bytes", get_memory_usage() - start_mem);
     }
 
     void smr_multipleSNP_for_each_chr(

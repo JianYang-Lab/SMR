@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BUILD_WITH_MKL ON)
+
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
@@ -65,9 +67,11 @@ message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
 message("")
 
-
-if(LINUX)
+if(LINUX AND NOT OMP_LIBRARY)
     set(OMP_LIBRARY "/usr/lib/libgomp.so")
+endif()
+
+if(LINUX AND BUILD_WITH_MKL)
     if(NOT MKL_DIR)
         set(MKL_DIR "/opt/intel/oneapi/mkl/latest/lib/cmake/mkl")
     endif()
@@ -77,7 +81,7 @@ endif()
 
 
 # APPLE use Apple Accelerate
-if(NOT APPLE)
+if(NOT APPLE AND BUILD_WITH_MKL)
     find_package(MKL REQUIRED)
 endif()
 
@@ -99,14 +103,10 @@ target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdl
 
 target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
 
-if(NOT APPLE)
+if(NOT APPLE AND BUILD_WITH_MKL)
     target_link_libraries(${PROJECT_NAME} MKL::MKL)
     target_compile_definitions(${PROJECT_NAME} PRIVATE EIGEN_USE_MKL_ALL)
     target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
-else()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        EIGEN_USE_BLAS
-        EIGEN_USE_LAPACKE)
 endif()
 
 # List targets

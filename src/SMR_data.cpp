@@ -7899,8 +7899,6 @@ namespace SMRDATA
 
         // the fastest way is using malloc and memcpy
         const std::string& besdfile = mapped.filename();
-        char SIGN[sizeof(uint64_t) + 8];
-        ifstream besd(besdfile.c_str(), ios::in|ios::binary);
         if (!mapped.valid()) {
             fprintf(stderr, "besd file mapped failed, path=%s", besdfile.c_str());
             exit (EXIT_FAILURE);
@@ -7908,8 +7906,7 @@ namespace SMRDATA
 
         if (prtscr) cout << "Reading eQTL summary data from [" + besdfile + "]." << endl;
 
-        besd.read(SIGN, 4);
-        uint32_t gflag = *(uint32_t *)SIGN;
+        uint32_t gflag = mapped.read_from<uint32_t>(0);
 
         cout << "gflag:" << gflag << endl;
 
@@ -7926,12 +7923,9 @@ namespace SMRDATA
             uint64_t valNum;
             uint64_t lSize;
             char * buffer;
-            besd.seekg(0, besd.end);
-            lSize = besd.tellg();
+            lSize = mapped.size();
 
-            besd.seekg(4); // same as besd.seekg(4, besd.beg);
-            besd.read(SIGN, sizeof(uint64_t));
-            valNum = *(uint64_t *)SIGN;
+            valNum = mapped.read_from<uint64_t>(4);
             if( lSize - (sizeof(float) + sizeof(uint64_t) + (colNum + valNum) * sizeof(uint32_t) + valNum * sizeof(float)) != 0)
             {
                 printf("The file size is %llu", lSize);
@@ -7941,17 +7935,11 @@ namespace SMRDATA
             }
 
 
-            buffer = (char *) malloc (sizeof(char) * (lSize));
+            buffer = mapped.offset<char*>(4 + sizeof(uint64_t));
             if (buffer == NULL) {
                 fputs ("Memory error.\n",stderr);
                 exit (1);
             }
-            besd.read(buffer, lSize);
-            if (besd.gcount()+sizeof(float) + sizeof(uint64_t) != lSize) {
-                fputs ("Reading error",stderr);
-                exit (2);
-            }
-
 
             uint32_t* ptr;
             ptr = (uint32_t *)buffer;
@@ -8020,7 +8008,6 @@ namespace SMRDATA
                                << " Probes and " << eqtlinfo->_snpNum
                                << " SNPs to be included from [" + besdfile + "]." << endl;
             }
-            free (buffer);
         }
         else if(gflag == DENSE_FILE_TYPE_1 || gflag == DENSE_FILE_TYPE_3)
         {
@@ -8029,8 +8016,8 @@ namespace SMRDATA
             if(gflag == DENSE_FILE_TYPE_3)
             {
                 int length = (RESERVEDUNITS - 1) * sizeof(int);
-                char* indicators = new char[length];
-                besd.read(indicators, length);
+                char* indicators = mapped.offset<char*>(4);
+
                 int* tmp = (int *)indicators;
                 int ss = *tmp++;
                 if(ss != -9)
@@ -8047,7 +8034,6 @@ namespace SMRDATA
                     printf("ERROR: The probes in your .epi file are not in consistency with the one in .besd file %s.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
-                delete[] indicators;
             }
 
             int infoLen = sizeof(uint32_t);
@@ -8066,8 +8052,8 @@ namespace SMRDATA
                 eqtlinfo->_sexz[i].resize(eqtlinfo->_esi_include.size());
             }
             char* buffer;
-            buffer = (char*) malloc (sizeof(char) * eqtlinfo->_snpNum << 3);
-            if (buffer == NULL) {fputs ("Memory error", stderr); exit (1);}
+            // buffer = (char*) malloc (sizeof(char) * eqtlinfo->_snpNum << 3);
+            // if (buffer == NULL) {fputs ("Memory error", stderr); exit (1);}
             float* ft;
             float* se_ptr;
             if (eqtlinfo->_include.size()<eqtlinfo->_probNum || eqtlinfo->_esi_include.size()<eqtlinfo->_snpNum || !sorted)  //means with the parameter --extract-probe. This also can read all the probes, but currently I don't think it is good for too many I/Os.
@@ -8075,9 +8061,10 @@ namespace SMRDATA
                 for(int i=0;i<eqtlinfo->_include.size();i++)
                 {
                     unsigned long pid=eqtlinfo->_include[i];
-                    besd.seekg(((pid*eqtlinfo->_snpNum)<<3)+infoLen);
-                    memset(buffer,0,sizeof(char)*eqtlinfo->_snpNum<<3);
-                    besd.read(buffer,eqtlinfo->_snpNum<<3);
+                    // besd.seekg(((pid*eqtlinfo->_snpNum)<<3)+infoLen);
+                    // memset(buffer,0,sizeof(char)*eqtlinfo->_snpNum<<3);
+                    // besd.read(buffer,eqtlinfo->_snpNum<<3);
+                    buffer = mapped.offset<char*>(((pid*eqtlinfo->_snpNum)<<3)+infoLen);
                     ft=(float *)buffer;
                     for (int j = 0; j<eqtlinfo->_esi_include.size(); j++) eqtlinfo->_bxz[i][j] = *(ft + eqtlinfo->_esi_include[j]);
                     se_ptr = ft + eqtlinfo->_snpNum;
@@ -8089,11 +8076,11 @@ namespace SMRDATA
             }
             else
             {
-                char* buff;
+                char* buff = mapped.offset<char*>(4);
                 uint64_t buffszie = 0x40000000;
-                buff = (char*) malloc (sizeof(char)*buffszie);
-                if (buff == NULL) { fputs ("Memory error when reading dense BESD file.",stderr); exit (1); }
-                memset(buff, 0, sizeof(char) * buffszie);
+                // buff = (char*) malloc (sizeof(char)*buffszie);
+                // if (buff == NULL) { fputs ("Memory error when reading dense BESD file.",stderr); exit (1); }
+                // memset(buff, 0, sizeof(char) * buffszie);
 
                 uint64_t perbeta = (eqtlinfo->_snpNum << 2);
                 uint64_t probonce = sizeof(char)*buffszie / perbeta;  //should be even number
@@ -8102,28 +8089,32 @@ namespace SMRDATA
                 uint64_t readsize = perbeta * probonce;
                 uint64_t probcount = 0;
                 double disp = 0;
-                while(!besd.eof())
+                size_t read_offset = 4; // has read a gflag(uint32_t)
+                while(!mapped.is_end(read_offset))
                 {
-                    besd.read(buff,readsize);
-                    uint64_t Bread=besd.gcount();
-                    char* rptr=buff;
+                    // besd.read(buff,readsize);
+                    uint64_t Bread = readsize;
+                    if (mapped.remain_size(read_offset + readsize) == 0) {
+                        uint64_t Bread = mapped.size() - read_offset;
+                    }
+                    char* rptr = mapped.offset<char*>(read_offset);
                     while(Bread)
                     {
-                        memcpy(&eqtlinfo->_bxz[probcount][0],rptr,perbeta);
+                        memcpy(&eqtlinfo->_bxz[probcount][0], rptr, perbeta);
                         rptr += perbeta;
-                        memcpy(&eqtlinfo->_sexz[probcount++][0],rptr,perbeta);
+                        memcpy(&eqtlinfo->_sexz[probcount++][0], rptr, perbeta);
                         rptr += perbeta;
                         Bread -= (perbeta<<1);
                     }
+
+                    read_offset += Bread;
+
                     int tmpint = (int)probcount;
                     progress(tmpint, disp, (int)eqtlinfo->_probNum);
 
                 }
                 if(prtscr) cout<<"\neQTL summary data of "<<eqtlinfo->_probNum<<" Probes and "<<eqtlinfo->_snpNum<<" SNPs to be included from [" + besdfile + "]." <<endl;
-                free(buff);
-
             }
-            free(buffer);
         }
 
         else if (gflag == 0x3f800000 )
@@ -8137,12 +8128,14 @@ namespace SMRDATA
             uint64_t valNum;
             uint64_t lSize;
             char* buffer;
-            besd.seekg(0,besd.end);
-            lSize = besd.tellg();
+            // besd.seekg(0,besd.end);
+            // lSize = besd.tellg();
+            lSize = mapped.size();
 
-            besd.seekg(4); // same as besd.seekg(4, besd.beg);
-            besd.read(SIGN, 4);
-            valNum = (uint32_t)*(float *)SIGN; // int to float then float to int back can lose pricision. hence this clause and bellow are unbelievable
+            // besd.seekg(4); // same as besd.seekg(4, besd.beg);
+            // besd.read(SIGN, 4);
+            // valNum = (uint32_t)*(float *)SIGN; // int to float then float to int back can lose pricision. hence this clause and bellow are unbelievable
+            valNum = mapped.read_from<uint32_t>(4);
              if(lSize - ((3 + colNum + (valNum << 1)) << 2) != 0)
              {
                  printf("The file size is %llu", lSize);
@@ -8153,10 +8146,11 @@ namespace SMRDATA
 
             valNum=((lSize>>2)-3-colNum)>>1;
 
-            buffer = (char*) malloc (sizeof(char)*(lSize-8));
-            if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
-            besd.read(buffer,(lSize-8));
-            if (besd.gcount()+8 != lSize) {fputs ("Reading error",stderr); exit (2);}
+            // buffer = (char*) malloc (sizeof(char)*(lSize-8));
+            // if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
+            // besd.read(buffer,(lSize-8));
+            // if (besd.gcount()+8 != lSize) {fputs ("Reading error",stderr); exit (2);}
+            buffer = mapped.offset<char*>(4);
             float* ptr;
             ptr=(float *)buffer;
 
@@ -8221,7 +8215,7 @@ namespace SMRDATA
                 if(prtscr)  cout<<"eQTL summary data of "<<eqtlinfo->_probNum<<" Probes and "<<eqtlinfo->_snpNum<<" SNPs to be included from [" + besdfile + "]." <<endl;
             }
             // terminate
-            free (buffer);
+            // free (buffer);
         }
 
         else if (gflag == SPARSE_FILE_TYPE_3F || gflag == SPARSE_FILE_TYPE_3)
@@ -8234,15 +8228,22 @@ namespace SMRDATA
             uint64_t valNum;
             uint64_t lSize;
 
-            besd.seekg(0, besd.end);
-            lSize = besd.tellg();
+            // besd.seekg(0, besd.end);
+            // lSize = besd.tellg();
+            lSize = mapped.size();
 
-            besd.seekg(4); // same as besd.seekg(4, besd.beg);
+            size_t read_offset = 4;
+            // besd.seekg(4); // same as besd.seekg(4, besd.beg);
             if(gflag == SPARSE_FILE_TYPE_3)
             {
+                // int length = (RESERVEDUNITS - 1) * sizeof(int);
+                // char* indicators = new char[length];
+                // besd.read(indicators, length);
+
                 int length = (RESERVEDUNITS - 1) * sizeof(int);
-                char* indicators = new char[length];
-                besd.read(indicators, length);
+                read_offset += length;
+                char* indicators = mapped.offset<char*>(read_offset);
+
                 int* tmp = (int *)indicators;
                 int ss = *tmp++;
                 if(ss != -9)
@@ -8259,11 +8260,13 @@ namespace SMRDATA
                     printf("ERROR: The probes in your .epi file are not in consistency with the one in .besd file %s.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
-                delete[] indicators;
+                // delete[] indicators;
             }
 
-            besd.read(SIGN, sizeof(uint64_t));
-            valNum=*(uint64_t *)SIGN;
+            // besd.read(SIGN, sizeof(uint64_t));
+            // valNum=*(uint64_t *)SIGN;
+            valNum = mapped.read_from<uint64_t>(read_offset);
+            read_offset += sizeof(uint64_t);
 
             //cout << "valNum: " << valNum << endl;
 
@@ -8290,10 +8293,12 @@ namespace SMRDATA
 
             if(eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum || !sorted)
             {
-                uint64_t colsize = colNum * sizeof(uint64_t);
-                buffer = (char*) malloc (sizeof(char) * (colsize));
-                if (buffer == NULL) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
-                besd.read(buffer, colsize);
+                // uint64_t colsize = colNum * sizeof(uint64_t);
+                // buffer = (char*) malloc (sizeof(char) * (colsize));
+                // if (buffer == NULL) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
+                // besd.read(buffer, colsize);
+
+                buffer = mapped.offset<char*>(read_offset);
 
                 uint64_t* ptr = (uint64_t *)buffer;
 
@@ -8335,18 +8340,20 @@ namespace SMRDATA
                         continue;
                     }
                     char* row_char_ptr = NULL;
-                    row_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(uint32_t));
-                    if (row_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
-                    char* val_char_ptr;
-                    val_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(float));
-                    if (val_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
-                    memset(row_char_ptr,0,sizeof(char)*2*num*sizeof(uint32_t));
-                    memset(val_char_ptr,0,sizeof(char)*2*num*sizeof(float));
-                    besd.seekg(rowSTART+pos*sizeof(uint32_t));
-                    besd.read(row_char_ptr, 2*num*sizeof(uint32_t));
+                    // row_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(uint32_t));
+                    // if (row_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
+                    char* val_char_ptr = NULL;
+                    // val_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(float));
+                    // if (val_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
+                    // memset(row_char_ptr,0,sizeof(char)*2*num*sizeof(uint32_t));
+                    // memset(val_char_ptr,0,sizeof(char)*2*num*sizeof(float));
+                    // besd.seekg(rowSTART+pos*sizeof(uint32_t));
+                    // besd.read(row_char_ptr, 2*num*sizeof(uint32_t));
+                    row_char_ptr = mapped.offset<char*>(rowSTART+pos*sizeof(uint32_t));
                     uint32_t* row_ptr=(uint32_t *)row_char_ptr;
-                    besd.seekg(valSTART+pos*sizeof(float));
-                    besd.read(val_char_ptr, 2*num*sizeof(float));
+                    // besd.seekg(valSTART+pos*sizeof(float));
+                    // besd.read(val_char_ptr, 2*num*sizeof(float));
+                    val_char_ptr = mapped.offset<char*>(valSTART+pos*sizeof(float));
                     float* val_ptr=(float*)val_char_ptr;
                     for(int j = 0; j < num<<1; j++)
                     {
@@ -8374,8 +8381,8 @@ namespace SMRDATA
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
                     eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
-                    free(row_char_ptr);
-                    free(val_char_ptr);
+                    // free(row_char_ptr);
+                    // free(val_char_ptr);
                 }
                 eqtlinfo->_valNum = eqtlinfo->_val.size();
 
@@ -8389,24 +8396,25 @@ namespace SMRDATA
             {
 
                 //cout << "lSize: " << lSize << endl;
-                buffer = (char*) malloc (sizeof(char)*(lSize));
-                if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
-                besd.read(buffer,lSize);
-                if(gflag==SPARSE_FILE_TYPE_3F)
-                {
-                    if (besd.gcount()+sizeof(uint32_t) + sizeof(uint64_t) != lSize)
-                    {
-                        printf("ERROR: reading file %s error.\n", besdfile.c_str());
-                        exit (EXIT_FAILURE);
-                    }
-                }else {
-                    if (besd.gcount()+RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) != lSize)
-                    {
-                        printf("ERROR: reading file %s error.\n", besdfile.c_str());
-                        exit (EXIT_FAILURE);
-                    }
-                }
+                // buffer = (char*) malloc (sizeof(char)*(lSize));
+                // if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
+                // besd.read(buffer,lSize);
+                // if(gflag==SPARSE_FILE_TYPE_3F)
+                // {
+                //     if (besd.gcount()+sizeof(uint32_t) + sizeof(uint64_t) != lSize)
+                //     {
+                //         printf("ERROR: reading file %s error.\n", besdfile.c_str());
+                //         exit (EXIT_FAILURE);
+                //     }
+                // }else {
+                //     if (besd.gcount()+RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) != lSize)
+                //     {
+                //         printf("ERROR: reading file %s error.\n", besdfile.c_str());
+                //         exit (EXIT_FAILURE);
+                //     }
+                // }
 
+                buffer = mapped.offset<char*>(read_offset);
                 uint64_t* ptr;
                 ptr=(uint64_t *)buffer;
 
@@ -8434,12 +8442,12 @@ namespace SMRDATA
                if(prtscr) cout << "eQTL summary data of " << eqtlinfo->_probNum << " Probes to be included from [" + besdfile + "]." <<endl;
             }
             // terminate
-            free (buffer);
+            // free (buffer);
         }
         else {
             cout<<"SMR doesn't support this format. Please use OSCA (http://cnsgenomics.com/software/osca) to transform it to SMR format."<<endl;
         }
-        besd.close();
+        // besd.close();
         /*
         if(eqtlinfo->_rowid.empty() && eqtlinfo->_bxz.empty())
         {

@@ -5416,7 +5416,8 @@ namespace SMRDATA
         epi_man(&esdata, problstName, genelistName,  chr, prbchr,  prbname,  fromprbname,  toprbname, prbWind, fromprbkb,  toprbkb, prbwindFlag,  genename);
 
         if(problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
-        read_besdfile(&esdata, string(eqtlFileName)+".besd");
+        // read_besdfile(&esdata, string(eqtlFileName)+".besd");
+        read_besdfile_mmap(&esdata, besd_mapped);
 
         if(esdata._rowid.empty() && esdata._bxz.empty()) {
             printf("No data included from %s in the analysis.\n",eqtlFileName);

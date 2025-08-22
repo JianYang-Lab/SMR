@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 #if defined(__linux__)
@@ -22,8 +23,24 @@ public:
   void *memory_bound() { return (unsigned char *)addr_ + size_; }
 
   void *addr() { return addr_; }
+
+  template <typename T> T offset(size_t n_bytes) {
+    return reinterpret_cast<T>(reinterpret_cast<uint8_t *>(addr_) + n_bytes);
+  }
+
+
+  template <typename T> T read_from(size_t offset) {
+    return *reinterpret_cast<T*>(reinterpret_cast<uint8_t *>(addr_) + offset);
+  }
+
+  bool is_end(size_t offset) const { return offset >= size_; }
+  size_t remain_size(size_t offset) {
+    if (is_end(offset)) return 0;
+    return size_ - offset;
+  }
+
   size_t size() { return size_; }
-  const std::string& filename() const { return filename_; }
+  const std::string &filename() const { return filename_; }
 
   void unmap() {
     munmap(addr_, size_);

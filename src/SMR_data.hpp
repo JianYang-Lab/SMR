@@ -221,7 +221,7 @@ namespace SMRDATA
 
     void read_epifile(eqtlInfo * eqtlinfo, string epifile , bool prtscr=true);
     void read_besdfile(eqtlInfo * eqtlinfo, string besdfile, bool prtscr=true);
-    void read_besdfile_mmap(eqtlInfo * eqtlinfo, string besdfile, bool prtscr=true);
+    void read_besdfile_mmap(eqtlInfo * eqtlinfo, MappedFile mapped, bool prtscr=true);
    
     bool has_prefix(const std::string &str, const std::string &prefix);
     bool has_suffix(const std::string &str, const std::string &suffix);

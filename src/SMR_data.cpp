@@ -9,6 +9,24 @@
 #include "SMR_data.hpp"
 #include "error_codes.hpp"
 
+#include <iostream>
+#include <istream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <queue>
+
+#include "CommFunc.hpp"
+#include "StatFunc.hpp"
+#include "StrFunc.hpp"
+
+using namespace CommFunc;
+using namespace StatFunc;
+using namespace StrFunc;
+using namespace SMRDATA;
+
+using namespace std;
+
 namespace SMRDATA
 {
 
@@ -736,8 +754,8 @@ namespace SMRDATA
             valNum = *(uint64_t *)SIGN;
             if( lSize - (sizeof(float) + sizeof(uint64_t) + (colNum + valNum) * sizeof(uint32_t) + valNum * sizeof(float)) != 0)
             {
-                printf("The file size is %llu",lSize);
-                printf(" %zu + %zu + %lld + %lld + %lld \n",sizeof(float),sizeof(uint64_t), colNum*sizeof(uint32_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                printf("The file size is %zu", lSize);
+                printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(float), sizeof(uint64_t), colNum*sizeof(uint32_t), valNum*sizeof(uint32_t), valNum*sizeof(float));
                 printf("ERROR: failed in binary file check.\n");
                 exit(EXIT_FAILURE);
             }
@@ -802,7 +820,7 @@ namespace SMRDATA
 
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
-                    eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
+                    eqtlinfo->_cols[(i+1)<<1]=real_num+eqtlinfo->_cols[i<<1];
                 }
                 eqtlinfo->_valNum = eqtlinfo->_val.size();
                 if(prtscr)  cout<<"eQTL summary data of "<<eqtlinfo->_include.size()<<" Probes and "<<eqtlinfo->_esi_include.size()<<" SNPs to be included from [" + besdfile + "]." <<endl;
@@ -860,7 +878,7 @@ namespace SMRDATA
             eqtlinfo->_val.clear();
             eqtlinfo->_valNum = 0;
             uint64_t memsize2use=eqtlinfo->_include.size()*eqtlinfo->_esi_include.size()*2*sizeof(float);
-            if(memsize2use>0x200000000) printf("WARNING: %llu GB should be allocated for your besd file.\n",memsize2use>>30);
+            if(memsize2use>0x200000000) printf("WARNING: %zu GB should be allocated for your besd file.\n",memsize2use>>30);
             eqtlinfo->_bxz.resize(eqtlinfo->_include.size());
             eqtlinfo->_sexz.resize(eqtlinfo->_include.size());
             for(unsigned int i=0;i<eqtlinfo->_include.size();i++)
@@ -1042,8 +1060,8 @@ namespace SMRDATA
             valNum=(uint32_t)*(float *)SIGN; // int to float then float to int back can lose pricision. hence this clause and bellow are unbelievable
              if(lSize-((3+colNum+(valNum<<1))<<2) != 0)
              {
-                 printf("The file size is %llu",lSize);
-                 printf(" %zu + %zu + %lld + %lld + %lld \n",sizeof(float),sizeof(float), (1+colNum)*sizeof(float),valNum*sizeof(float), valNum*sizeof(float));
+                 printf("The file size is %zu", lSize);
+                 printf(" %zu + %zu + %zu + %zu + %zu\n",sizeof(float), sizeof(float), (1+colNum)*sizeof(float), valNum*sizeof(float), valNum*sizeof(float));
                  printf("ERROR: failed in binary file check.\n");
                  exit(EXIT_FAILURE);
              }
@@ -1097,7 +1115,7 @@ namespace SMRDATA
                         }
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
-                    eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
+                    eqtlinfo->_cols[(i+1)<<1]=real_num+eqtlinfo->_cols[i<<1];
                 }
                 eqtlinfo->_valNum = eqtlinfo->_val.size();
                 if(prtscr)  cout<<"eQTL summary data of "<<eqtlinfo->_include.size()<<" Probes and "<<eqtlinfo->_esi_include.size()<<" SNPs to be included from [" + besdfile + "]." <<endl;
@@ -1165,8 +1183,8 @@ namespace SMRDATA
             if(gflag == SPARSE_FILE_TYPE_3F) {
                 if(lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu", lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n", sizeof(uint32_t),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %zu", lSize);
+                    printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(uint32_t), sizeof(uint64_t), colNum*sizeof(uint64_t), valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
@@ -1175,8 +1193,8 @@ namespace SMRDATA
             {
                 if(lSize - (RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu", lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n", RESERVEDUNITS*sizeof(int),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %zu", lSize);
+                    printf(" %zu + %zu + %zu + %zu + %zu\n", RESERVEDUNITS*sizeof(int), sizeof(uint64_t), colNum*sizeof(uint64_t), valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
@@ -1232,7 +1250,7 @@ namespace SMRDATA
                     uint64_t real_num = 0;
                     if(num == 0) {
                         eqtlinfo->_cols[(i<<1)+1]=eqtlinfo->_cols[i<<1];
-                        eqtlinfo->_cols[i+1<<1]=eqtlinfo->_cols[i<<1];
+                        eqtlinfo->_cols[(i+1)<<1]=eqtlinfo->_cols[i<<1];
                         //printf("WARNING: Probe %s with no eQTL found.\n",eqtlinfo->_epi_prbID[pid].c_str());
                         continue;
                     }
@@ -1276,7 +1294,7 @@ namespace SMRDATA
 
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
-                    eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
+                    eqtlinfo->_cols[(i+1)<<1]=real_num+eqtlinfo->_cols[i<<1];
                     free(row_char_ptr);
                     free(val_char_ptr);
                 }
@@ -6980,7 +6998,7 @@ namespace SMRDATA
                         for(int i=0;i<eqtlinfo._include.size();i++)
                         {
                             *uptr++=eqtlinfo._cols[(eqtlinfo._include[i]<<1)+1];
-                            *uptr++=eqtlinfo._cols[eqtlinfo._include[i]+1<<1];
+                            *uptr++=eqtlinfo._cols[(eqtlinfo._include[i]+1)<<1];
                         }
                         wptr+=colSize;
                         memcpy(wptr,&eqtlinfo._rowid[0],rowSize);
@@ -7520,7 +7538,7 @@ namespace SMRDATA
             for(int i=0;i<eqtlinfo->_include.size();i++)
             {
                 *uptr++=eqtlinfo->_cols[(eqtlinfo->_include[i]<<1)+1];
-                *uptr++=eqtlinfo->_cols[eqtlinfo->_include[i]+1<<1];
+                *uptr++=eqtlinfo->_cols[(eqtlinfo->_include[i]+1)<<1];
             }
             wptr+=colSize;
             memcpy(wptr,&eqtlinfo->_rowid[0],rowSize);
@@ -7928,8 +7946,8 @@ namespace SMRDATA
             valNum = mapped.read_from<uint64_t>(4);
             if( lSize - (sizeof(float) + sizeof(uint64_t) + (colNum + valNum) * sizeof(uint32_t) + valNum * sizeof(float)) != 0)
             {
-                printf("The file size is %llu", lSize);
-                printf(" %zu + %zu + %lld + %lld + %lld \n", sizeof(float), sizeof(uint64_t), colNum * sizeof(uint32_t), valNum * sizeof(uint32_t), valNum *sizeof(float));
+                printf("The file size is %zu", lSize);
+                printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(float), sizeof(uint64_t), colNum * sizeof(uint32_t), valNum * sizeof(uint32_t), valNum *sizeof(float));
                 printf("ERROR: failed in binary file check.\n");
                 exit(EXIT_FAILURE);
             }
@@ -8138,8 +8156,8 @@ namespace SMRDATA
             valNum = mapped.read_from<uint32_t>(4);
              if(lSize - ((3 + colNum + (valNum << 1)) << 2) != 0)
              {
-                 printf("The file size is %llu", lSize);
-                 printf(" %zu + %zu + %lld + %lld + %lld \n", sizeof(float), sizeof(float), (1 + colNum) * sizeof(float), valNum * sizeof(float), valNum * sizeof(float));
+                 printf("The file size is %zu", lSize);
+                 printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(float), sizeof(float), (1 + colNum) * sizeof(float), valNum * sizeof(float), valNum * sizeof(float));
                  printf("ERROR: failed in binary file check.\n");
                  exit(EXIT_FAILURE);
              }
@@ -8194,7 +8212,7 @@ namespace SMRDATA
                         }
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
-                    eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
+                    eqtlinfo->_cols[(i+1)<<1]=real_num+eqtlinfo->_cols[i<<1];
                 }
                 eqtlinfo->_valNum = eqtlinfo->_val.size();
                 if(prtscr) cout << "eQTL summary data of " << eqtlinfo->_include.size()
@@ -8273,8 +8291,8 @@ namespace SMRDATA
             if(gflag == SPARSE_FILE_TYPE_3F) {
                 if(lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu", lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n", sizeof(uint32_t),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %zu", lSize);
+                    printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(uint32_t), sizeof(uint64_t), colNum*sizeof(uint64_t), valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
@@ -8283,8 +8301,8 @@ namespace SMRDATA
             {
                 if(lSize - (RESERVEDUNITS*sizeof(int) + sizeof(uint64_t) + colNum*sizeof(uint64_t) + valNum*sizeof(uint32_t) + valNum*sizeof(float)) != 0)
                 {
-                    printf("The file size is %llu", lSize);
-                    printf(" %zu + %zu + %lld + %lld + %lld \n", RESERVEDUNITS*sizeof(int),sizeof(uint64_t), colNum*sizeof(uint64_t),valNum*sizeof(uint32_t), valNum*sizeof(float));
+                    printf("The file size is %zu", lSize);
+                    printf(" %zu + %zu + %zu + %zu + %zu\n", RESERVEDUNITS*sizeof(int), sizeof(uint64_t), colNum*sizeof(uint64_t), valNum*sizeof(uint32_t), valNum*sizeof(float));
                     printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
                     exit(EXIT_FAILURE);
                 }
@@ -8336,7 +8354,7 @@ namespace SMRDATA
                     uint64_t real_num = 0;
                     if(num == 0) {
                         eqtlinfo->_cols[(i<<1)+1]=eqtlinfo->_cols[i<<1];
-                        eqtlinfo->_cols[i+1<<1]=eqtlinfo->_cols[i<<1];
+                        eqtlinfo->_cols[(i+1)<<1]=eqtlinfo->_cols[i<<1];
                         continue;
                     }
                     char* row_char_ptr = NULL;
@@ -8380,7 +8398,7 @@ namespace SMRDATA
 
                     }
                     eqtlinfo->_cols[(i<<1)+1]=(real_num>>1)+eqtlinfo->_cols[i<<1];
-                    eqtlinfo->_cols[i+1<<1]=real_num+eqtlinfo->_cols[i<<1];
+                    eqtlinfo->_cols[(i+1)<<1]=real_num+eqtlinfo->_cols[i<<1];
                     // free(row_char_ptr);
                     // free(val_char_ptr);
                 }

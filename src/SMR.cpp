@@ -5,18 +5,25 @@
 //  Copyright (c) 2015 Futao Zhang. All rights reserved.
 //  Modified by fanghl in 20210511
 
+#include "SMR.hpp"
 
-#include "StrFunc.hpp"
+#include <iostream>
+
 #include "SMR_data_p1.hpp"
 #include "SMR_data_p2.hpp"
 #include "SMR_data_p3.hpp"
 #include "SMR_plot.hpp"
+
+#include "CommFunc.hpp"
+
 #include "bfile.hpp"
-#include "SMR.hpp"
+
 #include "config.h"
 
+using namespace std;
+using namespace CommFunc;
 using namespace SMRDATA;
-using namespace StatFunc;
+
 int thread_num;
 bool mute = false;
 int xh=0;

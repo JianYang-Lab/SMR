@@ -7,6 +7,19 @@
 //
 
 #include "bfile.hpp"
+
+#include <fstream>
+#include <iostream>
+#include <bitset>
+
+#include "CommFunc.hpp"
+#include "StrFunc.hpp"
+
+using namespace CommFunc;
+using namespace StrFunc;
+
+using namespace std;
+
 namespace SMRDATA
 {
     void read_famfile(bInfo* bdata, string famfile) {

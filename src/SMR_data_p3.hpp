@@ -9,13 +9,14 @@
 #ifndef __SMR_CPP__SMR_data_p3__
 #define __SMR_CPP__SMR_data_p3__
 
-#include "SMR_data.hpp"
+#include <vector>
+#include <string>
 
 namespace SMRDATA
 {
     typedef struct{
-        vector<int> pid;
-        string besdpath;
+        std::vector<int> pid;
+        std::string besdpath;
     } F2Prb;
     
     void combineBesd(char* eqtlsmaslstName, char* outFileName,bool save_dense_flag, int cis_itvl, int trans_itvl, float transThres, float restThres, bool genouni,int addn);

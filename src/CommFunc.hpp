@@ -39,19 +39,14 @@
 //typedef unsigned int         uint32_t;
 
 #include <limits>
-#include <complex>
 #include <vector>
-#include <algorithm>
 #include <ctime>
-#include <fstream>
-#include "StrFunc.hpp"
 #include <string.h>
+
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/SparseExtra>
 #include <Eigen/Eigenvalues>
-#include <queue>
-//#include <cmath> //already in Eigen
 
 using namespace Eigen;
 using namespace std;

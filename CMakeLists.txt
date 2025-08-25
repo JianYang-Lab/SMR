@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.16)
 project(smr C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -109,6 +110,14 @@ if(NOT APPLE AND BUILD_WITH_MKL)
     target_compile_definitions(${PROJECT_NAME} PRIVATE EIGEN_USE_MKL_ALL)
     target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
 endif()
+
+
+IF(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json")
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
+    )
+ENDIF()
 
 # List targets
 get_property(imported_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)

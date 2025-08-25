@@ -8,13 +8,14 @@
 
 #ifndef bfile_hpp
 #define bfile_hpp
-#include <iostream>
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
-#include <zlib.h>
+
+#include <vector>
+#include <string>
+#include <map>
+
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #if defined _WIN64 || defined _WIN32
 #include <direct.h>
 #define GetCurrentDir _getcwd
@@ -22,18 +23,19 @@
 #include <unistd.h>
 #define GetCurrentDir getcwd
 #endif
+
 #ifndef __APPLE__
 #include <omp.h>
 #endif
-#include <bitset>
-#include "CommFunc.hpp"
-#include "StatFunc.hpp"
-#include "StrFunc.hpp"
+
+#include <string>
+#include <vector>
+#include <map>
+
+#include <Eigen/Eigen>
 
 using namespace std;
-using namespace StatFunc;
-using namespace StrFunc;
-using namespace CommFunc;
+using namespace Eigen;
 
 namespace SMRDATA
 {

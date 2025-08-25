@@ -9,9 +9,6 @@
 #ifndef __SMR_CPP__SMR_plot__
 #define __SMR_CPP__SMR_plot__
 
-#include "SMR_data.hpp"
-#include "SMR_data_p1.hpp"
-
 namespace SMRDATA
 {
     void plot_newheidi(char* outFileName, char* bFileName,char* gwasFileName, char* eqtlFileName, double maf,char* indilstName, char* snplstName,char* problstName,bool bFlag,double p_hetero,double ld_top,int m_hetero ,int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde,double p_smr, char* refSNP, bool heidioffFlag, int cis_itvl, char* genelistName, int chr,int prbchr, char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag, char* geneAnnoName, double threshpsmrest,bool new_het_mtd,double threshphet, double ld_min,bool sampleoverlap, double pmecs, int minCor,double afthresh,double percenthresh);

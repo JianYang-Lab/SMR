@@ -7,6 +7,21 @@
 
 
 #include "SMR_data_p2.hpp"
+
+#include <zlib.h>
+
+#include "SMR_data.hpp"
+
+#include "CommFunc.hpp"
+#include "StatFunc.hpp"
+#include "StrFunc.hpp"
+
+using namespace StatFunc;
+using namespace StrFunc;
+using namespace CommFunc;
+
+using namespace std;
+
 FILE * techeQTLfile = NULL;
 namespace SMRDATA
 {

@@ -8,6 +8,24 @@
 
 #include "SMR_plot.hpp"
 
+#include <vector>
+#include <Eigen/Eigen>
+#include <Eigen/Core>
+
+#include "SMR_data.hpp"
+
+#include "CommFunc.hpp"
+#include "StatFunc.hpp"
+#include "StrFunc.hpp"
+
+using namespace CommFunc;
+using namespace StatFunc;
+using namespace StrFunc;
+using namespace Eigen;
+using namespace std;
+
+extern int thread_num;
+
 namespace SMRDATA
 {
     void smre2e(char* bFileName,char* eqtlFileName, char* eqtlFileName2, double maf,char* indilstName, char* snplstName,double p_hetero,double ld_top,int m_hetero, char* indilst2remove, char* snplst2exclde, double p_smr, int cis_itvl,int op_wind, const char* oprobe, vector<string> &mprobe, vector<double> &bsmr, vector<double> &sesmr, vector<double> &psmr, vector<double> &pheidi, vector<int> &nsnp)

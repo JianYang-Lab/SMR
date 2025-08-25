@@ -8,7 +8,9 @@
 #ifndef __SMR_CPP__SMR_data_p2__
 #define __SMR_CPP__SMR_data_p2__
 
-#include "SMR_data.hpp"
+#include <string>
+
+struct eqtlInfo;
 
 namespace SMRDATA
 {
@@ -24,7 +26,7 @@ namespace SMRDATA
         bool qtltoolsnflag, bool qtltoolspflag, int addn);
     void make_qfile(char* outFileName, char* eFileName, char* mafFileName);
     void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata);
-    void write_smr_esi(string outFileName, eqtlInfo* eqtlinfo);
-    void write_smr_epi(string outFileName, eqtlInfo* eqtlinfo);
+    void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo);
+    void write_smr_epi(std::string outFileName, eqtlInfo* eqtlinfo);
 }
 #endif /* defined(__SMR_CPP__SMR_data_p2__) */

@@ -9,8 +9,9 @@
 #ifndef __SRM_CPP__SMR_data__
 #define __SRM_CPP__SMR_data__
 
-#include <stdlib.h>
 #include <unordered_map>
+#include <string>
+#include <vector>
 
 #include "bfile.hpp"
 #include "mmap_read.hpp"
@@ -28,6 +29,8 @@ extern int xh; //using when testing
 extern bool forcefrqck;
 extern FILE* techeQTLfile;
 extern char* outFileName;
+
+using namespace std;
 
 namespace SMRDATA
 {

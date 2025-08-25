@@ -8,6 +8,15 @@
 #ifndef SMR_CPP_SMR_h
 #define SMR_CPP_SMR_h
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+#include "SMR_data.hpp"
+
+using namespace std;
+
 void option(int option_num, char* option_str[]);
 
 

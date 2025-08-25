@@ -8,6 +8,21 @@
 
 #include "SMR_data_p3.hpp"
 
+
+#include <string>
+#include <map>
+#include <vector>
+
+#include "CommFunc.hpp"
+#include "StatFunc.hpp"
+
+#include "SMR_data.hpp"
+
+using namespace CommFunc;
+using namespace StatFunc;
+using namespace std;
+
+
 namespace SMRDATA
 {
     void combine_esi(vector<snpinfolst>& snpinfo, vector<string>& smasNames, bool genouni)

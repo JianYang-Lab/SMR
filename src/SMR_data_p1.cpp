@@ -6,15 +6,27 @@
 //  Copyright (c) 2016 Futao Zhang. All rights reserved.
 //
 
+#include "SMR_data_p1.hpp"
+
 #include <istream>
+#include <iostream>
 
 #include <spdlog/spdlog.h>
 
-#include "SMR_data_p1.hpp"
 #include "error_codes.hpp"
 
 #include "perf_timer.hpp"
 #include "mmap_read.hpp"
+
+#include "CommFunc.hpp"
+#include "StatFunc.hpp"
+#include "StrFunc.hpp"
+
+using namespace CommFunc;
+using namespace StatFunc;
+using namespace StrFunc;
+
+using namespace std;
 
 namespace SMRDATA
 {

@@ -2932,8 +2932,13 @@ namespace SMRDATA
         string epifile = string(outFileName)+string(".epi");
         ofstream epi(epifile.c_str());
         if (!epi) throw ("Error: can not open the EPI file " + epifile + " to save!");
-        for (int j = 0;j <epiNum; j++) {
-            epi<<(prbchr[j]>0?atos(prbchr[j]):"NA")<<'\t'<<prbs[j]<<'\t'<<0<<'\t'<<(prbchr[j]>0?atos(prbbp[j]):"NA")<<'\t'<<"NA"<<'\t'<<prbstrand[j]<<'\n';
+        for (int j = 0; j < epiNum; j++) {
+            epi << (prbchr[j] > 0 ? atos(prbchr[j]) : "NA") << '\t'
+                << prbs[j] << '\t'
+                << 0 << '\t'
+                << (prbchr[j] > 0 ? atos(prbbp[j]) : "NA") << '\t'
+                << "NA" << '\t'
+                << prbstrand[j] << '\n';
         }
         epi.close();
         printf("%ld probes have been saved in the file %s.\n",epiNum,epifile.c_str());
@@ -2945,8 +2950,14 @@ namespace SMRDATA
         if (!esi) throw ("Error: can not open the ESI file to save!");
         esi_map.clear();
         epi_map.clear();
-        for (int j = 0;j <esiNum; j++) {
-            esi<<(rschr[j]>0?atos(rschr[j]):"NA")<<'\t'<<snps[j]<<'\t'<<0<<'\t'<<(rsbp[j]>0?atos(rsbp[j]):"NA")<<'\t'<<"NA"<<'\t'<<"NA"<<'\t'<<"NA"<<'\n';
+        for (int j = 0;j < esiNum; j++) {
+            esi << (rschr[j] > 0 ? atos(rschr[j]) : "NA") << '\t'
+                << snps[j] << '\t'
+                << 0 << '\t'
+                << (rsbp[j] > 0 ? atos(rsbp[j]) : "NA") << '\t'
+                << "NA" << '\t'
+                << "NA" << '\t'
+                << "NA" << '\n';
             esi_map.insert(pair<string,int>(snps[j],j));
         }
         esi.close();

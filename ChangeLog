@@ -1,0 +1,4 @@
+2025-08-29  Wang Kai  <wangkai@westlake.edu.cn>
+
+	* src/SMR_data_p1.cpp: Add flags `--beqtl-list` and
+	`--beqtl-list-index` to avoid read GWAS and xQTL data repeatedly.

@@ -5,8 +5,8 @@ set -e
 CWD=$(pwd)
 APP_NAME=smr
 
-# BUILD_TYPE=Release
-BUILD_TYPE=RelWithDebInfo
+BUILD_TYPE=Release
+# BUILD_TYPE=RelWithDebInfo
 
 fresh_build=""
 install_app=0

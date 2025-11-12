@@ -2634,7 +2634,6 @@ namespace SMRDATA
 
         int comm_count = 0, fail_maf = 0, fail_allele = 0, fail_frq = 0;
 
-        #pragma omp parallel for
         for(int i = 0; i < esdata->_esi_include.size(); i++)
         {
             int eid = esdata->_esi_include[i];

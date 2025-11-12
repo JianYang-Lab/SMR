@@ -51,7 +51,7 @@ function run {
 
     echo "Current working directory: ${CWD}"
 
-    module load gcc cmake intelmkl
+    module load gcc/10.3.0 cmake intelmkl
 
     if [[ $cmake_gen == 1 ]]; then
         # Generate cmake

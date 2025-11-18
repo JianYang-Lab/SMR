@@ -5201,17 +5201,22 @@ namespace SMRDATA
         std::string out_filename(outFileName);
         out_filename += ("_" + qtl_name + "_chr" + std::to_string(i));
 
-        smr_multipleSNP_for_each_chr(
-            out_filename.c_str(), bFileName, bld_filename.c_str(), gdata,
-            qtl_basename.c_str(), besd_mapped, maf, indilstName, snplstName, problstName,
-            bFlag, p_hetero, ld_top, m_hetero, opt_hetero, indilst2remove,
-            snplst2exclde, problst2exclde, p_smr, refSNP, heidioffFlag,
-            heidiskipthresh, cis_itvl, genelistName, chr, prbchr, prbname,
-            fromprbname, toprbname, prbWind, fromprbkb, toprbkb, prbwindFlag,
-            genename, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb,
-            tosnpkb, snpwindFlag, cis_flag, setlstName, geneAnnoFileName,
-            expanWind, ld_min, threshpsmrest, sampleoverlap, pmecs, minCor,
-            ld_top_multi, afthresh, percenthresh, enableGwasComments);
+        try {
+          smr_multipleSNP_for_each_chr(
+              out_filename.c_str(), bFileName, bld_filename.c_str(), gdata,
+              qtl_basename.c_str(), besd_mapped, maf, indilstName, snplstName,
+              problstName, bFlag, p_hetero, ld_top, m_hetero, opt_hetero,
+              indilst2remove, snplst2exclde, problst2exclde, p_smr, refSNP,
+              heidioffFlag, heidiskipthresh, cis_itvl, genelistName, chr,
+              prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb,
+              toprbkb, prbwindFlag, genename, snpchr, snprs, fromsnprs, tosnprs,
+              snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName,
+              geneAnnoFileName, expanWind, ld_min, threshpsmrest, sampleoverlap,
+              pmecs, minCor, ld_top_multi, afthresh, percenthresh,
+              enableGwasComments);
+        } catch (const std::exception &e) {
+          std::cout << "Error: " << e << std::endl;
+        }
 
         if (chr_specific_qtl) {
           besd_mapped.unmap();

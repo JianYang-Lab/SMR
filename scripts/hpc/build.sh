@@ -51,7 +51,7 @@ function run {
 
     echo "Current working directory: ${CWD}"
 
-    module load gcc/10.3.0 cmake intelmkl
+    module load gcc/8.4.0 cmake intelmkl
 
     if [[ $cmake_gen == 1 ]]; then
         # Generate cmake
@@ -85,6 +85,8 @@ function run {
         # Packaging
         ${LINUX_DEPLOY_BIN} --appdir build/${BUILD_TYPE}/installed \
             --executable build/${BUILD_TYPE}/installed/usr/bin/${APP_NAME} \
+            --library $(gcc -print-file-name=libstdc++.so.6) \
+            --library $(gcc -print-file-name=libgcc_s.so.1) \
             --desktop-file build/${BUILD_TYPE}/installed/usr/share/applications/${APP_NAME}.desktop \
             --icon-file build/${BUILD_TYPE}/installed/usr/share/icons/hicolor/256x256/apps/${APP_NAME}.png
 

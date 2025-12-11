@@ -5183,7 +5183,7 @@ namespace SMRDATA
       }
 
       // With more threads more memory is required
-      #pragma omp parallel for num_threads(2)
+      // #pragma omp parallel for num_threads(2)
       for (int i = 1; i <= 22; ++i) {
         std::string qtl_basename = qtl_data;
         MappedFile besd_mapped;
@@ -5215,7 +5215,11 @@ namespace SMRDATA
               pmecs, minCor, ld_top_multi, afthresh, percenthresh,
               enableGwasComments);
         } catch (const std::exception &e) {
-          std::cout << "Error: " << e << std::endl;
+          std::cerr << "Error, exception: " << e.what() << std::endl;
+        } catch (const char* s) {
+          std::cerr << "Error, msg: " << s << std::endl;
+        } catch (...) {
+          std::cerr << "Unknown error" << std::endl;
         }
 
         if (chr_specific_qtl) {

@@ -252,31 +252,12 @@ namespace SMRDATA
                     to_upper(vs_buf[6]);
                     to_upper(vs_buf[7]);
                     to_upper(vs_buf[8]);
-                    if(vs_buf[6].compare("NA") && (vs_buf[7].compare("NA") || vs_buf[8].compare("NA"))){
+                    if (vs_buf[6] != "NA" && vs_buf[7] != "NA") {
                         beta.push_back(atof(vs_buf[6].c_str()));
-                        if(vs_buf[8] == "NA")
-                            se.push_back(atof(vs_buf[7].c_str()));
-                        else {
-                            double betatmp=atof(vs_buf[6].c_str());
-                            double ptmp=atof(vs_buf[8].c_str());
-                            if(ptmp < 0){
-                                printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                                printf("%s\n",buf);
-                                exit(EXIT_FAILURE);
-                            }
-                            if(ptmp == 0){
-                                ptmp = __DBL_MIN__;
-                                printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                                printf("%s\n",buf);
-                            }
-                            if((ptmp < MIN_PVAL_ADJUSTED && vs_buf[7] != "NA") || ptmp == 1)
-                                se.push_back(atof(vs_buf[7].c_str()));
-                            else
-                                se.push_back(adjSE(betatmp, ptmp));
-                        }
+                        se.push_back(atof(vs_buf[7].c_str()));
                     } else {
-                        printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                        printf("%s\n",buf);
+                        printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                        printf("%s\n", buf);
                         beta.push_back(-9);
                         se.push_back(-9);
                     }
@@ -387,32 +368,13 @@ namespace SMRDATA
                     to_upper(vs_buf[6]);
                     to_upper(vs_buf[7]);
                     to_upper(vs_buf[8]);
-                    if(vs_buf[6].compare("NA") && (vs_buf[7].compare("NA") || vs_buf[8].compare("NA"))){
-                        tmpesd.beta=atof(vs_buf[6].c_str());
-                        if(vs_buf[8] == "NA")
-                            tmpesd.se = atof(vs_buf[7].c_str());
-                        else {
-                            double betatmp=atof(vs_buf[6].c_str());
-                            double ptmp=atof(vs_buf[8].c_str());
-                            if(ptmp < 0){
-                                printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                                printf("%s\n",buf);
-                                exit(EXIT_FAILURE);
-                            }
-                            if(ptmp == 0) {
-                                ptmp=__DBL_MIN__;
-                                printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                                printf("%s\n",buf);
-                            }
-                            if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[7]!="NA") || ptmp==1)
-                                tmpesd.se=atof(vs_buf[7].c_str());
-                            else
-                                tmpesd.se=adjSE(betatmp, ptmp);
-                        }
+                    if (vs_buf[6] != "NA" && vs_buf[7] != "NA") {
+                        tmpesd.beta = atof(vs_buf[6].c_str());
+                        tmpesd.se = atof(vs_buf[7].c_str());
                         snpinfo.push_back(tmpesd);
                     } else {
-                        printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                        printf("%s\n",buf);
+                        printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                        printf("%s\n", buf);
                         tmpesd.beta = -9;
                         tmpesd.se = -9;
                     }
@@ -491,30 +453,12 @@ namespace SMRDATA
                 to_upper(vs_buf[4]);
                 to_upper(vs_buf[5]);
                 to_upper(vs_buf[8]);
-                if(vs_buf[4].compare("NA") && (vs_buf[5].compare("NA") || vs_buf[8].compare("NA")))
-                {
+                if (vs_buf[4] != "NA" && vs_buf[5] != "NA") {
                     beta.push_back(atof(vs_buf[4].c_str()));
-                    if(vs_buf[8] == "NA") se.push_back(atof(vs_buf[5].c_str()));
-                    else {
-                        double betatmp = atof(vs_buf[4].c_str());
-                        double ptmp = atof(vs_buf[8].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",tbuf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",tbuf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[5]!="NA") || ptmp==1) se.push_back(atof(vs_buf[5].c_str()));
-                        else se.push_back(adjSE(betatmp, ptmp));
-                    }
+                    se.push_back(atof(vs_buf[5].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",tbuf);
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", tbuf);
                     beta.push_back(-9);
                     se.push_back(-9);
                 }
@@ -576,33 +520,15 @@ namespace SMRDATA
                     exit(EXIT_FAILURE);
                 }
                 bp.push_back(atoi(vs_buf[2].c_str()));
-                 to_upper(vs_buf[4]);
-                 to_upper(vs_buf[5]);
+                to_upper(vs_buf[4]);
+                to_upper(vs_buf[5]);
                 to_upper(vs_buf[8]);
-                if(vs_buf[4].compare("NA") && (vs_buf[5].compare("NA") || vs_buf[8].compare("NA")))
-                {
+                if (vs_buf[4] != "NA" && vs_buf[5] != "NA") {
                     beta.push_back(atof(vs_buf[4].c_str()));
-                    if(vs_buf[8]=="NA") se.push_back(atof(vs_buf[5].c_str()));
-                    else {
-                        double betatmp=atof(vs_buf[4].c_str());
-                        double ptmp=atof(vs_buf[8].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[5]!="NA") || ptmp==1) se.push_back(atof(vs_buf[5].c_str()));
-                        else se.push_back(adjSE(betatmp, ptmp));
-                    }
+                    se.push_back(atof(vs_buf[5].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",buf);
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", buf);
                     beta.push_back(-9);
                     se.push_back(-9);
                 }
@@ -681,38 +607,19 @@ namespace SMRDATA
                     exit(EXIT_FAILURE);
                 }
                 tmpesd.bp=atoi(vs_buf[2].c_str());
-                 to_upper(vs_buf[4]);
-                 to_upper(vs_buf[5]);
+                to_upper(vs_buf[4]);
+                to_upper(vs_buf[5]);
                 to_upper(vs_buf[8]);
-                if(vs_buf[4].compare("NA") && (vs_buf[5].compare("NA") || vs_buf[8].compare("NA")))
-                {
-                    tmpesd.beta=atof(vs_buf[4].c_str());
-                    if(vs_buf[8]=="NA") tmpesd.se=atof(vs_buf[5].c_str());
-                    else {
-                        double betatmp=atof(vs_buf[4].c_str());
-                        double ptmp=atof(vs_buf[8].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[5]!="NA") || ptmp==1) tmpesd.se=atof(vs_buf[5].c_str());
-                        else tmpesd.se=adjSE(betatmp, ptmp);
-                    }
+                if (vs_buf[4] != "NA" && vs_buf[5] != "NA") {
+                    tmpesd.beta = atof(vs_buf[4].c_str());
+                    tmpesd.se = atof(vs_buf[5].c_str());
                     snpinfo.push_back(tmpesd);
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",buf);
-                   tmpesd.beta=-9;
-                   tmpesd.se=-9;
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", buf);
+                    tmpesd.beta = -9;
+                    tmpesd.se = -9;
                 }
-
                 lineNum++;
             }
         }
@@ -793,31 +700,12 @@ namespace SMRDATA
                 to_upper(vs_buf[6]);
                 to_upper(vs_buf[7]);
                 to_upper(vs_buf[10]);
-                if(vs_buf[6].compare("NA") && (vs_buf[7].compare("NA") || vs_buf[10].compare("NA")))
-                {
+                if (vs_buf[6] != "NA" && vs_buf[7] != "NA") {
                     beta.push_back(atof(vs_buf[6].c_str()));
-                    if(vs_buf[10]=="NA") se.push_back(atof(vs_buf[7].c_str()));
-                    else {
-                        double betatmp=atof(vs_buf[6].c_str());
-                        double ptmp=atof(vs_buf[10].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",tbuf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",tbuf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[7]!="NA")  || ptmp==1) se.push_back(atof(vs_buf[7].c_str()));
-                        else se.push_back(adjSE(betatmp, ptmp));
-
-                    }
+                    se.push_back(atof(vs_buf[7].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",tbuf);
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", tbuf);
                     beta.push_back(-9);
                     se.push_back(-9);
                 }
@@ -1051,31 +939,15 @@ namespace SMRDATA
                 to_upper(vs_buf[8]);
                 to_upper(vs_buf[9]);
                 to_upper(vs_buf[11]);
-                if(vs_buf[8].compare("NA") && (vs_buf[9].compare("NA") || vs_buf[11].compare("NA"))) {
-                    beta.push_back(atof(vs_buf[8].c_str()));
-                    if(vs_buf[11]=="NA") se.push_back(atof(vs_buf[9].c_str()));
-                    else {
-                        double betatmp=atof(vs_buf[8].c_str());
-                        double ptmp=atof(vs_buf[11].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[9]!="NA") || ptmp==1) se.push_back(atof(vs_buf[9].c_str()));
-                        else se.push_back(adjSE(betatmp, ptmp));
-                    }
+                if (vs_buf[8] != "NA" && vs_buf[9] != "NA") {
+                    tmpesd.beta = atof(vs_buf[8].c_str());
+                    tmpesd.se = atof(vs_buf[9].c_str());
+                    snpinfo.push_back(tmpesd);
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",buf);
-                    beta.push_back(-9);
-                    se.push_back(-9);
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", buf);
+                    tmpesd.beta = -9;
+                    tmpesd.se = -9;
                 }
                 lineNum++;
 
@@ -1174,37 +1046,18 @@ namespace SMRDATA
                 } else {
                     tmpesd.freq=-9;
                 }
-                 to_upper(vs_buf[7]);
-                 to_upper(vs_buf[8]);
+                to_upper(vs_buf[7]);
+                to_upper(vs_buf[8]);
                 to_upper(vs_buf[10]);
-                if(vs_buf[7].compare("NA") && (vs_buf[8].compare("NA") || vs_buf[10].compare("NA"))) {
-                    tmpesd.beta=atof(vs_buf[7].c_str());
-                    if(vs_buf[10]=="NA") tmpesd.se=atof(vs_buf[8].c_str());
-                    else {
-                        double betatmp=atof(vs_buf[7].c_str());
-                        double ptmp=atof(vs_buf[10].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[8]!="NA") || ptmp==1) tmpesd.se=atof(vs_buf[8].c_str());
-                        else tmpesd.se=adjSE(betatmp, ptmp);
-                    }
-                    snpinfo.push_back(tmpesd);
+                 if (vs_buf[7] != "NA" && vs_buf[8] != "NA") {
+                    beta.push_back(atof(vs_buf[7].c_str()));
+                    se.push_back(atof(vs_buf[8].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",buf);
-                    tmpesd.beta=-9;
-                    tmpesd.se=-9;
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", buf);
+                    beta.push_back(-9);
+                    se.push_back(-9);
                 }
-
                 lineNum++;
             }
         }
@@ -1306,32 +1159,14 @@ namespace SMRDATA
                 to_upper(vs_buf[8]);
                 to_upper(vs_buf[9]);
                 to_upper(vs_buf[11]);
-                if(vs_buf[8].compare("NA") && (vs_buf[9].compare("NA") || vs_buf[11].compare("NA"))) {
-                    tmpesd.beta=atof(vs_buf[8].c_str());
-                    if(vs_buf[11]=="NA") tmpesd.se=atof(vs_buf[9].c_str());
-                    else {
-                        double betatmp=atof(vs_buf[8].c_str());
-                        double ptmp=atof(vs_buf[11].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[9]!="NA") || ptmp==1) tmpesd.se=atof(vs_buf[9].c_str());
-                        else tmpesd.se=adjSE(betatmp, ptmp);
-                    }
-                    snpinfo.push_back(tmpesd);
+                if (vs_buf[8] != "NA" && vs_buf[9] != "NA") {
+                    beta.push_back(atof(vs_buf[8].c_str()));
+                    se.push_back(atof(vs_buf[9].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
-                    printf("%s\n",buf);
-                    tmpesd.beta=-9;
-                    tmpesd.se=-9;
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
+                    printf("%s\n", buf);
+                    beta.push_back(-9);
+                    se.push_back(-9);
                 }
                 lineNum++;
             }
@@ -2703,12 +2538,13 @@ namespace SMRDATA
             printf("ERROR: Please specify only one file type.\n ");
             exit(EXIT_FAILURE);
         }
-        int rspos=-9, prbpos=-9, betapos=-9, ppos=-9, cnum=-9,prbchrpos=-9, prbbppos=-9, prbstrandpos=-9, rschrpos=-9, rsbppos=-9;
+        int rspos=-9, prbpos=-9, betapos=-9, ppos=-9, cnum=-9,prbchrpos=-9, prbbppos=-9, prbstrandpos=-9, rschrpos=-9, rsbppos=-9, t_statpos=-9;
         if(mateqtlflag) {
             cnum=5; // general 6; but with noFDRsaveMemory = TRUE, the output column is 5.
             rspos=0;
             prbpos=1;
             betapos=2;
+            t_statpos=3;
             ppos=4;
         }
         else if(fastnflag) {
@@ -2782,6 +2618,7 @@ namespace SMRDATA
         vector< vector<uint32_t> > _ttl_rsid;
         vector< vector<float> > _ttl_beta;
         vector< vector<float> > _ttl_se;
+        vector< vector<float> > _ttl_t_stat;
 
 
         char buf[MAX_LINE_SIZE];
@@ -2851,6 +2688,11 @@ namespace SMRDATA
                     //printf("%s\n",buf);
                     continue;
                 }
+                if(vs_buf[t_statpos]=="NA" || vs_buf[t_statpos]=="na") {
+                    printf("WARNING: the t_statpos of the SNP is missing (\"NA\"), this row is omitted.\n");
+                    printf("%s\n",buf);
+                    continue;
+                }
                 if(vs_buf[ppos]=="NA" || vs_buf[ppos]=="na") {
 
                     //printf("WARNING: the p-value of the SNP is missing (\"NA\"), this row is omitted.\n");
@@ -2897,8 +2739,25 @@ namespace SMRDATA
                     double ptmp=atof(vs_buf[ppos].c_str());
                     _ttl_rsid[idx].push_back(rsid);
                     _ttl_beta[idx].push_back(betatmp);
-                    _ttl_se[idx].push_back(adjSE(betatmp, ptmp));
-
+                    if (mateqtlflag) {
+                        if (vs_buf[t_statpos] != "NA") {
+                            double t_stattmp = atof(vs_buf[t_statpos].c_str());
+                            if (t_stattmp != 0) {
+                                _ttl_se[idx].push_back(calSE(betatmp, t_stattmp));
+                            } else {
+                                printf("ERROR: t-stat is 0 at row %ld, which is invalid.\n", lineNum + 2);
+                                printf("%s\n", buf);
+                                exit(EXIT_FAILURE);
+                            }
+                        } else {
+                            printf("ERROR: t-stat is missing or NA at row %ld.\n", lineNum + 2);
+                            printf("%s\n", buf);
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    else{
+                        _ttl_se[idx].push_back(adjSE(betatmp, ptmp));
+                    }
                 } else {
 
                     epi_map.insert(pair<string,int>(vs_buf[prbpos],epiNum));
@@ -2918,11 +2777,29 @@ namespace SMRDATA
                     _ttl_rsid.push_back(rsidtmp);
                     double betatmp=atof(vs_buf[betapos].c_str());
                     double ptmp=atof(vs_buf[ppos].c_str());
+                    double t_stattmp=atof(vs_buf[t_statpos].c_str());
                     vector<float> btmp;
                     btmp.push_back(betatmp);
                     _ttl_beta.push_back(btmp);
                     vector<float> setmp;
-                    setmp.push_back(adjSE(betatmp, ptmp));
+                    if (mateqtlflag) {
+                        if (vs_buf[t_statpos] != "NA") {
+                            double t_stattmp = atof(vs_buf[t_statpos].c_str());
+                            if (t_stattmp != 0) {
+                                setmp.push_back(calSE(betatmp, t_stattmp));
+                            } else {
+                                printf("ERROR: t-stat is 0 at row %ld, which is invalid.\n", lineNum + 2);
+                                printf("%s\n", buf);
+                                exit(EXIT_FAILURE);
+                            }
+                        } else {
+                            printf("ERROR: t-stat is missing or NA at row %ld.\n", lineNum + 2);
+                            printf("%s\n", buf);
+                            exit(EXIT_FAILURE);
+                        }
+                    }else{
+                        setmp.push_back(adjSE(betatmp, ptmp));
+                    }
                     _ttl_se.push_back(setmp);
                     epiNum++;
                 }
@@ -3333,29 +3210,12 @@ namespace SMRDATA
 
                 _ttl_rs[idx].push_back(vs_buf[0].c_str());
                 _ttl_beta[idx].push_back(atof(vs_buf[11].c_str()));
-
-                // Ajust SE value according condiations.
-                if(vs_buf[13] == "NA")
+                if (vs_buf[12] != "NA") {
                     _ttl_se[idx].push_back(atof(vs_buf[12].c_str()));
-                else {
-                    double betatmp = atof(vs_buf[11].c_str());
-                    double ptmp = atof(vs_buf[13].c_str());
-                    if(ptmp < 0)
-                    {
-                        printf("ERROR: p-value should be positive in row %ld.\n",lineNum + 2);
-                        printf("%s\n", buf);
-                        exit(EXIT_FAILURE);
-                    }
-                    if(ptmp == 0) {
-                        ptmp = __DBL_MIN__;
-                        printf("WARNING: p-value of 0 found in row %ld and changed to min \
-                            double value %e.\n", lineNum + 2, __DBL_MIN__);
-                        printf("%s\n", buf);
-                    }
-                    if((ptmp < MIN_PVAL_ADJUSTED && vs_buf[12] != "NA") || ptmp == 1)
-                        _ttl_se[idx].push_back(atof(vs_buf[12].c_str()));
-                    else
-                        _ttl_se[idx].push_back(adjSE(betatmp, ptmp));
+                } else {
+                    printf("WARNING: SE is missing (\"NA\") in row %ld.\n", lineNum + 2);
+                    printf("%s\n", buf);
+                    _ttl_se[idx].push_back(-9);
                 }
                 if(!save_dense_flag) {
                     _ttl_a1[idx].push_back(vs_buf[3].c_str());
@@ -3390,25 +3250,12 @@ namespace SMRDATA
                 _ttl_beta.push_back(betatmp);
 
                 vector<float> setmp;
-                if(vs_buf[13]=="NA")
+                if (vs_buf[12] != "NA") {
                     setmp.push_back(atof(vs_buf[12].c_str()));
-                else {
-                    double betatmp=atof(vs_buf[11].c_str());
-                    double ptmp=atof(vs_buf[13].c_str());
-                    if(ptmp<0)
-                    {
-                        printf("ERROR: p-value should be positive in row %ld.\n",lineNum+2);
-                        printf("%s\n",buf);
-                        exit(EXIT_FAILURE);
-                    }
-                    if(ptmp==0) {
-                        ptmp=__DBL_MIN__;
-                        printf("WARNING: p-value of 0 found in row %ld and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                        printf("%s\n",buf);
-                    }
-                    if((ptmp < MIN_PVAL_ADJUSTED && vs_buf[12] != "NA") || ptmp == 1)
-                        setmp.push_back(atof(vs_buf[12].c_str()));
-                    else setmp.push_back(adjSE(betatmp, ptmp));
+                } else {
+                    printf("WARNING: SE is missing (\"NA\") in row %ld.\n", lineNum + 2);
+                    printf("%s\n", buf);
+                    setmp.push_back(-9);
                 }
 
                 _ttl_se.push_back(setmp);

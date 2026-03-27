@@ -27,6 +27,7 @@ using namespace SMRDATA;
 
 using namespace std;
 
+extern int MAX_NUM_LD;
 namespace SMRDATA
 {
 

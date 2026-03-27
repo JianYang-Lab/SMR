@@ -25,6 +25,7 @@ using namespace Eigen;
 using namespace std;
 
 extern int thread_num;
+extern int MAX_NUM_LD;
 
 namespace SMRDATA
 {

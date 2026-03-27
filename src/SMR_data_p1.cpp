@@ -637,8 +637,6 @@ namespace SMRDATA
         map<string, string>::iterator iter;
         eqtlInfo eqtlinfo;
 
-        //cout << "begin to query: " << endl;
-
         cout << endl << "Reading eQTL summary data..." << endl;
         //eqtlFileName if prefix of eqtl summary data. it contain epi, esi and besd file.
         if(eqtlFileName != NULL){
@@ -667,9 +665,6 @@ namespace SMRDATA
         vector<float> out_beta;
         vector<float> out_se;
         vector<double> out_pval;
-
-        //cout << "query eqtlinfo._valNum: " << eqtlinfo._valNum << endl;
-
         if(eqtlinfo._valNum==0)
         {
             for(uint32_t i=0;i<eqtlinfo._probNum;i++)
@@ -693,7 +688,6 @@ namespace SMRDATA
                         double beta=eqtlinfo._bxz[i][j];
                         double se=eqtlinfo._sexz[i][j];
                         if(fabs(se+9)<1e-6) continue;
-
                         double zsxz, pxz;
                         if (beta == 0.0 && se == 0.0) {
                             pxz = 1.0;
@@ -726,23 +720,13 @@ namespace SMRDATA
                 throw ("Error: No data extracted from the input, please check.\n");
             }
 
-            //cout << "eqtlinfo._probNum: " << eqtlinfo._probNum << endl;
-
             for(uint32_t i=0;i<eqtlinfo._probNum;i++)
             {
                 uint64_t proid=eqtlinfo._include[i];
                 uint64_t pos=eqtlinfo._cols[proid<<1];
                 uint64_t pos1=eqtlinfo._cols[(proid<<1)+1];
                 uint64_t num=pos1-pos;
-
-                //cout << "proid: " << eqtlinfo._include[i] << endl;
-                //cout << "pos: " << pos << endl;
-                //cout << "pos1: " << pos1 << endl;
-                //cout << "num: " << num << endl;
-
                 string rstarget="";
-
-                //cout << "snpproblstName: " << snpproblstName << endl;
                 if(snpproblstName)
                 {
                     iter=prb_snp.find(eqtlinfo._epi_prbID[proid]);
@@ -770,20 +754,14 @@ namespace SMRDATA
                                 pxz= __DBL_MIN__;
                             }
                         }
-
-                        /*if(pxz<=plookup)
+                        if(pxz<=plookup)
                         {
                             out_esi_id.push_back(eqtlinfo._rowid[pos+j]);
                             out_epi_id.push_back(i);
                             out_beta.push_back(beta);
                             out_se.push_back(se);
                             out_pval.push_back(pxz);
-                        }*/
-                        out_esi_id.push_back(eqtlinfo._rowid[pos+j]);
-                        out_epi_id.push_back(i);
-                        out_beta.push_back(beta);
-                        out_se.push_back(se);
-                        out_pval.push_back(pxz);
+                        }
                     }
 
                 }
@@ -1856,17 +1834,7 @@ namespace SMRDATA
 
         MatrixXd C;
         cor_calc(C, X);
-
-        /*long bcrows = C.rows();
-        long bccols = C.cols();
-        cout << "before rm_cor_sbat crows: " << bcrows << " ccols: " << bccols << endl;
-        for (int bi=0;bi<bccols;bi++) {
-            cout << "C(0,bi):" << bi << "  " << C(0,bi) << endl;
-        }*/
-
         if (sbat_ld_cutoff < 1) rm_cor_sbat(C, R_cutoff, m, rm_ID1,zxz4smr);
-
-        //cout << "rm_ID1.size(): " << rm_ID1.size() << endl;
         //Create new index
         for (int i=0 ; i<m ; i++) {
             if (rm_ID1.size() == 0) sub_indx.push_back(i);
@@ -1875,8 +1843,6 @@ namespace SMRDATA
                 else sub_indx.push_back(i);
             }
         }
-
-
         snp_count = (int)sub_indx.size();
         if (sub_indx.size() < C.size()) { //Build new matrix
             MatrixXd D(sub_indx.size(),sub_indx.size());
@@ -1989,12 +1955,6 @@ namespace SMRDATA
             C = D;
         }
 
-        /*long crows = C.rows();
-        long ccols = C.cols();
-        cout << "after rm_cor_sbat crows: " << crows << " ccols: " << ccols << endl;
-        for (int i=0;i<ccols;i++) {
-            cout << "C(0,i):" << i << "  " << C(0,i) << endl;
-        }*/
         //ccols = C.cols();
         //for (int i=0;i<ccols;i++) {
         //    cout << "removed C(0,i):" << i << "  " << C(0,i) << endl;
@@ -2116,11 +2076,6 @@ namespace SMRDATA
                 zyz4smr.push_back(slct_byz[j]/slct_seyz[j]);
             }
         }
-
-
-        //cout << "slctId.size(): " << slctId.size() << endl;
-        //cout << "Id4smr.size(): " << Id4smr.size() << endl;
-
         int snp_count=(int)Id4smr.size();
         printf("%ld SNPs passed the p-value threshold %6.2e and %ld SNPs are excluded.\n",Id4smr.size(), p_smr,slctId.size()-Id4smr.size());
         if(snp_count==0) return -9;
@@ -2130,18 +2085,8 @@ namespace SMRDATA
         VectorXd eigenvalxy;
         vector<int> sub_indx;
         MatrixXd _X;
-
         make_XMat(bdata,Id4smr, _X); //_X: one row one individual, one column one SNP
         double sbat_ld_cutoff=sqrt(ld_top);
-
-        /*cout << "bdata._include.size(): " << bdata->_include.size() << endl;
-        cout << "bdata._snp_name.size(): " << bdata->_snp_name.size() << endl;
-        //打印出Id4smr的snp name
-        for (int i=0;i<Id4smr.size();i++) {
-            cout << "Id4smr: " << Id4smr[i] << endl;
-            cout << "snp name i: " << i << " , " << bdata->_snp_name[Id4smr[i]] << endl;
-        }*/
-
         sbat_calcu_lambda(_X, eigenval, eigenvalxy, snp_count,  sbat_ld_cutoff, sub_indx, zxz4smr, zyz4smr); //the index of slectId, snp_count can chage here
         printf("%ld SNPs passed LD-square threshold %6.2f and %ld SNPs are excluded.\n",sub_indx.size(), ld_top,Id4smr.size()-sub_indx.size());
         vector<double> zsxysq_slct(sub_indx.size());
@@ -3127,18 +3072,12 @@ namespace SMRDATA
                 smrwk.snpchrom.swap(slct_snpchr);
                 smrwk.freq.swap(slct_freq);
 
-
-                //cout << "pxy_max: " << pxy_max << endl;
-                //cout << "heidiskipthresh:" << heidiskipthresh << endl;
-
                 if(!heidioffFlag && pxy_max < heidiskipthresh) {
                     printf("Conducting HEIDI test...\n");
                     pdev= heidi_test_new(&bdata,&smrwk, ld_top,  threshold,  m_hetero, nsnp,ld_min,opt_hetero,sampleoverlap, theta);
                 } else {
                     printf("skip HEIDI test for probe %s\n", probename.c_str());
                 }
-
-
                 outstr = probename + '\t' + atos(probechr) + '\t' + probegene + '\t' + atos(probebp) + '\t' + topsnpname + '\t' + atos(esdata._esi_chr[out_raw_id]) + '\t' + atos(esdata._esi_bp[out_raw_id]) + '\t' + esdata._esi_allele1[out_raw_id] + '\t' + esdata._esi_allele2[out_raw_id] + '\t' + atos(bdata._mu[bdata._include[out_raw_id]] / 2) + '\t';
                 //outstr += atos(byz_max) + '\t' + atos(seyz_max) + '\t' + dtos(pyz_max) + '\t' + dtos(set_pval_gwas) + '\t';
                 //outstr += atos(bxz_max) + '\t' + atos(sexz_max) + '\t' + dtos(pxz_max) + '\t' + dtos(set_pval_eqtl) + '\t';

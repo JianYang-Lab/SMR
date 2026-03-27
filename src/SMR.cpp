@@ -31,32 +31,48 @@ bool forcefrqck = true;
 char* outFileName=NULL;
 int MAX_NUM_LD = 500;
 
+std::string getOSName()
+{
+    #ifdef _WIN32
+    return "Windows";
+    #elif __linux__
+    return "Linux";
+    #elif __APPLE__ || __MACH__
+    return "MacOS";
+    #else
+    return "Other";
+    #endif
+}
 
-int
-main(int argc, char** argv)
+
+int main(int argc, char** argv)
 {
     cout << "*******************************************************************" << endl;
-    cout << "* Summary-data-based Mendelian Randomization (SMR)" << endl;
-    cout << "* Version " << SMR_VERSION << endl;
+    cout << "* SMR (Summary-data-based Mendelian Randomization)" << endl;
+    cout << "* Version " << SMR_VERSION << " " << getOSName().c_str() << endl;
 #if defined __linux && __GNUC__
     cout << "* Build at " << __DATE__ << " " << __TIME__ <<\
         ", by GCC " << __GNUC__ << "." << __GNUC_MINOR__ << endl;
 #endif
-    cout << "* (C) 2015 Futao Zhang, Zhihong Zhu and Jian Yang" << endl;
-    cout << "* The University of Queensland" << endl;
+    cout << "* (C) 2015-present, Yang Lab, Westlake University" << endl;
+    cout << "* Please report bugs to Jian Yang jian.yang@westlake.edu.cn" << endl;
     cout << "* MIT License" << endl;
     cout << "*******************************************************************" << endl;
-    FLAGS_VALID_CK(argc,argv);
+
     long int time_used = 0, start = time(NULL);
-    string months[] = {"Jan", "Feb", "Mar", "Apr", "May",
-        "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    string weeks[] = {"Sun","Mon", "Tue", "Wed", "Thu", "Fri",
-        "Sat" };
-    time_t t = time(0);
-    tm* now = localtime(&t);
-    cout << "Analysis started: " << now -> tm_hour << ":"<< now -> tm_min << ":" << now -> tm_sec \
-        << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] << " " << now -> tm_mday \
-        << "," << (now -> tm_year + 1900) << endl;
+    time_t curr = time(0);
+    char timeStr[100]; // 根据需要调整缓冲区大小
+    // 自定义时间格式
+    strftime(timeStr, sizeof(timeStr), "%H:%M:%S %Z on %a %b %d %Y", localtime(&curr));
+    printf("Analysis started at %s. \n", timeStr);
+
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) == 0) {
+        printf("Hostname: %s\n", hostname);
+    } 
+
+    FLAGS_VALID_CK(argc, argv);
+
     cout << "\nOptions:" << endl;
 
     try {
@@ -66,13 +82,17 @@ main(int argc, char** argv)
     } catch (const char *err_msg) {
         cerr << "\n" << err_msg << endl;
     }
-    t = time(0);
-    now = localtime(&t);
-    cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
-        << now -> tm_sec << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] \
-        << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << endl;
+
+    curr = time(0);
     time_used = time(NULL) - start;
-    cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60 << endl;
+    printf("\nAnalysis finished: %s \nComputational time: %ld:%ld:%ld\n", ctime(&curr),time_used / 3600,(time_used % 3600) / 60,time_used % 60);
+    // t = time(0);q
+    // now = localtime(&t);
+    // cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
+    //     << now -> tm_sec << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] \
+    //     << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << endl;
+    // time_used = time(NULL) - start;
+    // cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60 << endl;
     return 0;
 }
 
@@ -80,7 +100,6 @@ main(int argc, char** argv)
 void
 option(int option_num, char* option_str[])
 {
-    
     thread_num = 1;
     char * bFileName = NULL;
     char * gwasFileName = NULL;

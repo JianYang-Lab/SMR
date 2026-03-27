@@ -28,8 +28,9 @@ namespace SMRDATA
     double
     adjSE(double beta,double p)
     {
-       const double min_p = 1e-300;
+        const double min_p = 1e-300;
 
+        // 防止 p 为 0
         if (p == 0.0) {
             p = min_p;
         }
@@ -43,6 +44,15 @@ namespace SMRDATA
         }
     }
 
+    double
+    calSE(double beta,double t_stat)
+    {
+        if ((beta > 0 && t_stat < 0) || (beta < 0 && t_stat > 0)) {
+            printf("ERROR: beta and t-stat have opposite signs (beta = %f, t_stat = %f).\n", beta, t_stat);
+            exit(EXIT_FAILURE);
+        }
+        return fabs(beta/t_stat);
+    }
 
     // below for txt 2 besd
     int
@@ -811,28 +821,11 @@ namespace SMRDATA
                  to_upper(vs_buf[7]);
                  to_upper(vs_buf[8]);
                  to_upper(vs_buf[10]);
-                if(vs_buf[7].compare("NA") && (vs_buf[8].compare("NA") || vs_buf[10].compare("NA"))) {
+                 if (vs_buf[7] != "NA" && vs_buf[8] != "NA") {
                     beta.push_back(atof(vs_buf[7].c_str()));
-                    if(vs_buf[10]=="NA") se.push_back(atof(vs_buf[8].c_str()));
-                    else {
-                        double betatmp=atof(vs_buf[7].c_str());
-                        double ptmp=atof(vs_buf[10].c_str());
-                        if(ptmp<0)
-                        {
-                            printf("ERROR: p-value should be positive in row %d.\n",lineNum+2);
-                            printf("%s\n",buf);
-                            exit(EXIT_FAILURE);
-                        }
-                        if(ptmp==0) {
-                            ptmp=__DBL_MIN__;
-                            printf("WARNING: p-value of 0 found in row %d and changed to min double value %e.\n",lineNum+2,__DBL_MIN__);
-                            printf("%s\n",buf);
-                        }
-                        if((ptmp<MIN_PVAL_ADJUSTED && vs_buf[8]!="NA") || ptmp==1) se.push_back(atof(vs_buf[8].c_str()));
-                        else se.push_back(adjSE(betatmp, ptmp));
-                    }
+                    se.push_back(atof(vs_buf[8].c_str()));
                 } else {
-                    printf("WARNING: this row is omitted because beta is missing or both SE and P are missing (\"NA\").\n");
+                    printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
                     printf("%s\n",buf);
                     beta.push_back(-9);
                     se.push_back(-9);
@@ -940,14 +933,13 @@ namespace SMRDATA
                 to_upper(vs_buf[9]);
                 to_upper(vs_buf[11]);
                 if (vs_buf[8] != "NA" && vs_buf[9] != "NA") {
-                    tmpesd.beta = atof(vs_buf[8].c_str());
-                    tmpesd.se = atof(vs_buf[9].c_str());
-                    snpinfo.push_back(tmpesd);
+                    beta.push_back(atof(vs_buf[8].c_str()));
+                    se.push_back(atof(vs_buf[9].c_str()));
                 } else {
                     printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
                     printf("%s\n", buf);
-                    tmpesd.beta = -9;
-                    tmpesd.se = -9;
+                    beta.push_back(-9);
+                    se.push_back(-9);
                 }
                 lineNum++;
 
@@ -1050,13 +1042,14 @@ namespace SMRDATA
                 to_upper(vs_buf[8]);
                 to_upper(vs_buf[10]);
                  if (vs_buf[7] != "NA" && vs_buf[8] != "NA") {
-                    beta.push_back(atof(vs_buf[7].c_str()));
-                    se.push_back(atof(vs_buf[8].c_str()));
+                    tmpesd.beta = atof(vs_buf[7].c_str());
+                    tmpesd.se = atof(vs_buf[8].c_str());
+                    snpinfo.push_back(tmpesd);
                 } else {
                     printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
                     printf("%s\n", buf);
-                    beta.push_back(-9);
-                    se.push_back(-9);
+                    tmpesd.beta = -9;
+                    tmpesd.se = -9;
                 }
                 lineNum++;
             }
@@ -1160,13 +1153,14 @@ namespace SMRDATA
                 to_upper(vs_buf[9]);
                 to_upper(vs_buf[11]);
                 if (vs_buf[8] != "NA" && vs_buf[9] != "NA") {
-                    beta.push_back(atof(vs_buf[8].c_str()));
-                    se.push_back(atof(vs_buf[9].c_str()));
+                    tmpesd.beta = atof(vs_buf[8].c_str());
+                    tmpesd.se = atof(vs_buf[9].c_str());
+                    snpinfo.push_back(tmpesd);
                 } else {
                     printf("WARNING: this row is omitted because beta or SE is missing (\"NA\").\n");
                     printf("%s\n", buf);
-                    beta.push_back(-9);
-                    se.push_back(-9);
+                    tmpesd.beta = -9;
+                    tmpesd.se = -9;
                 }
                 lineNum++;
             }
@@ -2509,10 +2503,10 @@ namespace SMRDATA
             double sparsity=1.0*ttlv/(esiNum*epiNum);
             if(sparsity>=0.4)
             {
-                printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
+                //printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
                 save_txts_dbesd(outFileName, esiNum, epiNum,epi2esd, prbiflst,fformat, esi_rs, esi_a1,esi_a2,addn);
             } else {
-                printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
+                //printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
                 save_full_txts_sbesd( outFileName,  esiNum,  epiNum,epi2esd,prbiflst,fformat,esi_rs,esi_a1,esi_a2,addn);
             }
 
@@ -2816,12 +2810,7 @@ namespace SMRDATA
         ofstream epi(epifile.c_str());
         if (!epi) throw ("Error: can not open the EPI file " + epifile + " to save!");
         for (int j = 0; j < epiNum; j++) {
-            epi << (prbchr[j] > 0 ? atos(prbchr[j]) : "NA") << '\t'
-                << prbs[j] << '\t'
-                << 0 << '\t'
-                << (prbchr[j] > 0 ? atos(prbbp[j]) : "NA") << '\t'
-                << "NA" << '\t'
-                << prbstrand[j] << '\n';
+            epi<<(prbchr[j]>0?atos(prbchr[j]):"NA")<<'\t'<<prbs[j]<<'\t'<<0<<'\t'<<(prbchr[j]>0?atos(prbbp[j]):"NA")<<'\t'<<"NA"<<'\t'<<prbstrand[j]<<'\n';
         }
         epi.close();
         printf("%ld probes have been saved in the file %s.\n",epiNum,epifile.c_str());
@@ -2834,13 +2823,7 @@ namespace SMRDATA
         esi_map.clear();
         epi_map.clear();
         for (int j = 0;j < esiNum; j++) {
-            esi << (rschr[j] > 0 ? atos(rschr[j]) : "NA") << '\t'
-                << snps[j] << '\t'
-                << 0 << '\t'
-                << (rsbp[j] > 0 ? atos(rsbp[j]) : "NA") << '\t'
-                << "NA" << '\t'
-                << "NA" << '\t'
-                << "NA" << '\n';
+            esi<<(rschr[j]>0?atos(rschr[j]):"NA")<<'\t'<<snps[j]<<'\t'<<0<<'\t'<<(rsbp[j]>0?atos(rsbp[j]):"NA")<<'\t'<<"NA"<<'\t'<<"NA"<<'\t'<<"NA"<<'\n';
             esi_map.insert(pair<string,int>(snps[j],j));
         }
         esi.close();

@@ -1,13 +1,14 @@
 #include "perf_timer.hpp"
 
+#include <spdlog/spdlog.h>
 #include <sys/resource.h>
 
-#include <spdlog/spdlog.h>
-
 /// PerfTimer
-PerfTimer::PerfTimer(const std::string &name)
-    : name_(name), start_time_(std::chrono::high_resolution_clock::now()),
-      elapsed_time_(start_time_), stopped_(false) {}
+PerfTimer::PerfTimer(const std::string& name)
+    : name_(name),
+      start_time_(std::chrono::high_resolution_clock::now()),
+      elapsed_time_(start_time_),
+      stopped_(false) {}
 
 PerfTimer::~PerfTimer() {
   if (!stopped_) {
@@ -15,9 +16,8 @@ PerfTimer::~PerfTimer() {
   }
 }
 
-void PerfTimer::elapsed(const std::string &elapsed_name) {
-  if (stopped_)
-    return; // Avoid double stop
+void PerfTimer::elapsed(const std::string& elapsed_name) {
+  if (stopped_) return;  // Avoid double stop
   auto result = elapsed_to(elapsed_time_);
   std::string time_str = result.first;
   elapsed_time_ = result.second;
@@ -25,17 +25,15 @@ void PerfTimer::elapsed(const std::string &elapsed_name) {
 }
 
 void PerfTimer::stop() {
-  if (stopped_)
-    return; // Avoid double stop
+  if (stopped_) return;  // Avoid double stop
   auto result = elapsed_to(start_time_);
   std::string time_str = result.first;
   spdlog::info("[perf] ===> {}, cost {}", name_, time_str);
   stopped_ = true;
 }
 
-std::pair<std::string, std::chrono::high_resolution_clock::time_point>
-PerfTimer::elapsed_to(
-    const std::chrono::high_resolution_clock::time_point &time_point) {
+std::pair<std::string, std::chrono::high_resolution_clock::time_point> PerfTimer::elapsed_to(
+    const std::chrono::high_resolution_clock::time_point& time_point) {
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = end_time - time_point;
   std::chrono::duration<double, std::milli> milliseconds = duration;
@@ -63,7 +61,7 @@ PerfTimer::elapsed_to(
 }
 
 size_t get_memory_usage() {
-    struct rusage usage;
-    getrusage(RUSAGE_SELF, &usage);
-    return usage.ru_maxrss * 1024; // Returns bytes
+  struct rusage usage;
+  getrusage(RUSAGE_SELF, &usage);
+  return usage.ru_maxrss * 1024;  // Returns bytes
 }

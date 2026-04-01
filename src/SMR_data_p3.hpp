@@ -9,18 +9,24 @@
 #ifndef __SMR_CPP__SMR_data_p3__
 #define __SMR_CPP__SMR_data_p3__
 
-#include <vector>
 #include <string>
+#include <vector>
 
-namespace SMRDATA
-{
-    typedef struct{
-        std::vector<int> pid;
-        std::string besdpath;
-    } F2Prb;
-    
-    void combineBesd(char* eqtlsmaslstName, char* outFileName,bool save_dense_flag, int cis_itvl, int trans_itvl, float transThres, float restThres, bool genouni,int addn);
-    void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int trans_itvl, float transThres, float restThres,char* genelistName, int chr,int prbchr, char* prbname, char* fromprbname, char* toprbname,int prbWind,int fromprbkb, int toprbkb,bool prbwindFlag, char* genename,int snpchr, char* snprs, char* fromsnprs, char* tosnprs,int snpWind,int fromsnpkb, int tosnpkb,bool snpwindFlag,bool cis_flag,char* snplstName,char* problstName, char* snplst2exclde, char* problst2exclde, bool qcflag, int qcmtd, int z_thresh,bool extract_cis_only,char* prbseqregion,double ptech, double pinsnp,double pexsnp,int addn);
-}
+namespace SMRDATA {
+typedef struct {
+  std::vector<int> pid;
+  std::string besdpath;
+} F2Prb;
+
+void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag, int cis_itvl, int trans_itvl,
+                 float transThres, float restThres, bool genouni, int addn);
+void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int trans_itvl, float transThres,
+                      float restThres, char* genelistName, int chr, int prbchr, char* prbname, char* fromprbname,
+                      char* toprbname, int prbWind, int fromprbkb, int toprbkb, bool prbwindFlag, char* genename,
+                      int snpchr, char* snprs, char* fromsnprs, char* tosnprs, int snpWind, int fromsnpkb, int tosnpkb,
+                      bool snpwindFlag, bool cis_flag, char* snplstName, char* problstName, char* snplst2exclde,
+                      char* problst2exclde, bool qcflag, int qcmtd, int z_thresh, bool extract_cis_only,
+                      char* prbseqregion, double ptech, double pinsnp, double pexsnp, int addn);
+}  // namespace SMRDATA
 
 #endif /* defined(__SMR_CPP__SMR_data_p3__) */

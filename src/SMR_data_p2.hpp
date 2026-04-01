@@ -12,21 +12,17 @@
 
 struct eqtlInfo;
 
-namespace SMRDATA
-{
-    void make_besd(char * outFileName, char * syllabusName, bool gctaflag, \
-        bool plinkflag,bool gemmaflag, bool merlinflag, bool boltflag, \
-        bool save_dense_flag, int cis_itvl, int trans_itvl, \
-        float transThres, float restThres, bool samegeno, int addn);
-    void make_besd_byQfile(char * qfile, char * outFileName, \
-        bool save_dense_flag, int cis_itvl, int trans_itvl, \
-        float transThres, float restThres, int addn);
-    void make_besd_fmat(char * fmatfileName, char * outFileName, \
-        bool mateqtlflag, bool fastnflag, bool fastpflag, \
-        bool qtltoolsnflag, bool qtltoolspflag, int addn);
-    void make_qfile(char* outFileName, char* eFileName, char* mafFileName);
-    void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata);
-    void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo);
-    void write_smr_epi(std::string outFileName, eqtlInfo* eqtlinfo);
-}
+namespace SMRDATA {
+void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkflag, bool gemmaflag, bool merlinflag,
+               bool boltflag, bool save_dense_flag, int cis_itvl, int trans_itvl, float transThres, float restThres,
+               bool samegeno, int addn);
+void make_besd_byQfile(char* qfile, char* outFileName, bool save_dense_flag, int cis_itvl, int trans_itvl,
+                       float transThres, float restThres, int addn);
+void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, bool fastnflag, bool fastpflag,
+                    bool qtltoolsnflag, bool qtltoolspflag, int addn);
+void make_qfile(char* outFileName, char* eFileName, char* mafFileName);
+void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata);
+void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo);
+void write_smr_epi(std::string outFileName, eqtlInfo* eqtlinfo);
+}  // namespace SMRDATA
 #endif /* defined(__SMR_CPP__SMR_data_p2__) */

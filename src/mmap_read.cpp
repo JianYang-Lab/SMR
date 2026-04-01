@@ -26,7 +26,7 @@ MappedFile mmap_file(const char* filename) {
     return mapped_file;
   }
 
-  void *mapped_addr = mmap(nullptr, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
+  void* mapped_addr = mmap(nullptr, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
 
   close(fd);
 

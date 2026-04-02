@@ -96,11 +96,12 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 CPMAddPackage("gh:eigen-mirror/eigen#3.4.0")
 CPMAddPackage("gh:madler/zlib@1.3.1")
 CPMAddPackage("gh:gabime/spdlog@1.15.3")
+CPMAddPackage("gh:fmtlib/fmt#12.1.0")
 
 file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(${PROJECT_NAME} ${SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
 # -march=native require rebuild it on AMD/Intel
 target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64)

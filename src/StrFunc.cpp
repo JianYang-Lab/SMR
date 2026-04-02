@@ -14,42 +14,52 @@
 #include <cstdio>
 #include <map>
 
-int StrFunc::split_string(const string& str, vector<string>& vec_str, string separator) {
+int StrFunc::split_string(const std::string& str, std::vector<std::string>& out_vec, const std::string& separators) {
   if (str.empty()) return 0;
-  vec_str.clear();
+  out_vec.clear();
 
-  int i = 0;
   bool look = false;
-  string str_buf;
-  string symbol_pool =
+  std::string str_buf;
+  std::string symbol_pool =
       "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\asdfghjkl;'zxcvbnm,./QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>? \t\n";
-  string::size_type pos;
+  std::string::size_type pos;
 
-  for (i = 0; i < separator.size(); i++) {
-    pos = symbol_pool.find(separator[i]);
+  // Remove seperators
+  for (size_t i = 0; i < separators.size(); i++) {
+    pos = symbol_pool.find(separators[i]);
     if (pos != string::npos) symbol_pool.erase(symbol_pool.begin() + pos);
   }
 
-  for (i = 0; i < str.size(); i++) {
+  for (size_t i = 0; i < str.size(); i++) {
     if (symbol_pool.find(str[i]) != string::npos) {
       if (!look) look = true;
       str_buf += str[i];
     } else {
       if (look) {
         look = false;
-        vec_str.push_back(str_buf);
+        out_vec.push_back(str_buf);
         str_buf.erase(str_buf.begin(), str_buf.end());
       }
     }
   }
-  if (look) vec_str.push_back(str_buf);
+  if (look) out_vec.push_back(str_buf);
 
-  return (int)vec_str.size();
+  return (int)out_vec.size();
 }
 
-int StrFunc::split_string_fast(const string& str, vector<string>& vec_str, string separator) {
+/// Both `str` and `separators` are consist of ASCII characters.
+int StrFunc::split_string_fast(const std::string& str, std::vector<std::string>& out_vec,
+                               const std::string& separators) {
   if (str.empty()) return 0;
-  vec_str.clear();
+  out_vec.clear();
+
+  // heuristic, reduce reallocation
+  out_vec.reserve(str.size() / 4);
+
+  bool is_sep[256] = {};
+  for (unsigned char c : separators) {
+    is_sep[c] = true;
+  }
 
   // Record the start position and length of each substring
   size_t start_pos = 0;
@@ -58,9 +68,9 @@ int StrFunc::split_string_fast(const string& str, vector<string>& vec_str, strin
   // Traverse the input string
   for (size_t i = 0; i < str.size(); ++i) {
     // If the current character is a separator, add the previous substring to the output vector
-    if (separator.find(str[i]) != string::npos) {
+    if (is_sep[static_cast<unsigned char>(str[i])]) {
       if (len > 0) {
-        vec_str.push_back(str.substr(start_pos, len));
+        out_vec.emplace_back(str, start_pos, len);
         len = 0;
       }
     } else {
@@ -74,10 +84,10 @@ int StrFunc::split_string_fast(const string& str, vector<string>& vec_str, strin
 
   // Add the last substring
   if (len > 0) {
-    vec_str.push_back(str.substr(start_pos, len));
+    out_vec.emplace_back(str, start_pos, len);
   }
 
-  return vec_str.size();
+  return out_vec.size();
 }
 
 string StrFunc::first_string(const string& str, const char separator) {
@@ -91,6 +101,7 @@ string StrFunc::last_string(const string& str, const char separator) {
   if (pos != -1) return string(str.begin() + pos + 1, str.end());
   return string("");
 }
+
 void StrFunc::to_upper(char* str, int len) {
   int i = 0;
   for (i = 0; i < len; i++) {
@@ -98,8 +109,9 @@ void StrFunc::to_upper(char* str, int len) {
   }
 }
 
+// Uppercase ASCII, avoid `std::to_upper` locale table lookup.
 void StrFunc::to_upper(string& str) {
-  int i = 0;
+  size_t i = 0;
   for (i = 0; i < str.size(); i++) {
     if (str[i] >= 'a' && str[i] <= 'z') str[i] += 'A' - 'a';
   }

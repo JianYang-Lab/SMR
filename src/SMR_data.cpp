@@ -8,6 +8,9 @@
 
 #include "SMR_data.hpp"
 
+#include <fmt/format.h>
+#include <fmt/printf.h>
+
 #include <fstream>
 #include <iostream>
 #include <istream>
@@ -29,6 +32,9 @@ using namespace std;
 
 extern int MAX_NUM_LD;
 namespace SMRDATA {
+
+constexpr bool is_na(const std::string& val) { return val == "NA" || val == "na"; }
+
 void progress_print(float progress) {
   int barWidth = 70;
   cout << "[";
@@ -138,96 +144,96 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
   char buf[MAX_LINE_SIZE];
   int lineNumNoComments(0);
   int lineNumWithComments(0);
-  gwasFile.getline(buf, MAX_LINE_SIZE);  // the header
+  // Read the header
+  gwasFile.getline(buf, MAX_LINE_SIZE);
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", gwasFileName);
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
-  split_string_fast(buf, vs_buf, ", \t\n");
-  to_upper(vs_buf[0]);
-  if (vs_buf[0] != "SNP") {
+  vector<string> cols;
+  StrFunc::split_string_fast(buf, cols, ", \t\n");
+  to_upper(cols[0]);
+  if (cols[0] != "SNP") {
     printf("ERROR: %s should have headers that start with \"snp\".\n", gwasFileName);
     exit(EXIT_FAILURE);
   }
   while (!gwasFile.eof()) {
     gwasFile.getline(buf, MAX_LINE_SIZE);
 
+    if (buf[0] == '\0') {
+      continue;
+    }
+
+    // Skip comment line
     if (enableGwasComments && buf[0] == '#') {
-      // printf("WARN: comment row %d!\n", lineNumWithComments+2);
       lineNumWithComments++;
       continue;
     }
 
-    if (buf[0] != '\0') {
-      vs_buf.clear();
-
-      int col_num = split_string_fast(buf, vs_buf, ", \t\n");
-      if (col_num != 8) {
-        printf("ERROR: column number is not correct in row %d!\n", lineNumWithComments + 2);
-        exit(EXIT_FAILURE);
-      }
-      if (vs_buf[0] == "NA" || vs_buf[0] == "na") {
-        printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNumWithComments + 2);
-        exit(EXIT_FAILURE);
-      }
-      if (gdata->_snp_name_map.find(vs_buf[0]) != gdata->_snp_name_map.end()) {
-        cout << "WARNING: Duplicated SNP ID \"" + vs_buf[0] + "\" ";
-        stringstream ss;
-        ss << vs_buf[0] << "_" << lineNumNoComments + 1;
-        vs_buf[0] = ss.str();
-        cout << "has been changed to \"" + vs_buf[0] + "\".\n";
-      }
-      gdata->_snp_name_map.insert(pair<string, int>(vs_buf[0], lineNumNoComments));
-      gdata->snpName.push_back(vs_buf[0]);
-      if (vs_buf[1] == "NA" || vs_buf[1] == "na") {
-        printf("ERROR: allele1 is \'NA\' in row %d.\n", lineNumWithComments + 2);
-        exit(EXIT_FAILURE);
-      }
-      to_upper(vs_buf[1]);
-      gdata->allele_1.push_back(vs_buf[1]);
-
-      if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
-        printf("ERROR: allele2 is \'NA\' in row %d.\n", lineNumWithComments + 2);
-        exit(EXIT_FAILURE);
-      }
-      to_upper(vs_buf[2]);
-      gdata->allele_2.push_back(vs_buf[2]);
-
-      if (vs_buf[3] == "NA" || vs_buf[3] == "na") {
-        if (!warnnullfreq) {
-          warnnullfreq = true;
-          printf("WARNING: frequency is \'NA\' in one or more rows.\n");
-        }
-        gdata->freq.push_back(-9);
-
-      } else {
-        gdata->freq.push_back(atof(vs_buf[3].c_str()));
-      }
-
-      if (vs_buf[4] == "NA" || vs_buf[4] == "na") {
-        printf("WARNING: effect size is \'NA\' in row %d.\n", lineNumWithComments + 2);
-        gdata->byz.push_back(0);
-      } else {
-        gdata->byz.push_back(atof(vs_buf[4].c_str()));
-      }
-      if (vs_buf[5] == "NA" || vs_buf[5] == "na") {
-        printf("WARNING: standard error is \'NA\' in row %d.\n", lineNumWithComments + 2);
-        gdata->seyz.push_back(-9);
-      } else {
-        gdata->seyz.push_back(atof(vs_buf[5].c_str()));
-      }
-
-      gdata->pvalue.push_back(atof(vs_buf[6].c_str()));
-      gdata->splSize.push_back(atoi(vs_buf[7].c_str()));
-      gdata->_include.push_back(lineNumNoComments);
-      lineNumNoComments++;
-      lineNumWithComments++;
+    cols.clear();
+    int col_num = split_string_fast(buf, cols, ", \t\n");
+    if (col_num != 8) {
+      printf("ERROR: column number is not correct in row %d!\n", lineNumWithComments + 2);
+      exit(EXIT_FAILURE);
     }
+    if (is_na(cols[0])) {
+      printf("ERROR: the SNP name is 'NA' in row %d.\n", lineNumWithComments + 2);
+      exit(EXIT_FAILURE);
+    }
+    if (gdata->containsSNP(cols[0])) {
+      std::stringstream ss;
+      ss << cols[0] << "_" << lineNumNoComments + 1;
+      fmt::print("WARNING: Duplicated SNP ID '{}' has been changed to '{}'.\n", cols[0], ss.str());
+      cols[0] = ss.str();
+    }
+    gdata->_snp_name_map.emplace(cols[0], lineNumNoComments);
+    gdata->snpName.push_back(cols[0]);
+    if (is_na(cols[1])) {
+      printf("ERROR: allele1 is 'NA' in row %d.\n", lineNumWithComments + 2);
+      exit(EXIT_FAILURE);
+    }
+    to_upper(cols[1]);
+    gdata->allele_1.push_back(cols[1]);
+
+    if (is_na(cols[2])) {
+      printf("ERROR: allele2 is 'NA' in row %d.\n", lineNumWithComments + 2);
+      exit(EXIT_FAILURE);
+    }
+    to_upper(cols[2]);
+    gdata->allele_2.push_back(cols[2]);
+
+    if (is_na(cols[3])) {
+      if (!warnnullfreq) {
+        warnnullfreq = true;
+        printf("WARNING: frequency is 'NA' in one or more rows.\n");
+      }
+      gdata->freq.push_back(-9);
+
+    } else {
+      gdata->freq.push_back(atof(cols[3].c_str()));
+    }
+
+    if (is_na(cols[4])) {
+      printf("WARNING: effect size is 'NA' in row %d.\n", lineNumWithComments + 2);
+      gdata->byz.push_back(0);
+    } else {
+      gdata->byz.push_back(atof(cols[4].c_str()));
+    }
+    if (is_na(cols[5])) {
+      printf("WARNING: standard error is 'NA' in row %d.\n", lineNumWithComments + 2);
+      gdata->seyz.push_back(-9);
+    } else {
+      gdata->seyz.push_back(atof(cols[5].c_str()));
+    }
+
+    gdata->pvalue.push_back(atof(cols[6].c_str()));
+    gdata->splSize.push_back(atoi(cols[7].c_str()));
+    gdata->_include.push_back(lineNumNoComments);
+    lineNumNoComments++;
+    lineNumWithComments++;
   }
   gdata->snpNum = gdata->_include.size();
-  cout << "GWAS summary data of " << gdata->snpNum << " SNPs to be included from [" + string(gwasFileName) + "]."
-       << endl;
+  fmt::print("GWAS summary data of {} SNPs to be included from [{}].\n", gdata->snpNum, gwasFileName);
   gwasFile.close();
 }
 /*
@@ -273,7 +279,7 @@ void read_esifile(eqtlInfo* eqtlinfo, string esifile, bool prtscr) {
         exit(EXIT_FAILURE);
       }
 
-      if (vs_buf[0] == "NA" || vs_buf[0] == "na" || vs_buf[0] == "0") {
+      if (is_na(vs_buf[0]) || vs_buf[0] == "0") {
         printf("ERROR: chromosome is \"NA\" in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
@@ -287,7 +293,7 @@ void read_esifile(eqtlInfo* eqtlinfo, string esifile, bool prtscr) {
       // add esi chrome infor into _esi_chr int vector.
       eqtlinfo->_esi_chr.push_back(tmpchr);
 
-      if (vs_buf[1] == "NA" || vs_buf[1] == "na") {
+      if (is_na(vs_buf[1])) {
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
@@ -305,21 +311,21 @@ void read_esifile(eqtlInfo* eqtlinfo, string esifile, bool prtscr) {
       // add third colomn into string vector.
       eqtlinfo->_esi_gd.push_back(atoi(vs_buf[2].c_str()));
 
-      if (vs_buf[3] == "NA" || vs_buf[3] == "na") {
+      if (is_na(vs_buf[3])) {
         printf("ERROR: SNP BP is \'NA\' in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
       // add esi position infor into int vector.
       eqtlinfo->_esi_bp.push_back(atoi(vs_buf[3].c_str()));
 
-      if (vs_buf[4] == "NA" || vs_buf[4] == "na")
+      if (is_na(vs_buf[4]))
         if (!warn1) {
           printf("WARNING: at least one allele1 is \"NA\".\n");
           warn1 = true;
         }
       to_upper(vs_buf[4]);
       eqtlinfo->_esi_allele1.push_back(vs_buf[4]);
-      if (vs_buf[5] == "NA" || vs_buf[5] == "na")
+      if (is_na(vs_buf[5]))
         if (!warn2) {
           printf("WARNING: at lease one allele2 is \"NA\".\n");
           warn2 = true;
@@ -329,7 +335,7 @@ void read_esifile(eqtlInfo* eqtlinfo, string esifile, bool prtscr) {
 
       // the seventh column is frequence, and if it is missing, using -9 to indicate.
       if (col_num == 7) {
-        if (vs_buf[6] == "NA" || vs_buf[6] == "na") {
+        if (is_na(vs_buf[6])) {
           if (!ptrnullfrq) {
             printf("WARNING: frequency is \"NA\" in one or more rows.\n");
             ptrnullfrq = true;
@@ -388,7 +394,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, string esifile, int snpchr, bool pr
         exit(EXIT_FAILURE);
       }
 
-      if (vs_buf[0] == "NA" || vs_buf[0] == "na" || vs_buf[0] == "0") {
+      if (is_na(vs_buf[0]) || vs_buf[0] == "0") {
         printf("ERROR: chromosome is \"NA\" in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
@@ -423,7 +429,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, string esifile, int snpchr, bool pr
       // add esi chrome infor into _esi_chr int vector.
       eqtlinfo->_esi_chr.push_back(tmpchr);
 
-      if (vs_buf[1] == "NA" || vs_buf[1] == "na") {
+      if (is_na(vs_buf[1])) {
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
@@ -441,21 +447,21 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, string esifile, int snpchr, bool pr
       // add third colomn into string vector.
       eqtlinfo->_esi_gd.push_back(atoi(vs_buf[2].c_str()));
 
-      if (vs_buf[3] == "NA" || vs_buf[3] == "na") {
+      if (is_na(vs_buf[3])) {
         printf("ERROR: SNP BP is \'NA\' in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
       // add esi position infor into int vector.
       eqtlinfo->_esi_bp.push_back(atoi(vs_buf[3].c_str()));
 
-      if (vs_buf[4] == "NA" || vs_buf[4] == "na")
+      if (is_na(vs_buf[4]))
         if (!warn1) {
           printf("WARNING: at least one allele1 is \"NA\".\n");
           warn1 = true;
         }
       to_upper(vs_buf[4]);
       eqtlinfo->_esi_allele1.push_back(vs_buf[4]);
-      if (vs_buf[5] == "NA" || vs_buf[5] == "na")
+      if (is_na(vs_buf[5]))
         if (!warn2) {
           printf("WARNING: at lease one allele2 is \"NA\".\n");
           warn2 = true;
@@ -465,7 +471,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, string esifile, int snpchr, bool pr
 
       // the seventh column is frequence, and if it is missing, using -9 to indicate.
       if (col_num == 7) {
-        if (vs_buf[6] == "NA" || vs_buf[6] == "na") {
+        if (is_na(vs_buf[6])) {
           if (!ptrnullfrq) {
             printf("WARNING: frequency is \"NA\" in one or more rows.\n");
             ptrnullfrq = true;
@@ -542,7 +548,7 @@ void read_epifile(eqtlInfo* eqtlinfo, string epifile, bool prtscr) {
 
     // read first field, chromsome, and it cann't be NA.
     iss >> field;
-    if (field == "NA" || field == "na" || field == "-9") {
+    if (is_na(field) || field == "-9") {
       printf("ERROR: chromosome is \"NA\" in row %d.\n", i + 1);
       exit(EXIT_FAILURE);
     }
@@ -576,7 +582,7 @@ void read_epifile(eqtlInfo* eqtlinfo, string epifile, bool prtscr) {
 
     // read fourth field, probe location by bp.
     iss >> field;
-    if (field == "NA" || field == "na" || field == "0") {
+    if (is_na(field) || field == "0") {
       printf("ERROR: probe BP is \"NA\" in row %d.\n", i + 1);
       exit(EXIT_FAILURE);
     }
@@ -7218,11 +7224,11 @@ void update_freq(char* eqtlFileName, char* frqfile) {
         printf("ERROR: column number is not correct in row %d!\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
-      if (vs_buf[0] == "NA" || vs_buf[0] == "na" || vs_buf[0] == "0") {
+      if (is_na(vs_buf[0]) || vs_buf[0] == "0") {
         printf("ERROR: SNP name is \"NA\" in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }
-      if (vs_buf[3] == "NA" || vs_buf[3] == "na") {
+      if (is_na(vs_buf[3])) {
         printf("ERROR: frequency of the effect allele is \"NA\" in row %d.\n", lineNum + 1);
         exit(EXIT_FAILURE);
       }

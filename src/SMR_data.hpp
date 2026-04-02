@@ -6,8 +6,7 @@
 //  Copyright (c) 2015 Futao Zhang. All rights reserved.
 //
 
-#ifndef __SRM_CPP__SMR_data__
-#define __SRM_CPP__SMR_data__
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -33,18 +32,17 @@ namespace SMRDATA {
 
 struct gwasData {
   long snpNum;
-  vector<string> snpName;
-  vector<int> snpBp;
-  vector<string> allele_1;
-  vector<string> allele_2;
-  vector<double> freq;
-  vector<double> byz;
-  vector<double> seyz;
-  vector<double> pvalue;
-  vector<uint32_t> splSize;
-  vector<int> _include;
-  // map<string,int> _snp_name_map;
-  unordered_map<string, int> _snp_name_map;
+  std::vector<std::string> snpName;
+  std::vector<int> snpBp;
+  std::vector<std::string> allele_1;
+  std::vector<std::string> allele_2;
+  std::vector<double> freq;
+  std::vector<double> byz;
+  std::vector<double> seyz;
+  std::vector<double> pvalue;
+  std::vector<uint32_t> splSize;
+  std::vector<int> _include;
+  std::unordered_map<std::string, int> _snp_name_map;
 
   void reset() {
     snpNum = 0;
@@ -60,6 +58,8 @@ struct gwasData {
     pvalue.clear();
     splSize.clear();
   }
+
+  bool containsSNP(const std::string& snp_name) const { return _snp_name_map.find(snp_name) != _snp_name_map.end(); }
 };
 
 typedef struct {
@@ -430,4 +430,3 @@ void slct_trans_per_prb(vector<int>& slct_idx, vector<int>& regionChr, vector<lo
                         vector<info4trans>& snpinfo, long cis_itvl, long trans_itvl, double transThres);
 void extract_targets(eqtlInfo* eqtlinfo, string snpprblistfile, map<string, string>& prb_snp);
 }  // namespace SMRDATA
-#endif /* defined(__SRM_CPP__SMR_data__) */

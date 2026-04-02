@@ -20,8 +20,8 @@ using namespace std;
 namespace StrFunc {
 
 bool str_within_quto(const string& str, string& str_buf);
-int split_string(const string& str, vector<string>& vec_str, string separator = " ,\t;\n");
-int split_string_fast(const string& str, vector<string>& vec_str, string separator = " ,\t;\n");
+int split_string(const std::string& str, std::vector<std::string>& out_vec, const std::string& separators = " ,\t;\n");
+int split_string_fast(const std::string& str, std::vector<std::string>& out_vec, const std::string& separators = " ,\t;\n");
 string first_string(const string& str, const char separator);
 string last_string(const string& str, const char separator);
 void to_upper(char* str, int len);

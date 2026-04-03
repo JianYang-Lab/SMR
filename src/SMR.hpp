@@ -15,12 +15,10 @@
 
 #include "SMR_data.hpp"
 
-using namespace std;
-
 void option(int option_num, char* option_str[]);
 
-static inline bool not_in_flags(vector<string>& flags, string str) {
-  return find(flags.begin(), flags.end(), str) == flags.end();
+static inline bool not_in_flags(std::vector<std::string>& flags, std::string str) {
+  return std::find(flags.begin(), flags.end(), str) == flags.end();
 }
 
 static inline void FLAGS_VALID_CK(int option_num, char* option_str[]) {
@@ -149,19 +147,19 @@ static inline void FLAGS_VALID_CK(int option_num, char* option_str[]) {
                         "--enable-gwas-comments"};
 
   // define varible flags, using start pointer and end pointer.
-  vector<string> flags(flgs, flgs + sizeof(flgs) / sizeof(flgs[0]));
+  std::vector<std::string> flags(flgs, flgs + sizeof(flgs) / sizeof(flgs[0]));
   if (option_num < 3) {
-    cout << "flags include:" << endl;
+    std::cout << "flags include:" << std::endl;
     int cur_mark = 0;
     for (int i = 0; i < flags.size(); i++) {
       int tmp = i >> 2;
       if (tmp > cur_mark) {
-        cout << endl;
+        std::cout << std::endl;
         cur_mark = tmp;
       }
-      cout << flags[i] << ",";
+      std::cout << flags[i] << ",";
     }
-    cout << endl;
+    std::cout << std::endl;
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < option_num; i++) {
@@ -173,7 +171,7 @@ static inline void FLAGS_VALID_CK(int option_num, char* option_str[]) {
   }
 }
 
-static inline void FLAG_VALID_CK(string str, char* flag) {
+static inline void FLAG_VALID_CK(std::string str, char* flag) {
   if (flag == NULL || SMRDATA::has_prefix(flag, "--")) {
     fprintf(stderr, "Please verify the flag %s!: \n", str.c_str());
     exit(EXIT_FAILURE);

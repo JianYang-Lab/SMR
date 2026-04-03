@@ -29,15 +29,11 @@ double StatFunc::betai(double a, double b, double x) {
 
   if (x < 0.0 || x > 1.0) throw("Bad x in routine betai!");
 
-  if (x == 0.0 || x == 1.0)
-    bt = 0.0;
-  else
-    bt = exp(gammln(a + b) - gammln(a) - gammln(b) + a * log(x) + b * log(1.0 - x));
+  if (x == 0.0 || x == 1.0) bt = 0.0;
+  else bt = exp(gammln(a + b) - gammln(a) - gammln(b) + a * log(x) + b * log(1.0 - x));
 
-  if (x < (a + 1.0) / (a + b + 2.0))
-    return bt * betacf(a, b, x) / a;
-  else
-    return 1.0 - bt * betacf(b, a, 1.0 - x) / b;
+  if (x < (a + 1.0) / (a + b + 2.0)) return bt * betacf(a, b, x) / a;
+  else return 1.0 - bt * betacf(b, a, 1.0 - x) / b;
 }
 
 double StatFunc::gammln(double xx) {
@@ -57,7 +53,7 @@ double StatFunc::gammln(double xx) {
 double StatFunc::betacf(double a, double b, double x) {
   const int MAXIT = 300;
   const double Eps = 1.0e-08;
-  const double FPMIN = (std::numeric_limits<double>::min)() / numeric_limits<double>::epsilon();
+  const double FPMIN = (std::numeric_limits<double>::min)() / std::numeric_limits<double>::epsilon();
   int m, m2;
   double aa, c, d, del, h, qab, qam, qap;
 
@@ -137,7 +133,7 @@ void StatFunc::gser(double& gamser, const double a, const double x, double& gln)
 
 void StatFunc::gcf(double& gammcf, const double a, const double x, double& gln) {
   const int ITMAX = 100;
-  const double EPS = numeric_limits<double>::epsilon();
+  const double EPS = std::numeric_limits<double>::epsilon();
   const double FPMIN = (std::numeric_limits<double>::min)() / EPS;
   int i;
   double an, b, c, d, del, h;
@@ -166,7 +162,7 @@ void StatFunc::gcf(double& gammcf, const double a, const double x, double& gln) 
 
 ///////// Random Number Generation Functions Start ////////
 
-void StatFunc::gasdev_seq(int& idum, vector<double>& vec, int size, double means, double var) {
+void StatFunc::gasdev_seq(int& idum, std::vector<double>& vec, int size, double means, double var) {
   vec.clear();
   vec.resize(size);
 
@@ -174,7 +170,7 @@ void StatFunc::gasdev_seq(int& idum, vector<double>& vec, int size, double means
   for (i = 0; i < size; i++) vec[i] = means + sqrt(var) * StatFunc::gasdev(idum);
 }
 
-void StatFunc::gasdev_seq(int& idum, vector<double>& vec, int size, double var) {
+void StatFunc::gasdev_seq(int& idum, std::vector<double>& vec, int size, double var) {
   if (size < 2) throw("Invalid size! StatFunc::gasdev_seq");
   if (CommFunc::FloatEqual(var, 0.0)) {
     vec.clear();
@@ -231,15 +227,13 @@ double StatFunc::ran1(int& idum) {
   const int NDIV = (1 + (IM - 1) / NTAB);
   const double EPS = 3.0e-16, AM = 1.0 / IM, RNMX = (1.0 - EPS);
   static int iy = 0;
-  static vector<int> iv(NTAB);
+  static std::vector<int> iv(NTAB);
   int j, k;
   double temp;
 
   if (idum <= 0 || !iy) {
-    if (-idum < 1)
-      idum = 1;
-    else
-      idum = -idum;
+    if (-idum < 1) idum = 1;
+    else idum = -idum;
     for (j = NTAB + 7; j >= 0; j--) {
       k = idum / IQ;
       idum = IA * (idum - k * IQ) - IR * k;
@@ -254,17 +248,13 @@ double StatFunc::ran1(int& idum) {
   j = iy / NDIV;
   iy = iv[j];
   iv[j] = idum;
-  if ((temp = AM * iy) > RNMX)
-    return RNMX;
-  else
-    return temp;
+  if ((temp = AM * iy) > RNMX) return RNMX;
+  else return temp;
 }
 
 double StatFunc::chidev(int& idum, const double df) {
-  if (df > 2.0)
-    return 2.0 * cheng_gamdev(idum, df * 0.5);
-  else
-    throw("Invalid degree of freedom! StatFunc::chidev");
+  if (df > 2.0) return 2.0 * cheng_gamdev(idum, df * 0.5);
+  else throw("Invalid degree of freedom! StatFunc::chidev");
 }
 
 double StatFunc::cheng_gamdev(int& idum, const double alpha) {
@@ -277,8 +267,7 @@ double StatFunc::cheng_gamdev(int& idum, const double alpha) {
     nu = (alpha - 1.0 / (6.0 * alpha)) * u1;
     nu /= (beta * u2);
     d_buf = 2.0 * (u2 - 1.0) / beta + nu + 1.0 / nu;
-    if (d_buf < 2.0)
-      return beta * nu;
+    if (d_buf < 2.0) return beta * nu;
     else {
       d_buf = 2.0 * log(u2) / beta - log(nu) + nu;
       if (d_buf < 1.0) return beta * nu;
@@ -328,10 +317,8 @@ double StatFunc::chi_val(double df, double prob) {
   while (true) {
     prob_buf = chi_prob(df, chi_val);
 
-    if (prob_buf > prob)
-      way = 1.0;
-    else
-      way = -1.0;
+    if (prob_buf > prob) way = 1.0;
+    else way = -1.0;
 
     if (CommFunc::Abs(preway - way) > 1.0e-08) walk *= 0.5;
     chi_val += walk * way;
@@ -362,10 +349,8 @@ double StatFunc::t_val(double df, double prob) {
   while (true) {
     prob_buf = t_prob(df, t_val, false);
 
-    if (prob_buf > prob)
-      way = 1.0;
-    else
-      way = -1.0;
+    if (prob_buf > prob) way = 1.0;
+    else way = -1.0;
 
     if (CommFunc::Abs(preway - way) > 1.0e-08) walk *= 0.5;
     t_val += walk * way;
@@ -396,10 +381,8 @@ double StatFunc::F_val(double df_1, double df_2, double prob) {
   while (true) {
     prob_buf = F_prob(df_1, df_2, F_val);
 
-    if (prob_buf > prob)
-      way = 1.0;
-    else
-      way = -1.0;
+    if (prob_buf > prob) way = 1.0;
+    else way = -1.0;
 
     if (CommFunc::Abs(preway - way) > 1.0e-08) walk *= 0.5;
     F_val += walk * way;
@@ -411,37 +394,34 @@ double StatFunc::F_val(double df_1, double df_2, double prob) {
   return F_val;
 }
 
-double StatFunc::ControlFDR(const vector<double>& P_Value, double alpha, bool Restrict) {
+double StatFunc::ControlFDR(const std::vector<double>& P_Value, double alpha, bool Restrict) {
   int i = 0, Size = P_Value.size();
   if (Size <= 1) throw("Invalid size! StatFunc::ControlFDR");
   double FDR_Threshold = 0.0;
-  vector<double> P_ValueBuf(Size);
+  std::vector<double> P_ValueBuf(Size);
   for (i = 0; i < Size; i++) P_ValueBuf[i] = P_Value[i];
-  stable_sort(P_ValueBuf.begin(), P_ValueBuf.end());
+  std::stable_sort(P_ValueBuf.begin(), P_ValueBuf.end());
   for (i = 0; i < Size; i++) {
     double d_Buf = ((double)(i + 1)) * alpha / ((double)Size);
     if (i == Size - 1) {
-      if (P_ValueBuf[i] <= d_Buf || Restrict)
-        FDR_Threshold = d_Buf;
-      else
-        FDR_Threshold = -1.0;
+      if (P_ValueBuf[i] <= d_Buf || Restrict) FDR_Threshold = d_Buf;
+      else FDR_Threshold = -1.0;
       break;
     }
     if (P_ValueBuf[i] <= d_Buf && P_ValueBuf[i + 1] > d_Buf) {
       FDR_Threshold = d_Buf;
       break;
-    } else if (i == Size - 1)
-      FDR_Threshold = -1.0;
+    } else if (i == Size - 1) FDR_Threshold = -1.0;
   }
   return FDR_Threshold;
 }
 
-double StatFunc::ControlFDR_Zou(const vector<double>& GenePValue, double FDR) {
+double StatFunc::ControlFDR_Zou(const std::vector<double>& GenePValue, double FDR) {
   int i = 0, Size = GenePValue.size();
   double PValue = 0.0;
-  vector<double> Temp(Size);
+  std::vector<double> Temp(Size);
   for (i = 0; i < Size; i++) Temp[i] = GenePValue[i];
-  sort(Temp.begin(), Temp.end());
+  std::sort(Temp.begin(), Temp.end());
   for (i = 0; i < Size; i++) {
     if (Temp[i] <= (i + 1) * FDR / Size && Temp[i + 1] > (i + 1) * FDR / Size) {
       PValue = (i + 1) * FDR / Size;
@@ -456,16 +436,17 @@ double StatFunc::ControlFDR_Zou(const vector<double>& GenePValue, double FDR) {
   return PValue;
 }
 
-double StatFunc::ControlFDR_Storey(vector<double>& P_Value, vector<double>& Q_Value, double CrtQ, double& FDR) {
+double StatFunc::ControlFDR_Storey(std::vector<double>& P_Value, std::vector<double>& Q_Value, double CrtQ,
+                                   double& FDR) {
   if (P_Value.empty()) return CrtQ;
 
   // Initialize Lambda
   double dBuf = 0.0;
-  vector<double> Lambda;
+  std::vector<double> Lambda;
   for (dBuf = 0.0; dBuf < 0.9001; dBuf += 0.05) Lambda.push_back(dBuf);
 
   // Calculate Pi0
-  stable_sort(P_Value.begin(), P_Value.end());
+  std::stable_sort(P_Value.begin(), P_Value.end());
   double Pi0 = CalcuPi0(P_Value, Lambda);
 
   // Calculate q-value
@@ -502,9 +483,9 @@ double StatFunc::ControlFDR_Storey(vector<double>& P_Value, vector<double>& Q_Va
   return CrtVal;
 }
 
-double StatFunc::CalcuPi0(vector<double>& P_Value, vector<double>& Lambda) {
+double StatFunc::CalcuPi0(std::vector<double>& P_Value, std::vector<double>& Lambda) {
   int i = 0, j = 0, P_Size = P_Value.size(), LambdaSize = Lambda.size();
-  vector<double> Pi(LambdaSize), NewPi(LambdaSize);
+  std::vector<double> Pi(LambdaSize), NewPi(LambdaSize);
   for (i = 0; i < LambdaSize; i++) {
     int Count = 0;
     for (j = 0; j < P_Size; j++) {
@@ -518,14 +499,14 @@ double StatFunc::CalcuPi0(vector<double>& P_Value, vector<double>& Lambda) {
   return PrePi < 1.0 ? PrePi : 1.0;
 }
 
-void StatFunc::spline(vector<double>& x, vector<double>& y, const double yp1, const double ypn, vector<double>& y2) {
+void StatFunc::spline(std::vector<double>& x, std::vector<double>& y, const double yp1, const double ypn,
+                      std::vector<double>& y2) {
   int i, k;
   double p, qn, sig, un;
 
   int n = y2.size();
-  vector<double> u(n - 1);
-  if (yp1 > 0.99e30)
-    y2[0] = u[0] = 0.0;
+  std::vector<double> u(n - 1);
+  if (yp1 > 0.99e30) y2[0] = u[0] = 0.0;
   else {
     y2[0] = -0.5;
     u[0] = (3.0 / (x[1] - x[0])) * ((y[1] - y[0]) / (x[1] - x[0]) - yp1);
@@ -537,8 +518,7 @@ void StatFunc::spline(vector<double>& x, vector<double>& y, const double yp1, co
     u[i] = (y[i + 1] - y[i]) / (x[i + 1] - x[i]) - (y[i] - y[i - 1]) / (x[i] - x[i - 1]);
     u[i] = (6.0 * u[i] / (x[i + 1] - x[i - 1]) - sig * u[i - 1]) / p;
   }
-  if (ypn > 0.99e30)
-    qn = un = 0.0;
+  if (ypn > 0.99e30) qn = un = 0.0;
   else {
     qn = 0.5;
     un = (3.0 / (x[n - 1] - x[n - 2])) * (ypn - (y[n - 1] - y[n - 2]) / (x[n - 1] - x[n - 2]));
@@ -547,7 +527,8 @@ void StatFunc::spline(vector<double>& x, vector<double>& y, const double yp1, co
   for (k = n - 2; k >= 0; k--) y2[k] = y2[k] * y2[k + 1] + u[k];
 }
 
-void StatFunc::splint(vector<double>& xa, vector<double>& ya, vector<double>& y2a, const double x, double& y) {
+void StatFunc::splint(std::vector<double>& xa, std::vector<double>& ya, std::vector<double>& y2a, const double x,
+                      double& y) {
   int k;
   double h, b, a;
 
@@ -556,10 +537,8 @@ void StatFunc::splint(vector<double>& xa, vector<double>& ya, vector<double>& y2
   int khi = n - 1;
   while (khi - klo > 1) {
     k = (khi + klo) >> 1;
-    if (xa[k] > x)
-      khi = k;
-    else
-      klo = k;
+    if (xa[k] > x) khi = k;
+    else klo = k;
   }
   h = xa[khi] - xa[klo];
   if (h == 0.0) throw("Bad xa input to routine splint");
@@ -578,10 +557,8 @@ double StatFunc::erf(double x) {
 // Default: upper-tail
 double StatFunc::pnorm(double x) {
   double z = 0.0;
-  if (x > 0)
-    z = -1.0 * x;
-  else
-    z = x;
+  if (x > 0) z = -1.0 * x;
+  else z = x;
   double sqrt2pi = 2.50662827463;
   double t0, z1, p0;
   t0 = 1 / (1 + 0.2316419 * fabs(z));
@@ -624,10 +601,8 @@ double StatFunc::pchisq(double x, double df) {
 
 // q is not good to be less than 1e-161
 double StatFunc::qchisq(double q, double df) {
-  if (q < 0)
-    return -9;
-  else if (q >= 1)
-    return 0;
+  if (q < 0) return -9;
+  else if (q >= 1) return 0;
 
   double x;
   double p = 1 - q;
@@ -680,12 +655,9 @@ double StatFunc::psadd(double x, VectorXd lambda) {
 
   double lmin = 0.0;
   double m = lambda.minCoeff();
-  if (m < 0.0)
-    lmin = 0.499995 / m;
-  else if (x > lambda.sum())
-    lmin = -0.01;
-  else
-    lmin = -0.5 * (double)lambda.size() / x;
+  if (m < 0.0) lmin = 0.499995 / m;
+  else if (x > lambda.sum()) lmin = -0.01;
+  else lmin = -0.5 * (double)lambda.size() / x;
   double lmax = 0.499995 / lambda.maxCoeff();
 
   double hatzeta = Brents_Kp_min_x(lambda, x, lmin, lmax, 1e-08);
@@ -695,14 +667,12 @@ double StatFunc::psadd(double x, VectorXd lambda) {
   double v = hatzeta * sqrt(Kpp(hatzeta, lambda));
 
   // debug
-  // cout<<"hatzeta = "<<hatzeta<<endl;
-  // cout<<"w = "<<w<<endl;
-  // cout<<"v = "<<v<<endl;
+  // std::cout<<"hatzeta = "<<hatzeta<<std::endl;
+  // std::cout<<"w = "<<w<<std::endl;
+  // std::cout<<"v = "<<v<<std::endl;
 
-  if (fabs(hatzeta) < 1e-04)
-    return 2.0;
-  else
-    return pnorm(w + log(v / w) / w);
+  if (fabs(hatzeta) < 1e-04) return 2.0;
+  else return pnorm(w + log(v / w) / w);
 }
 
 double StatFunc::psatt(double x, VectorXd lambda) {
@@ -744,13 +714,11 @@ double StatFunc::Brents_Kp_min_x(VectorXd& lambda, double x, double lowerLimit, 
 
   // if f(a) f(b) >= 0 then error-exit
   if (fa * fb >= 0) {
-    if (fa < fb)
-      return a;
-    else
-      return b;
+    if (fa < fb) return a;
+    else return b;
   }
 
-  // if |f(a)| < |f(b)| then swap (a,b) end if
+  // if |f(a)| < |f(b)| then std::swap (a,b) end if
   if (fabs(fa) < fabs(fb)) {
     double tmp = a;
     a = b;
@@ -783,8 +751,7 @@ double StatFunc::Brents_Kp_min_x(VectorXd& lambda, double x, double lowerLimit, 
       if ((mflag && (fabs(b - c) < errorTol)) || (!mflag && (fabs(c - d) < errorTol))) {
         s = (a + b) / 2;
         mflag = true;
-      } else
-        mflag = false;
+      } else mflag = false;
     }
     fs = Kp_min_x(s, lambda, x);
     d = c;
@@ -798,7 +765,7 @@ double StatFunc::Brents_Kp_min_x(VectorXd& lambda, double x, double lowerLimit, 
       fa = fs;
     }
 
-    // if |f(a)| < |f(b)| then swap (a,b) end if
+    // if |f(a)| < |f(b)| then std::swap (a,b) end if
     if (fabs(fa) < fabs(fb)) {
       double tmp = a;
       a = b;

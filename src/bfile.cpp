@@ -18,17 +18,15 @@
 using namespace CommFunc;
 using namespace StrFunc;
 
-using namespace std;
-
 namespace SMRDATA {
-void read_famfile(bInfo* bdata, string famfile) {
+void read_famfile(bInfo* bdata, std::string famfile) {
   bdata->_autosome_num = 22;
-  ifstream Fam(famfile.c_str());
+  std::ifstream Fam(famfile.c_str());
   if (!Fam) throw("Error: can not open the file [" + famfile + "] to read.");
-  cout << "Reading PLINK FAM file from [" + famfile + "]." << endl;
+  std::cout << "Reading PLINK FAM file from [" + famfile + "]." << std::endl;
 
   int i = 0;
-  string str_buf;
+  std::string str_buf;
   bdata->_fid.clear();
   bdata->_pid.clear();
   bdata->_fa_id.clear();
@@ -53,7 +51,7 @@ void read_famfile(bInfo* bdata, string famfile) {
   Fam.clear();
   Fam.close();
   bdata->_indi_num = bdata->_fid.size();
-  cout << bdata->_indi_num << " individuals to be included from [" + famfile + "]." << endl;
+  std::cout << bdata->_indi_num << " individuals to be included from [" + famfile + "]." << std::endl;
 
   // Initialize _keep
   bdata->_keep.clear();
@@ -62,21 +60,21 @@ void read_famfile(bInfo* bdata, string famfile) {
   int size = 0;
   for (int i = 0; i < bdata->_indi_num; i++) {
     bdata->_keep[i] = i;
-    bdata->_id_map.insert(pair<string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
+    bdata->_id_map.insert(std::pair<std::string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
     if (size == bdata->_id_map.size())
       throw("Error: Duplicate individual ID found: \"" + bdata->_fid[i] + "\t" + bdata->_pid[i] + "\".");
     size = bdata->_id_map.size();
   }
 }
 
-void update_bim(bInfo* bdata, vector<int>& rsnp) {
+void update_bim(bInfo* bdata, std::vector<int>& rsnp) {
   int i = 0;
 
   // update bim information
-  vector<int> chr_buf, bp_buf;
-  vector<string> a1_buf, a2_buf, ref_A_buf, other_A_buf;
-  vector<string> snp_name_buf;
-  vector<double> genet_dst_buf, impRsq_buf;
+  std::vector<int> chr_buf, bp_buf;
+  std::vector<std::string> a1_buf, a2_buf, ref_A_buf, other_A_buf;
+  std::vector<std::string> snp_name_buf;
+  std::vector<double> genet_dst_buf, impRsq_buf;
   for (i = 0; i < bdata->_snp_num; i++) {
     if (!rsnp[i]) continue;
     chr_buf.push_back(bdata->_chr[i]);
@@ -114,16 +112,16 @@ void update_bim(bInfo* bdata, vector<int>& rsnp) {
 
   for (i = 0; i < bdata->_snp_num; i++) {
     bdata->_include[i] = i;
-    bdata->_snp_name_map.insert(pair<string, int>(bdata->_snp_name[i], i));
+    bdata->_snp_name_map.insert(std::pair<std::string, int>(bdata->_snp_name[i], i));
   }
 }
 
-void update_fam(bInfo* bdata, vector<int>& rindi) {
+void update_fam(bInfo* bdata, std::vector<int>& rindi) {
   // update fam information
   int i = 0;
-  vector<string> fid_buf, pid_buf, fa_id_buf, mo_id_buf;
-  vector<int> sex_buf;
-  vector<double> pheno_buf;
+  std::vector<std::string> fid_buf, pid_buf, fa_id_buf, mo_id_buf;
+  std::vector<int> sex_buf;
+  std::vector<double> pheno_buf;
   for (i = 0; i < bdata->_indi_num; i++) {
     if (!rindi[i]) continue;
     fid_buf.push_back(bdata->_fid[i]);
@@ -152,19 +150,19 @@ void update_fam(bInfo* bdata, vector<int>& rindi) {
   bdata->_id_map.clear();
   for (i = 0; i < bdata->_indi_num; i++) {
     bdata->_keep[i] = i;
-    bdata->_id_map.insert(pair<string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
+    bdata->_id_map.insert(std::pair<std::string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
   }
 }
 
-void read_bimfile(bInfo* bdata, string bimfile) {
+void read_bimfile(bInfo* bdata, std::string bimfile) {
   // Read bim file: recombination rate is defined between SNP i and SNP i-1
   int ibuf = 0;
-  string cbuf = "0";
+  std::string cbuf = "0";
   double dbuf = 0.0;
-  string str_buf;
-  ifstream Bim(bimfile.c_str());
+  std::string str_buf;
+  std::ifstream Bim(bimfile.c_str());
   if (!Bim) throw("Error: can not open the file [" + bimfile + "] to read.");
-  cout << "Reading PLINK BIM file from [" + bimfile + "]." << endl;
+  std::cout << "Reading PLINK BIM file from [" + bimfile + "]." << std::endl;
   bdata->_chr.clear();
   bdata->_snp_name.clear();
   bdata->_genet_dst.clear();
@@ -193,7 +191,7 @@ void read_bimfile(bInfo* bdata, string bimfile) {
   // by default, allele1 is ref allele
   bdata->_ref_A = bdata->_allele1;
   bdata->_other_A = bdata->_allele2;
-  cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << endl;
+  std::cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << std::endl;
 
   // Initialize _include
   bdata->_include.clear();
@@ -203,39 +201,35 @@ void read_bimfile(bInfo* bdata, string bimfile) {
   for (int i = 0; i < bdata->_snp_num; i++) {
     bdata->_include[i] = i;
     if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end()) {
-      cout << "Warning: Duplicated SNP ID \"" + bdata->_snp_name[i] + "\" ";
-      stringstream ss;
+      std::cout << "Warning: Duplicated SNP ID \"" + bdata->_snp_name[i] + "\" ";
+      std::stringstream ss;
       ss << bdata->_snp_name[i] << "_" << i + 1;
       bdata->_snp_name[i] = ss.str();
-      cout << "has been changed to \"" + bdata->_snp_name[i] + "\".\n";
+      std::cout << "has been changed to \"" + bdata->_snp_name[i] + "\".\n";
     }
-    bdata->_snp_name_map.insert(pair<string, int>(bdata->_snp_name[i], i));
+    bdata->_snp_name_map.insert(std::pair<std::string, int>(bdata->_snp_name[i], i));
   }
 }
 
 // some code are adopted from PLINK with modifications
-void read_bedfile(bInfo* bdata, string bedfile) {
+void read_bedfile(bInfo* bdata, std::string bedfile) {
   int i = 0, j = 0, k = 0;
 
   // Flag for reading individuals and SNPs
-  vector<int> rindi, rsnp;
+  std::vector<int> rindi, rsnp;
   // get_rindi
   rindi.clear();
   rindi.resize(bdata->_indi_num);
   for (int i = 0; i < bdata->_indi_num; i++) {
-    if (bdata->_id_map.find(bdata->_fid[i] + ":" + bdata->_pid[i]) != bdata->_id_map.end())
-      rindi[i] = 1;
-    else
-      rindi[i] = 0;
+    if (bdata->_id_map.find(bdata->_fid[i] + ":" + bdata->_pid[i]) != bdata->_id_map.end()) rindi[i] = 1;
+    else rindi[i] = 0;
   }
   // get_rsnp
   rsnp.clear();
   rsnp.resize(bdata->_snp_num);
   for (int i = 0; i < bdata->_snp_num; i++) {
-    if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end())
-      rsnp[i] = 1;
-    else
-      rsnp[i] = 0;
+    if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end()) rsnp[i] = 1;
+    else rsnp[i] = 0;
   }
 
   if (bdata->_include.size() == 0) throw("Error: No SNP is retained for analysis.");
@@ -243,16 +237,16 @@ void read_bedfile(bInfo* bdata, string bedfile) {
 
   // Read bed file
   char ch[1];
-  bitset<8> b;
+  std::bitset<8> b;
   bdata->_snp_1.resize(bdata->_include.size());
   bdata->_snp_2.resize(bdata->_include.size());
   for (i = 0; i < bdata->_include.size(); i++) {
-    bdata->_snp_1[i].reserve(bdata->_keep.size());
-    bdata->_snp_2[i].reserve(bdata->_keep.size());
+    bdata->_snp_1[i].resize(bdata->_keep.size());
+    bdata->_snp_2[i].resize(bdata->_keep.size());
   }
-  fstream BIT(bedfile.c_str(), ios::in | ios::binary);
+  std::fstream BIT(bedfile.c_str(), std::ios::in | std::ios::binary);
   if (!BIT) throw("Error: can not open the file [" + bedfile + "] to read.");
-  cout << "Reading PLINK BED file from [" + bedfile + "] in SNP-major format ..." << endl;
+  std::cout << "Reading PLINK BED file from [" + bedfile + "] in SNP-major format ..." << std::endl;
   for (i = 0; i < 3; i++) BIT.read(ch, 1);  // skip the first three bytes
   int snp_indx = 0, indi_indx = 0;
   for (j = 0, snp_indx = 0; j < bdata->_snp_num;
@@ -267,8 +261,7 @@ void read_bedfile(bInfo* bdata, string bedfile) {
       b = ch[0];
       k = 0;
       while (k < 7 && i < bdata->_indi_num) {  // change code: 11 for AA; 00 for BB;
-        if (!rindi[i])
-          k += 2;
+        if (!rindi[i]) k += 2;
         else {
           // Flip the bit to change code: 11 for AA, 00 for BB, 10 for heterozygote and 01 for missing.
           // As a result, we also need to swap snp_1 and snp_2 to keep 10 for missing and 01 for heterozygote.
@@ -284,33 +277,34 @@ void read_bedfile(bInfo* bdata, string bedfile) {
   }
   BIT.clear();
   BIT.close();
-  cout << "Genotype data for " << bdata->_keep.size() << " individuals and " << bdata->_include.size()
-       << " SNPs to be included from [" + bedfile + "]." << endl;
+  std::cout << "Genotype data for " << bdata->_keep.size() << " individuals and " << bdata->_include.size()
+            << " SNPs to be included from [" + bedfile + "]." << std::endl;
 
   update_fam(bdata, rindi);
   update_bim(bdata, rsnp);
 }
 
-void keep_indi(bInfo* bdata, string indi_list_file) {
-  vector<string> indi_list;
+void keep_indi(bInfo* bdata, std::string indi_list_file) {
+  std::vector<std::string> indi_list;
   read_indi_list(indi_list_file, indi_list);
   update_id_map_kp(indi_list, bdata->_id_map, bdata->_keep);
-  cout << bdata->_keep.size() << " individuals are kept from [" + indi_list_file + "]." << endl;
+  std::cout << bdata->_keep.size() << " individuals are kept from [" + indi_list_file + "]." << std::endl;
 }
 
-void remove_indi(bInfo* bdata, string indi_list_file) {
-  vector<string> indi_list;
+void remove_indi(bInfo* bdata, std::string indi_list_file) {
+  std::vector<std::string> indi_list;
   read_indi_list(indi_list_file, indi_list);
   int prev_size = bdata->_keep.size();
   update_id_map_rm(indi_list, bdata->_id_map, bdata->_keep);
-  cout << prev_size - bdata->_keep.size() << " individuals are removed from [" + indi_list_file + "] and there are "
-       << bdata->_keep.size() << " individuals remaining." << endl;
+  std::cout << prev_size - bdata->_keep.size()
+            << " individuals are removed from [" + indi_list_file + "] and there are " << bdata->_keep.size()
+            << " individuals remaining." << std::endl;
 }
 
 void extract_region_bp(bInfo* bdata, int chr, int fromkb, int tokb) {
   int frombp = fromkb * 1000;
   int tobp = tokb * 1000;
-  vector<string> snplist;
+  std::vector<std::string> snplist;
   for (int i = 0; i < bdata->_include.size(); i++) {
     int j = bdata->_include[i];
     if (bdata->_chr[j] == chr && bdata->_bp[j] <= tobp && bdata->_bp[j] >= frombp)
@@ -318,40 +312,40 @@ void extract_region_bp(bInfo* bdata, int chr, int fromkb, int tokb) {
   }
   if (snplist.empty()) throw("Error: on SNP found in this region.");
   update_id_map_kp(snplist, bdata->_snp_name_map, bdata->_include);
-  cout << bdata->_include.size() << " SNPs are extracted from SNP BP: " << fromkb << "Kb" << "to SNP BP: " << tokb
-       << "Kb." << endl;
+  std::cout << bdata->_include.size() << " SNPs are extracted from SNP BP: " << fromkb << "Kb" << "to SNP BP: " << tokb
+            << "Kb." << std::endl;
 }
 
 void extract_snp(bInfo* bdata, int chr) {
-  vector<string> snplist;
+  std::vector<std::string> snplist;
   for (int i = 0; i < bdata->_include.size(); i++) {
     int j = bdata->_include[i];
     if (bdata->_chr[j] == chr) snplist.push_back(bdata->_snp_name[j]);
   }
   if (snplist.empty()) throw("Error: on SNP found in this region.");
   update_id_map_kp(snplist, bdata->_snp_name_map, bdata->_include);
-  cout << bdata->_include.size() << " SNPs are extracted from chromosome " << chr << "." << endl;
+  std::cout << bdata->_include.size() << " SNPs are extracted from chromosome " << chr << "." << std::endl;
 }
 
-void extract_snp(bInfo* bdata, string snplistfile) {
-  vector<string> snplist;
-  string msg = "SNPs";
+void extract_snp(bInfo* bdata, std::string snplistfile) {
+  std::vector<std::string> snplist;
+  std::string msg = "SNPs";
   read_msglist(snplistfile, snplist, msg);
   update_id_map_kp(snplist, bdata->_snp_name_map, bdata->_include);
-  cout << bdata->_include.size() << " SNPs are extracted from [" + snplistfile + "]." << endl;
+  std::cout << bdata->_include.size() << " SNPs are extracted from [" + snplistfile + "]." << std::endl;
 }
 
-void exclude_snp(bInfo* bdata, string snplistfile) {
-  vector<string> snplist;
-  string msg = "SNPs";
+void exclude_snp(bInfo* bdata, std::string snplistfile) {
+  std::vector<std::string> snplist;
+  std::string msg = "SNPs";
   read_msglist(snplistfile, snplist, msg);
   int prev_size = bdata->_include.size();
   update_id_map_rm(snplist, bdata->_snp_name_map, bdata->_include);
-  cout << prev_size - bdata->_include.size() << " SNPs are excluded from [" + snplistfile + "] and there are "
-       << bdata->_include.size() << " SNPs remaining." << endl;
+  std::cout << prev_size - bdata->_include.size() << " SNPs are excluded from [" + snplistfile + "] and there are "
+            << bdata->_include.size() << " SNPs remaining." << std::endl;
 }
 
-int getMaxNum(bInfo* bdata, int ldWind, vector<uint64_t>& cols) {
+int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
   int n = 0, loopj = 0, preldnum = 1;
   long window = ldWind * 1000;
   int maxldnum = 0;
@@ -373,7 +367,7 @@ int getMaxNum(bInfo* bdata, int ldWind, vector<uint64_t>& cols) {
     ldnum += preldnum - 1;
     // 注意：这里ldnum有可能是负数，如果为负，需要重新置为0
     if (ldnum < 0) {
-      cout << "i:" << i << "ldnum: " << ldnum << endl;
+      std::cout << "i:" << i << "ldnum: " << ldnum << std::endl;
       // ldnum = 0;
     }
     preldnum = ldnum;
@@ -387,26 +381,16 @@ int getMaxNum(bInfo* bdata, int ldWind, vector<uint64_t>& cols) {
   return maxldnum;
 }
 
-void mu_func(bInfo* bdata, int j, vector<double>& fac) {
+void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
   int i = 0;
   bdata->_dosage_flag = 0;
   double fcount = 0.0, f_buf = 0.0;
-  if (bdata->_dosage_flag) {
-    for (i = 0; i < bdata->_keep.size(); i++) {
-      if (bdata->_geno_dose[bdata->_keep[i]][bdata->_include[j]] < 1e5) {
-        bdata->_mu[bdata->_include[j]] += fac[i] * bdata->_geno_dose[bdata->_keep[i]][bdata->_include[j]];
-        fcount += fac[i];
-      }
-    }
-  } else {
-    for (i = 0; i < bdata->_keep.size(); i++) {
-      if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
-        f_buf =
-            (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-        if (bdata->_allele2[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]]) f_buf = 2.0 - f_buf;
-        bdata->_mu[bdata->_include[j]] += fac[i] * f_buf;
-        fcount += fac[i];
-      }
+  for (i = 0; i < bdata->_keep.size(); i++) {
+    if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
+      f_buf = (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
+      if (bdata->_allele2[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]]) f_buf = 2.0 - f_buf;
+      bdata->_mu[bdata->_include[j]] += fac[i] * f_buf;
+      fcount += fac[i];
     }
   }
 
@@ -416,37 +400,32 @@ void mu_func(bInfo* bdata, int j, vector<double>& fac) {
 void calcu_mu(bInfo* bdata, bool ssq_flag) {
   int i = 0, j = 0;
 
-  vector<double> auto_fac(bdata->_keep.size()), xfac(bdata->_keep.size()), fac(bdata->_keep.size());
+  std::vector<double> auto_fac(bdata->_keep.size()), xfac(bdata->_keep.size()), fac(bdata->_keep.size());
   for (i = 0; i < bdata->_keep.size(); i++) {
     auto_fac[i] = 1.0;
-    if (bdata->_sex[bdata->_keep[i]] == 1)
-      xfac[i] = 0.5;
-    else if (bdata->_sex[bdata->_keep[i]] == 2)
-      xfac[i] = 1.0;
+    if (bdata->_sex[bdata->_keep[i]] == 1) xfac[i] = 0.5;
+    else if (bdata->_sex[bdata->_keep[i]] == 2) xfac[i] = 1.0;
     fac[i] = 0.5;
   }
 
-  cout << "Calculating allele frequencies ..." << endl;
+  std::cout << "Calculating allele frequencies ..." << std::endl;
   bdata->_mu.clear();
   bdata->_mu.resize(bdata->_snp_num);
 
 #pragma omp parallel for
   for (j = 0; j < bdata->_include.size(); j++) {
-    if (bdata->_chr[bdata->_include[j]] < (bdata->_autosome_num + 1))
-      mu_func(bdata, j, auto_fac);
-    else if (bdata->_chr[bdata->_include[j]] == (bdata->_autosome_num + 1))
-      mu_func(bdata, j, xfac);
-    else
-      mu_func(bdata, j, fac);
+    if (bdata->_chr[bdata->_include[j]] < (bdata->_autosome_num + 1)) mu_func(bdata, j, auto_fac);
+    else if (bdata->_chr[bdata->_include[j]] == (bdata->_autosome_num + 1)) mu_func(bdata, j, xfac);
+    else mu_func(bdata, j, fac);
   }
 }
 
-bool make_XMat_subset(bInfo* bdata, MatrixXf& X, vector<int>& snp_indx, bool divid_by_std) {
+bool make_XMat_subset(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, bool divid_by_std) {
   if (snp_indx.empty()) return false;
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
   int i = 0, j = 0, k = 0, n = (int)bdata->_keep.size(), m = (int)snp_indx.size();
-  vector<double> sd_SNP(m);
+  std::vector<double> sd_SNP(m);
 
   X.resize(n, m);
   for (i = 0; i < n; i++) {
@@ -455,11 +434,9 @@ bool make_XMat_subset(bInfo* bdata, MatrixXf& X, vector<int>& snp_indx, bool div
       if (!bdata->_snp_1[k][bdata->_keep[i]] || bdata->_snp_2[k][bdata->_keep[i]]) {
         if (bdata->_allele1[k] == bdata->_ref_A[k])
           X(i, j) = bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]];
-        else
-          X(i, j) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
+        else X(i, j) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
         X(i, j) -= bdata->_mu[k];
-      } else
-        X(i, j) = 0.0;
+      } else X(i, j) = 0.0;
       sd_SNP[j] += X(i, j) * X(i, j);
     }
   }
@@ -467,10 +444,8 @@ bool make_XMat_subset(bInfo* bdata, MatrixXf& X, vector<int>& snp_indx, bool div
   if (divid_by_std) {
     for (j = 0; j < m; j++) {
       sd_SNP[j] = sd_SNP[j] / (n - 1.0);
-      if (fabs(sd_SNP[j]) < 1.0e-50)
-        sd_SNP[j] = 0.0;
-      else
-        sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
+      if (fabs(sd_SNP[j]) < 1.0e-50) sd_SNP[j] = 0.0;
+      else sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
     }
     for (j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
   }
@@ -478,7 +453,7 @@ bool make_XMat_subset(bInfo* bdata, MatrixXf& X, vector<int>& snp_indx, bool div
   /*
    // alternative method. a little different
   if(divid_by_std){
-      vector<double> sd_SNP(m);
+      std::vector<double> sd_SNP(m);
       for (j = 0; j < m; j++){
           k = bdata->_include[snp_indx[j]];
           sd_SNP[j] = bdata->_mu[k]*(1.0 - 0.5 * bdata->_mu[k]);
@@ -499,20 +474,16 @@ void makex_xVec_subset(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid
     if (!bdata->_snp_1[k][bdata->_keep[i]] || bdata->_snp_2[k][bdata->_keep[i]]) {
       if (bdata->_allele1[k] == bdata->_ref_A[k])
         x[i] = (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
-      else
-        x(i) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
+      else x(i) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
       x(i) -= bdata->_mu[k];
-    } else
-      x(i) = 0.0;
+    } else x(i) = 0.0;
     sd_SNP += x(i) * x(i);
   }
 
   if (divid_by_std) {
     sd_SNP /= (bdata->_keep.size() - 1.0);
-    if (fabs(sd_SNP) < 1.0e-50)
-      sd_SNP = 0.0;
-    else
-      sd_SNP = sqrt(1.0 / sd_SNP);
+    if (fabs(sd_SNP) < 1.0e-50) sd_SNP = 0.0;
+    else sd_SNP = sqrt(1.0 / sd_SNP);
     x *= sd_SNP;
   }
   /*
@@ -527,14 +498,14 @@ void makex_xVec_subset(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid
 }
 
 void initX(bInfo* bdata, MatrixXf& X, long snpnum) {
-  vector<int> snpids(snpnum);
+  std::vector<int> snpids(snpnum);
   for (int i = 0; i < snpnum; i++) snpids[i] = i;
   // make_XMat(bdata, snpids,X,true); //centered
   make_XMat_subset(bdata, X, snpids, true);
 }
 
 void write_smr_esi(char* outFileName, bInfo* binfo) {
-  string epiName = string(outFileName) + ".esi";
+  std::string epiName = std::string(outFileName) + ".esi";
   FILE* efile = fopen(epiName.c_str(), "w");
   if (!(efile)) {
     printf("Error: Failed to open file %s.\n", epiName.c_str());
@@ -543,21 +514,16 @@ void write_smr_esi(char* outFileName, bInfo* binfo) {
 
   printf("Saving SNP information ...\n");
   for (int i = 0; i < binfo->_include.size(); i++) {
-    string chrstr;
-    if (binfo->_chr[binfo->_include[i]] == 23)
-      chrstr = "X";
-    else if (binfo->_chr[binfo->_include[i]] == 24)
-      chrstr = "Y";
-    else
-      chrstr = atosm(binfo->_chr[binfo->_include[i]]);
-    string freqstr;
-    if (binfo->_mu.empty())
-      freqstr = "NA";
-    else
-      freqstr = atos(binfo->_mu[binfo->_include[i]] / 2);
-    string str = chrstr + '\t' + binfo->_snp_name[binfo->_include[i]] + '\t' + atos(0) + '\t' +
-                 atosm(binfo->_bp[binfo->_include[i]]) + '\t' + binfo->_allele1[binfo->_include[i]] + '\t' +
-                 binfo->_allele2[binfo->_include[i]] + '\t' + freqstr + '\n';
+    std::string chrstr;
+    if (binfo->_chr[binfo->_include[i]] == 23) chrstr = "X";
+    else if (binfo->_chr[binfo->_include[i]] == 24) chrstr = "Y";
+    else chrstr = atosm(binfo->_chr[binfo->_include[i]]);
+    std::string freqstr;
+    if (binfo->_mu.empty()) freqstr = "NA";
+    else freqstr = atos(binfo->_mu[binfo->_include[i]] / 2);
+    std::string str = chrstr + '\t' + binfo->_snp_name[binfo->_include[i]] + '\t' + atos(0) + '\t' +
+                      atosm(binfo->_bp[binfo->_include[i]]) + '\t' + binfo->_allele1[binfo->_include[i]] + '\t' +
+                      binfo->_allele2[binfo->_include[i]] + '\t' + freqstr + '\n';
     if (fputs_checked(str.c_str(), efile)) {
       printf("ERROR: in writing file %s .\n", epiName.c_str());
     }
@@ -569,9 +535,9 @@ void write_smr_esi(char* outFileName, bInfo* binfo) {
 void filter_snp_maf(bInfo* bdata, double maf) {
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
-  cout << "Pruning SNPs with MAF > " << maf << " ..." << endl;
-  map<string, int> id_map_buf(bdata->_snp_name_map);
-  map<string, int>::iterator iter, end = id_map_buf.end();
+  std::cout << "Pruning SNPs with MAF > " << maf << " ..." << std::endl;
+  std::map<std::string, int> id_map_buf(bdata->_snp_name_map);
+  std::map<std::string, int>::iterator iter, end = id_map_buf.end();
   int prev_size = bdata->_include.size();
   double fbuf = 0.0;
   bdata->_include.clear();
@@ -582,12 +548,11 @@ void filter_snp_maf(bInfo* bdata, double maf) {
     bdata->_snp_name_map.insert(*iter);
     bdata->_include.push_back(iter->second);
   }
-  if (bdata->_include.size() == 0)
-    throw("Error: No SNP is retained for analysis.");
+  if (bdata->_include.size() == 0) throw("Error: No SNP is retained for analysis.");
   else {
-    stable_sort(bdata->_include.begin(), bdata->_include.end());
-    cout << "After pruning SNPs with MAF > " << maf << ", there are " << bdata->_include.size() << " SNPs ("
-         << prev_size - bdata->_include.size() << " SNPs with MAF < " << maf << ")." << endl;
+    std::stable_sort(bdata->_include.begin(), bdata->_include.end());
+    std::cout << "After pruning SNPs with MAF > " << maf << ", there are " << bdata->_include.size() << " SNPs ("
+              << prev_size - bdata->_include.size() << " SNPs with MAF < " << maf << ")." << std::endl;
   }
 }
 
@@ -622,8 +587,8 @@ void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
   }
 }
 
-void extract_snp_kb(bInfo* bdata, string rsnames, int windInKb) {
-  map<string, int>::iterator iter;
+void extract_snp_kb(bInfo* bdata, std::string rsnames, int windInKb) {
+  std::map<std::string, int>::iterator iter;
   iter = bdata->_snp_name_map.find(rsnames);
   if (iter == bdata->_snp_name_map.end()) {
     printf("ERROR: Can't find SNP %s.\n", rsnames.c_str());
@@ -635,7 +600,7 @@ void extract_snp_kb(bInfo* bdata, string rsnames, int windInKb) {
   int upbound = snpbp + windInKb * 1000;
   int tmpint = snpbp - windInKb * 1000;
   int lowbound = tmpint > 0 ? tmpint : 0;
-  vector<string> snplist;
+  std::vector<std::string> snplist;
   for (int i = 0; i < bdata->_include.size(); i++) {
     tmpint = bdata->_include[i];
     if (bdata->_chr[tmpint] == snpchr && bdata->_bp[tmpint] >= lowbound && bdata->_bp[tmpint] <= upbound)
@@ -654,12 +619,12 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   bool bitmod = true;
   bInfo bdata;
   MatrixXf X;
-  vector<uint64_t> cols;
-  vector<float> lds;
-  read_famfile(&bdata, string(bFileName) + ".fam");
+  std::vector<std::uint64_t> cols;
+  std::vector<float> lds;
+  read_famfile(&bdata, std::string(bFileName) + ".fam");
   if (indilstName != NULL) keep_indi(&bdata, indilstName);
   if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
-  read_bimfile(&bdata, string(bFileName) + ".bim");
+  read_bimfile(&bdata, std::string(bFileName) + ".bim");
   if (chr) extract_snp(&bdata, chr);
   if (rs != NULL) extract_snp_kb(&bdata, rs, ldWind);
   if (snplstName != NULL) extract_snp(&bdata, snplstName);
@@ -667,14 +632,14 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
 
   // int mym=getMaxNum(&bdata,ldWind, cols);
 
-  // uint64_t myValnum=cols[bdata._include.size()];
+  // std::uint64_t myValnum=cols[bdata._include.size()];
 
-  // cout << "myValnum:" << myValnum << endl;
-  // cout << "return....." << endl;
+  // std::cout << "myValnum:" << myValnum << std::endl;
+  // std::cout << "return....." << std::endl;
 
   // return;
 
-  read_bedfile(&bdata, string(bFileName) + ".bed");
+  read_bedfile(&bdata, std::string(bFileName) + ".bed");
   if (bdata._mu.empty()) calcu_mu(&bdata);
   if (maf > 0) filter_snp_maf(&bdata, maf);
   int m = getMaxNum(&bdata, ldWind, cols);
@@ -691,12 +656,12 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   //  {
   //      if(cols[i] < 0)
   //      {
-  //          cout << "i:" << i << " cols[i]:" << cols[i] << endl;
+  //          std::cout << "i:" << i << " cols[i]:" << cols[i] << std::endl;
   //      }
   //  }
 
   write_smr_esi(outFileName, &bdata);
-  string bldname = string(outFileName) + ".bld";
+  std::string bldname = std::string(outFileName) + ".bld";
   FILE* outfile = fopen(bldname.c_str(), "wb");
   if (!(outfile)) {
     printf("Error: Failed to open file %s.\n", bldname.c_str());
@@ -704,21 +669,19 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   }
   // Write header
   // reserved 16 * int: ldr2, individual size, snp size, ld window size
-  // uint64_t: valnum
-  // uint64_t * (snip size + 1): each uint64_t is the accumulated ldnum, ldnum[i] = cols[i] - cols[i-1]
-  vector<int> reserved(RESERVEDUNITS);
-  if (ldr)
-    reserved[0] = 0;
-  else if (ldr2)
-    reserved[0] = 1;
+  // std::uint64_t: valnum
+  // std::uint64_t * (snip size + 1): each std::uint64_t is the accumulated ldnum, ldnum[i] = cols[i] - cols[i-1]
+  std::vector<int> reserved(RESERVEDUNITS);
+  if (ldr) reserved[0] = 0;
+  else if (ldr2) reserved[0] = 1;
   reserved[1] = (int)bdata._keep.size();
   reserved[2] = (int)bdata._include.size();
   reserved[3] = ldWind;
   for (int i = 4; i < RESERVEDUNITS; i++) reserved[i] = -9;
   fwrite(&reserved[0], sizeof(int), RESERVEDUNITS, outfile);
-  uint64_t valnum = cols[bdata._include.size()];
-  fwrite(&valnum, sizeof(uint64_t), 1, outfile);
-  fwrite(&cols[0], sizeof(uint64_t), bdata._include.size() + 1, outfile);
+  std::uint64_t valnum = cols[bdata._include.size()];
+  fwrite(&valnum, sizeof(std::uint64_t), 1, outfile);
+  fwrite(&cols[0], sizeof(std::uint64_t), bdata._include.size() + 1, outfile);
   long window = ldWind * 1000, vc = 0;
   double cr = 0;
   for (int i = 0; i < bdata._include.size(); i++) {
@@ -727,10 +690,8 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     // X shape: individual size * (max snp size within ldwin)
     if (X.size() == 0) initX(&bdata, X, m);
     int start = -9;
-    if (bitmod)
-      start = (i & (m - 1));
-    else
-      start = i % m;
+    if (bitmod) start = (i & (m - 1));
+    else start = i % m;
 
     VectorXf x = X.col(start);
 
@@ -747,10 +708,8 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
       int chrj = bdata._chr[bdata._include[i + j]];
       int bpj = bdata._bp[bdata._include[i + j]];
       int cur = -9;
-      if (bitmod)
-        cur = ((start + j) & (m - 1));
-      else
-        cur = (start + j) % m;
+      if (bitmod) cur = ((start + j) & (m - 1));
+      else cur = (start + j) % m;
       if (chri == chrj && abs(bpj - bpi) <= window) {
         if (st < 0) st = cur;
         ed = cur;
@@ -780,15 +739,15 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     printf("Please repot this bug.\n");
     exit(EXIT_FAILURE);
   }
-  // cout << "vc:" << vc << endl;
-  // cout << "valnum:" << valnum << endl;
+  // std::cout << "vc:" << vc << std::endl;
+  // std::cout << "valnum:" << valnum << std::endl;
   fclose(outfile);
   printf("LD information is saved in the binary file %s.\n", bldname.c_str());
 }
 
 void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
-  vector<string> strlist;
-  uint32_t line_idx = 0;
+  std::vector<std::string> strlist;
+  std::uint32_t line_idx = 0;
   int colnum = 7;
   FILE* esifile = fopen(esiFileName, "r");
   if (!(esifile)) {
@@ -834,10 +793,8 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
       printf("ERROR: Duplicate SNP : %s.\n", strlist[1].c_str());
       exit(EXIT_FAILURE);
     }
-    if (strlist[0] == "X" || strlist[0] == "x")
-      ldinfo->_esi_chr.push_back(23);
-    else if (strlist[0] == "Y" || strlist[0] == "y")
-      ldinfo->_esi_chr.push_back(24);
+    if (strlist[0] == "X" || strlist[0] == "x") ldinfo->_esi_chr.push_back(23);
+    else if (strlist[0] == "Y" || strlist[0] == "y") ldinfo->_esi_chr.push_back(24);
     else if (strlist[0] == "NA" || strlist[0] == "na") {
       ldinfo->_esi_chr.push_back(-9);
       if (!chrwarning) {
@@ -852,8 +809,7 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
       // printf("WARNING: abmormal chromosome found:\n");
       // printf("%s\n",Tbuf);
       ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
-    } else
-      ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
+    } else ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
 
     if (strlist[1] == "NA" || strlist[1] == "na") {
       printf("ERROR: NA SNP ID found:\n");
@@ -862,10 +818,8 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
     }
     ldinfo->_esi_rs.push_back(strlist[1]);
     ldinfo->_esi_gd.push_back(atoi(strlist[2].c_str()));
-    if (strlist[3] == "NA" || strlist[3] == "na")
-      ldinfo->_esi_bp.push_back(-9);
-    else
-      ldinfo->_esi_bp.push_back(atoi(strlist[3].c_str()));
+    if (strlist[3] == "NA" || strlist[3] == "na") ldinfo->_esi_bp.push_back(-9);
+    else ldinfo->_esi_bp.push_back(atoi(strlist[3].c_str()));
     if (strlist[4] == "NA" || strlist[4] == "na") {
       if (!allele1warning) {
         // printf("WARNING: At least one reference allele is missing.\n");
@@ -904,31 +858,31 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
 }
 
 void extract_ld_esi_by_chr(ldInfo* ldinfo, int snpchr) {
-  vector<int> newIcld;
+  std::vector<int> newIcld;
   ldinfo->_snp_name_map.clear();
   for (int i = 0; i < ldinfo->_esi_include.size(); i++) {
     int tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == snpchr) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(pair<string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
     }
   }
   ldinfo->_esi_include.swap(newIcld);
   printf("%ld SNPs are extracted from chromosome %d. \n", ldinfo->_esi_include.size(), snpchr);
 }
 
-void extract_ld_esi_snps(ldInfo* ldinfo, string snplstName) {
-  vector<string> snplist;
-  string msg = "SNPs";
+void extract_ld_esi_snps(ldInfo* ldinfo, std::string snplstName) {
+  std::vector<std::string> snplist;
+  std::string msg = "SNPs";
   read_msglist(snplstName, snplist, msg);
   update_map_kp(snplist, ldinfo->_snp_name_map, ldinfo->_esi_include);
   printf("%ld SNPs are extracted from %s.\n", ldinfo->_esi_include.size(), snplstName.c_str());
 }
 
-void extract_ld_esi_snps(ldInfo* ldinfo, string snp, int Wind) {
+void extract_ld_esi_snps(ldInfo* ldinfo, std::string snp, int Wind) {
   int bp = -9;
   int chr = -9;
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   iter = ldinfo->_snp_name_map.find(snp);
   if (iter == ldinfo->_snp_name_map.end()) {
     printf("ERROR: Can't find SNP %s.\n", snp.c_str());
@@ -948,13 +902,13 @@ void extract_ld_esi_snps(ldInfo* ldinfo, string snp, int Wind) {
   int upbound = bp + Wind * 1000;
   int tmpint = bp - Wind * 1000;
   int lowbound = tmpint > 0 ? tmpint : 0;
-  vector<int> newIcld;
+  std::vector<int> newIcld;
   ldinfo->_snp_name_map.clear();
   for (int i = 0; i < ldinfo->_esi_include.size(); i++) {
     tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == chr && ldinfo->_esi_bp[tmpint] >= lowbound && ldinfo->_esi_bp[tmpint] <= upbound) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(pair<string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
     }
   }
   ldinfo->_esi_include.swap(newIcld);
@@ -962,8 +916,8 @@ void extract_ld_esi_snps(ldInfo* ldinfo, string snp, int Wind) {
          snp.c_str());
 }
 
-void extract_ld_esi_single_snp(ldInfo* ldinfo, string snprs) {
-  map<string, int>::iterator iter;
+void extract_ld_esi_single_snp(ldInfo* ldinfo, std::string snprs) {
+  std::map<std::string, int>::iterator iter;
   iter = ldinfo->_snp_name_map.find(snprs);
   if (iter == ldinfo->_snp_name_map.end()) {
     printf("ERROR: Can't find SNP %s.\n", snprs.c_str());
@@ -973,12 +927,12 @@ void extract_ld_esi_single_snp(ldInfo* ldinfo, string snprs) {
   ldinfo->_esi_include.clear();
   ldinfo->_esi_include.push_back((int)idx);
   ldinfo->_snp_name_map.clear();
-  ldinfo->_snp_name_map.insert(pair<string, int>(snprs, idx));
+  ldinfo->_snp_name_map.insert(std::pair<std::string, int>(snprs, idx));
   printf("SNP %s is extracted.\n", snprs.c_str());
 }
 
-void extract_ld_esi_snps(ldInfo* ldinfo, string fromsnprs, string tosnprs) {
-  map<string, int>::iterator iter;
+void extract_ld_esi_snps(ldInfo* ldinfo, std::string fromsnprs, std::string tosnprs) {
+  std::map<std::string, int>::iterator iter;
   iter = ldinfo->_snp_name_map.find(fromsnprs);
   if (iter == ldinfo->_snp_name_map.end()) {
     printf("ERROR: Can't find probe %s.\n", fromsnprs.c_str());
@@ -1004,7 +958,7 @@ void extract_ld_esi_snps(ldInfo* ldinfo, string fromsnprs, string tosnprs) {
     tosnpbp = tmp;
   }
 
-  vector<string> snplst;
+  std::vector<std::string> snplst;
   for (int i = 0; i < ldinfo->_esi_include.size(); i++) {
     int tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == snpchr && ldinfo->_esi_bp[tmpint] >= fromsnpbp &&
@@ -1026,13 +980,13 @@ void extract_ld_esi_snps(ldInfo* ldinfo, int chr, int fromsnpkb, int tosnpkb) {
     tosnpbp = tmp;
   }
 
-  vector<int> newIcld;
+  std::vector<int> newIcld;
   ldinfo->_snp_name_map.clear();
   for (int i = 0; i < ldinfo->_esi_include.size(); i++) {
     int tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == chr && ldinfo->_esi_bp[tmpint] >= fromsnpbp && ldinfo->_esi_bp[tmpint] <= tosnpbp) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(pair<string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
     }
   }
   ldinfo->_esi_include.swap(newIcld);
@@ -1040,9 +994,9 @@ void extract_ld_esi_snps(ldInfo* ldinfo, int chr, int fromsnpkb, int tosnpkb) {
          fromsnpkb, tosnpkb, chr);
 }
 
-void exclude_ld_esi_snp(ldInfo* ldinfo, string snplstName) {
-  vector<string> snplist;
-  string msg = "SNPs";
+void exclude_ld_esi_snp(ldInfo* ldinfo, std::string snplstName) {
+  std::vector<std::string> snplist;
+  std::string msg = "SNPs";
   read_msglist(snplstName, snplist, msg);
   long pre_num = ldinfo->_esi_include.size();
   update_map_rm(snplist, ldinfo->_snp_name_map, ldinfo->_esi_include);
@@ -1050,8 +1004,8 @@ void exclude_ld_esi_snp(ldInfo* ldinfo, string snplstName) {
          snplstName.c_str(), ldinfo->_esi_include.size());
 }
 
-void exclude_ld_esi_snps(ldInfo* ldinfo, string snprs2exclde) {
-  vector<string> snplist;
+void exclude_ld_esi_snps(ldInfo* ldinfo, std::string snprs2exclde) {
+  std::vector<std::string> snplist;
   snplist.push_back(snprs2exclde);
   update_map_rm(snplist, ldinfo->_snp_name_map, ldinfo->_esi_include);
   printf("SNP %s are excluded and there are %ld probe remaining.\n", snprs2exclde.c_str(), ldinfo->_esi_include.size());
@@ -1059,7 +1013,7 @@ void exclude_ld_esi_snps(ldInfo* ldinfo, string snprs2exclde) {
 
 void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, char* snprs, char* fromsnprs,
                 char* tosnprs, int snpWind, bool snpwindFlag, int fromsnpkb, int tosnpkb, char* snprs2exclde) {
-  string logstr;
+  std::string logstr;
   int flags4snp = 0;
   if (snplstName != NULL) flags4snp++;
   if (snprs != NULL) flags4snp++;
@@ -1074,8 +1028,7 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
     extract_ld_esi_by_chr(ldinfo, chr);
   }
 
-  if (snplstName != NULL)
-    extract_ld_esi_snps(ldinfo, snplstName);
+  if (snplstName != NULL) extract_ld_esi_snps(ldinfo, snplstName);
   else if (snpwindFlag) {
     if (snprs == NULL) {
       printf("ERROR: please specify the SNP name by --snp when using --snp-wind.\n");
@@ -1106,7 +1059,7 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
   if (snprs2exclde != NULL) exclude_ld_esi_snps(ldinfo, snprs2exclde);
 }
 
-void get_BlddHeaders(char* blddFileName, vector<int>& headers)  //
+void get_BlddHeaders(char* blddFileName, std::vector<int>& headers)  //
 {
   headers.resize(RESERVEDUNITS);
   FILE* bld = fopen(blddFileName, "rb");
@@ -1121,14 +1074,14 @@ void get_BlddHeaders(char* blddFileName, vector<int>& headers)  //
   fclose(bld);
 }
 
-void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, vector<uint32_t>& curId, int sid, vector<float>& ld) {
+void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& curId, int sid, std::vector<float>& ld) {
   ld.resize(curId.size());
   int testid = ldinfo->_esi_include[curId[sid]];
-  uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + (ldinfo->_snpNum + 1) * sizeof(uint64_t);
+  std::uint64_t valSTART =
+      RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + (ldinfo->_snpNum + 1) * sizeof(std::uint64_t);
   for (int i = 0; i < curId.size(); i++) {
     int toid = ldinfo->_esi_include[curId[i]];
-    if (testid == toid)
-      ld[i] = 1;
+    if (testid == toid) ld[i] = 1;
     else if (testid > toid) {
       long poss = ldinfo->_cols[toid];
       fseek(ldfprt, (poss + testid - toid - 1) * sizeof(float) + valSTART, SEEK_SET);
@@ -1142,10 +1095,11 @@ void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, vector<uint32_t>& curId, int s
 }
 
 void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid,
-                    vector<float>& ld) {  // only the SNPs with bigger pb would be extracted!
-  uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + ldinfo->_snpNum * sizeof(uint64_t);
-  uint64_t poss = ldinfo->_cols[sid];
-  uint64_t post = ldinfo->_cols[sid + 1];
+                    std::vector<float>& ld) {  // only the SNPs with bigger pb would be extracted!
+  std::uint64_t valSTART =
+      RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + ldinfo->_snpNum * sizeof(std::uint64_t);
+  std::uint64_t poss = ldinfo->_cols[sid];
+  std::uint64_t post = ldinfo->_cols[sid + 1];
   long num = post - poss;
   ld.resize(num);
   fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET);
@@ -1155,17 +1109,18 @@ void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid,
   }
 }
 
-void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, string rs, vector<float>& ld) {
-  map<string, int>::iterator iter;
+void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, std::string rs, std::vector<float>& ld) {
+  std::map<std::string, int>::iterator iter;
   iter = ldinfo->_snp_name_map.find(rs);
   if (iter == ldinfo->_snp_name_map.end()) {
     printf("ERROR: can't find SNP %s.\n", rs.c_str());
     exit(EXIT_FAILURE);
   }
   int sid = iter->second;
-  uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + ldinfo->_snpNum * sizeof(uint64_t);
-  uint64_t poss = ldinfo->_cols[sid];
-  uint64_t post = ldinfo->_cols[sid + 1];
+  std::uint64_t valSTART =
+      RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + ldinfo->_snpNum * sizeof(std::uint64_t);
+  std::uint64_t poss = ldinfo->_cols[sid];
+  std::uint64_t post = ldinfo->_cols[sid + 1];
   long num = post - poss;
   ld.resize(num);
   fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET);
@@ -1190,7 +1145,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   read_ld_esifile(&ldinfo, inputname);
 
   memcpy(suffix, ".bld", 5);
-  vector<int> headers;
+  std::vector<int> headers;
   headers.resize(RESERVEDUNITS);
   FILE* bld = fopen(inputname, "rb");
   if (bld == NULL) {
@@ -1210,24 +1165,22 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     exit(EXIT_FAILURE);
   }
   int indicator = headers[0];
-  if (indicator == 0)
-    printf("\nReading ld r from binary file %s...\n", inputname);
-  else
-    printf("\nReading ld r-squared from binary file %s...\n", inputname);
-  uint64_t valnum = readuint64(bld), colNum = ldinfo._snpNum + 1;
-  uint64_t cur_pos = ftell(bld);
+  if (indicator == 0) printf("\nReading ld r from binary file %s...\n", inputname);
+  else printf("\nReading ld r-squared from binary file %s...\n", inputname);
+  std::uint64_t valnum = readuint64(bld), colNum = ldinfo._snpNum + 1;
+  std::uint64_t cur_pos = ftell(bld);
   fseek(bld, 0L, SEEK_END);
-  uint64_t size_file = ftell(bld);
+  std::uint64_t size_file = ftell(bld);
   fseek(bld, cur_pos, SEEK_SET);
-  if (size_file -
-          (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valnum * sizeof(float)) !=
+  if (size_file - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                   valnum * sizeof(float)) !=
       0) {
     printf("ERROR: File %s is broken!\n", inputname);
     exit(EXIT_FAILURE);
   }
 
   ldinfo._cols.resize(colNum);
-  if (fread(&ldinfo._cols[0], sizeof(uint64_t), colNum, bld) < 1) {
+  if (fread(&ldinfo._cols[0], sizeof(std::uint64_t), colNum, bld) < 1) {
     printf("ERROR: File %s read failed!\n", inputname);
     exit(EXIT_FAILURE);
   }
@@ -1241,10 +1194,10 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     printf("Error: Failed to open file %s.\n", outFileName);
     exit(EXIT_FAILURE);
   }
-  string tmpstr = "CHR_A\tBP_A\tSNP_A\tCHR_B\tBP_B\tSNP_B\tR\n";
+  std::string tmpstr = "CHR_A\tBP_A\tSNP_A\tCHR_B\tBP_B\tSNP_B\tR\n";
   if (indicator) tmpstr = "CHR_A\tBP_A\tSNP_A\tCHR_B\tBP_B\tSNP_B\tR2\n";
   fputs(tmpstr.c_str(), outfile);
-  uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
+  std::uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
   long wcount = 0;
   float* buffer = (float*)malloc(sizeof(float) * maxnum);
   if (buffer == NULL) {
@@ -1252,11 +1205,11 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     exit(EXIT_FAILURE);
   }
   if (ldinfo._esi_include.size() == 1) {
-    vector<int> snplist;
+    std::vector<int> snplist;
     int sid = ldinfo._esi_include[0];
     int chri = ldinfo._esi_chr[sid];
     int bpi = ldinfo._esi_bp[sid];
-    string rsi = ldinfo._esi_rs[sid];
+    std::string rsi = ldinfo._esi_rs[sid];
     for (int i = sid - 1; i >= 0; i--) {
       int chrj = ldinfo._esi_chr[i];
       int bpj = ldinfo._esi_bp[i];
@@ -1266,12 +1219,12 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
       int sidi = snplist[i];
       int chrj = ldinfo._esi_chr[sidi];
       int bpj = ldinfo._esi_bp[sidi];
-      string rsj = ldinfo._esi_rs[sidi];
-      uint64_t poss = ldinfo._cols[sidi];
+      std::string rsj = ldinfo._esi_rs[sidi];
+      std::uint64_t poss = ldinfo._cols[sidi];
       fseek(bld, (poss + sid - sidi - 1) * sizeof(float) + valSTART, SEEK_SET);
       float ldv = readfloat(bld);
-      string tmpstr = atos(chrj) + '\t' + atos(bpj) + '\t' + rsj + '\t' + atos(chri) + '\t' + atos(bpi) + '\t' + rsi +
-                      '\t' + atos(ldv) + '\n';
+      std::string tmpstr = atos(chrj) + '\t' + atos(bpj) + '\t' + rsj + '\t' + atos(chri) + '\t' + atos(bpi) + '\t' +
+                           rsi + '\t' + atos(ldv) + '\n';
       fputs(tmpstr.c_str(), outfile);
       wcount++;
     }
@@ -1280,9 +1233,9 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     int sid = ldinfo._esi_include[i];
     int chri = ldinfo._esi_chr[sid];
     int bpi = ldinfo._esi_bp[sid];
-    string rsi = ldinfo._esi_rs[sid];
-    uint64_t poss = ldinfo._cols[sid];
-    uint64_t post = ldinfo._cols[sid + 1];
+    std::string rsi = ldinfo._esi_rs[sid];
+    std::uint64_t poss = ldinfo._cols[sid];
+    std::uint64_t post = ldinfo._cols[sid + 1];
     long num = post - poss;
     fseek(bld, poss * sizeof(float) + valSTART, SEEK_SET);
     if (fread(buffer, sizeof(float), num, bld) != num) {
@@ -1293,10 +1246,10 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
       int sid2 = sid + j + 1;
       int chrj = ldinfo._esi_chr[sid2];
       int bpj = ldinfo._esi_bp[sid2];
-      string rsj = ldinfo._esi_rs[sid2];
+      std::string rsj = ldinfo._esi_rs[sid2];
       float ldv = buffer[j];
-      string tmpstr = atos(chri) + '\t' + atos(bpi) + '\t' + rsi + '\t' + atos(chrj) + '\t' + atos(bpj) + '\t' + rsj +
-                      '\t' + atos(ldv) + '\n';
+      std::string tmpstr = atos(chri) + '\t' + atos(bpi) + '\t' + rsi + '\t' + atos(chrj) + '\t' + atos(bpj) + '\t' +
+                           rsj + '\t' + atos(ldv) + '\n';
       fputs(tmpstr.c_str(), outfile);
       wcount++;
     }
@@ -1314,8 +1267,8 @@ void check_autosome(bInfo* bdata) {
   }
 }
 
-void get_ld_blk_pnt(bInfo* bdata, vector<int>& brk_pnt1, vector<int>& brk_pnt2, vector<int>& brk_pnt3, int wind_bp,
-                    int wind_snp) {
+void get_ld_blk_pnt(bInfo* bdata, std::vector<int>& brk_pnt1, std::vector<int>& brk_pnt2, std::vector<int>& brk_pnt3,
+                    int wind_bp, int wind_snp) {
   unsigned long i = 0, j = 0, k = 0, m = bdata->_include.size();
 
   brk_pnt1.clear();
@@ -1326,8 +1279,7 @@ void get_ld_blk_pnt(bInfo* bdata, vector<int>& brk_pnt1, vector<int>& brk_pnt2, 
       if (chr_start || ((bdata->_bp[bdata->_include[i]] - bdata->_bp[bdata->_include[brk_pnt1[j]]] > 0.5 * wind_bp) &&
                         (i - brk_pnt1[j] > 0.5 * wind_snp)))
         brk_pnt1.push_back(m - 1);
-      else
-        brk_pnt1[j - 1] = brk_pnt1[j] = m - 1;
+      else brk_pnt1[j - 1] = brk_pnt1[j] = m - 1;
     } else if (bdata->_chr[bdata->_include[i]] != bdata->_chr[bdata->_include[brk_pnt1[j]]] ||
                bdata->_bp[bdata->_include[i]] - bdata->_bp[bdata->_include[i - 1]] > 1e6) {
       if (chr_start ||
@@ -1351,8 +1303,8 @@ void get_ld_blk_pnt(bInfo* bdata, vector<int>& brk_pnt1, vector<int>& brk_pnt2, 
       j++;
     }
   }
-  stable_sort(brk_pnt1.begin(), brk_pnt1.end());
-  brk_pnt1.erase(unique(brk_pnt1.begin(), brk_pnt1.end()), brk_pnt1.end());
+  std::stable_sort(brk_pnt1.begin(), brk_pnt1.end());
+  brk_pnt1.erase(std::unique(brk_pnt1.begin(), brk_pnt1.end()), brk_pnt1.end());
 
   brk_pnt2.clear();
   brk_pnt3.clear();
@@ -1372,7 +1324,7 @@ void calcu_ld_blk_split(bInfo* bdata, int size, int size_limit, MatrixXf& X_sub,
                         double rsq_cutoff, VectorXf& rsq_size, VectorXf& mean_rsq_sub, VectorXf& max_rsq_sub, int s1,
                         int s2, bool second) {
   int i = 0, j = 0, k = 0, m = 0, n = bdata->_keep.size();
-  vector<int> brk_pnt_sub;
+  std::vector<int> brk_pnt_sub;
   brk_pnt_sub.push_back(0);
   for (i = size_limit; i < size - size_limit; i += size_limit) {
     brk_pnt_sub.push_back(i - 1);
@@ -1422,8 +1374,8 @@ void calcu_ld_blk_split(bInfo* bdata, int size, int size_limit, MatrixXf& X_sub,
   }
 }
 
-void calcu_ld_blk(bInfo* bdata, vector<int>& brk_pnt, vector<int>& brk_pnt3, VectorXf& mean_rsq, VectorXf& snp_num,
-                  VectorXf& max_rsq, bool second, double rsq_cutoff) {
+void calcu_ld_blk(bInfo* bdata, std::vector<int>& brk_pnt, std::vector<int>& brk_pnt3, VectorXf& mean_rsq,
+                  VectorXf& snp_num, VectorXf& max_rsq, bool second, double rsq_cutoff) {
   int i = 0, j = 0, k = 0, s1 = 0, s2 = 0, n = bdata->_keep.size(), m = bdata->_include.size(), size = 0,
       size_limit = 10000;
   int ttlsize = 0;
@@ -1442,17 +1394,15 @@ void calcu_ld_blk(bInfo* bdata, vector<int>& brk_pnt, vector<int>& brk_pnt3, Vec
     VectorXf rsq_size(size), mean_rsq_sub(size), max_rsq_sub = VectorXf::Constant(size, -1.0);
     ttlsize += size;
     // make genotype matrix
-    vector<int> snp_indx(size);
+    std::vector<int> snp_indx(size);
     for (j = brk_pnt[i], k = 0; j <= brk_pnt[i + 1]; j++, k++) snp_indx[k] = j;
     MatrixXf X_sub;
     make_XMat_subset(bdata, X_sub, snp_indx, true);
     VectorXf ssx_sqrt_i_sub(size);
     for (j = 0; j < size; j++) {
       ssx_sqrt_i_sub[j] = X_sub.col(j).squaredNorm();
-      if (ssx_sqrt_i_sub[j] < 1.0e-30)
-        ssx_sqrt_i_sub[j] = 0.0;
-      else
-        ssx_sqrt_i_sub[j] = 1.0 / sqrt(ssx_sqrt_i_sub[j]);
+      if (ssx_sqrt_i_sub[j] < 1.0e-30) ssx_sqrt_i_sub[j] = 0.0;
+      else ssx_sqrt_i_sub[j] = 1.0 / sqrt(ssx_sqrt_i_sub[j]);
     }
 
     if (size > size_limit)
@@ -1495,33 +1445,33 @@ void calcu_ld_blk(bInfo* bdata, vector<int>& brk_pnt, vector<int>& brk_pnt3, Vec
       }
     }
   }
-  cout << ttlsize << endl;
+  std::cout << ttlsize << std::endl;
 }
 
 void calcu_mean_rsq(char* outFileName, char* bFileName, char* indilstName, char* indilst2remove, char* snplstName,
                     char* snplst2exclde, int chr, double maf, bool ldr, bool ldr2, int ldWind, double rsq_cutoff) {
   bInfo bdata;
   MatrixXd X;
-  vector<uint64_t> cols;
-  vector<float> lds;
-  read_famfile(&bdata, string(bFileName) + ".fam");
+  std::vector<std::uint64_t> cols;
+  std::vector<float> lds;
+  read_famfile(&bdata, std::string(bFileName) + ".fam");
   if (indilstName != NULL) keep_indi(&bdata, indilstName);
   if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
-  read_bimfile(&bdata, string(bFileName) + ".bim");
+  read_bimfile(&bdata, std::string(bFileName) + ".bim");
   if (chr) extract_snp(&bdata, chr);
   if (snplstName != NULL) extract_snp(&bdata, snplstName);
   if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
-  read_bedfile(&bdata, string(bFileName) + ".bed");
+  read_bedfile(&bdata, std::string(bFileName) + ".bed");
   if (bdata._mu.empty()) calcu_mu(&bdata);
   if (maf > 0) filter_snp_maf(&bdata, maf);
   check_autosome(&bdata);
 
   int i = 0, m = bdata._include.size();
 
-  cout << "\nCalculating LD score for SNPs (block size of " << ldWind / 1000 << "Kb with an overlap of "
-       << ldWind / 2000 << "Kb between blocks); LD rsq threshold = " << rsq_cutoff << ") ... " << endl;
+  std::cout << "\nCalculating LD score for SNPs (block size of " << ldWind / 1000 << "Kb with an overlap of "
+            << ldWind / 2000 << "Kb between blocks); LD rsq threshold = " << rsq_cutoff << ") ... " << std::endl;
 
-  vector<int> brk_pnt1, brk_pnt2, brk_pnt3;
+  std::vector<int> brk_pnt1, brk_pnt2, brk_pnt3;
   get_ld_blk_pnt(&bdata, brk_pnt1, brk_pnt2, brk_pnt3, ldWind, 0);
 
   VectorXf mean_rsq = VectorXf::Zero(m), snp_num = VectorXf::Zero(m), max_rsq = VectorXf::Zero(m);
@@ -1530,10 +1480,10 @@ void calcu_mean_rsq(char* outFileName, char* bFileName, char* indilstName, char*
   if (brk_pnt2.size() > 1) calcu_ld_blk(&bdata, brk_pnt2, brk_pnt3, mean_rsq, snp_num, max_rsq, true, rsq_cutoff);
   // printf(" cost2: %f ms.\n",float( clock () - begin_time ) /  1000);
   /*
-  string mrsq_file = "";
+  std::string mrsq_file = "";
   mrsq_file = _out + ".score.ld";
-  ofstream o_mrsq(mrsq_file.data());
-  o_mrsq<<"SNP chr bp MAF mean_rsq snp_num max_rsq ldscore"<<endl;
+  std::ofstream o_mrsq(mrsq_file.data());
+  o_mrsq<<"SNP chr bp MAF mean_rsq snp_num max_rsq ldscore"<<std::endl;
   double ldscore = 0.0;
   for (i = 0; i < m; i++){
       o_mrsq << bdata->_snp_name[bdata->_include[i]] << " " << bdata->_chr[bdata->_include[i]] << " " <<
@@ -1541,8 +1491,8 @@ void calcu_mean_rsq(char* outFileName, char* bFileName, char* indilstName, char*
   MAF; ldscore = 1.0 + mean_rsq[i] * snp_num[i]; o_mrsq << MAF << " " << mean_rsq[i] << " " << snp_num[i] << " " <<
   max_rsq[i] << " " << ldscore << "\n";
   }
-  o_mrsq << endl;
-  cout << "LD score for " << m << " SNPs have been saved in the file [" + mrsq_file + "]." << endl;
+  o_mrsq << std::endl;
+  std::cout << "LD score for " << m << " SNPs have been saved in the file [" + mrsq_file + "]." << std::endl;
    */
 }
 

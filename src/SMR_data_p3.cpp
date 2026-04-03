@@ -18,69 +18,68 @@
 
 using namespace CommFunc;
 using namespace StatFunc;
-using namespace std;
 
 namespace SMRDATA {
-void combine_esi(vector<snpinfolst>& snpinfo, vector<string>& smasNames, bool genouni) {
+void combine_esi(std::vector<snpinfolst>& snpinfo, std::vector<std::string>& smasNames, bool genouni) {
   long counter = 0;
-  map<string, int> rs_map;
-  map<string, int> rsbp_map;
+  std::map<std::string, int> rs_map;
+  std::map<std::string, int> rsbp_map;
   long f2r = smasNames.size();
   if (genouni) f2r = 1;
 
   for (int i = 0; i < f2r; i++) {
     //        typedef struct{
-    //            vector<int> _esi_chr;
-    //            vector<string> _esi_rs;
-    //            vector<int> _esi_gd;
-    //            vector<int> _esi_bp;
-    //            vector<string> _esi_allele1;
-    //            vector<string> _esi_allele2;
-    //            vector<int> _esi_include; // initialized in the readesi
-    //            map<string,int> _snp_name_map;
-    //            vector<float> _esi_freq;
+    //            std::vector<int> _esi_chr;
+    //            std::vector<std::string> _esi_rs;
+    //            std::vector<int> _esi_gd;
+    //            std::vector<int> _esi_bp;
+    //            std::vector<std::string> _esi_allele1;
+    //            std::vector<std::string> _esi_allele2;
+    //            std::vector<int> _esi_include; // initialized in the readesi
+    //            std::map<std::string,int> _snp_name_map;
+    //            std::vector<float> _esi_freq;
     //
-    //            vector<int> _epi_chr;
-    //            vector<string> _epi_prbID;
-    //            vector<int> _epi_gd;
-    //            vector<int> _epi_bp;
-    //            vector<string> _epi_gene;
-    //            vector<char> _epi_orien;
-    //            vector<int> _include; // initialized in the readepi
-    //            map<string,int> _probe_name_map;
-    //            vector<double> _epi_var;
+    //            std::vector<int> _epi_chr;
+    //            std::vector<std::string> _epi_prbID;
+    //            std::vector<int> _epi_gd;
+    //            std::vector<int> _epi_bp;
+    //            std::vector<std::string> _epi_gene;
+    //            std::vector<char> _epi_orien;
+    //            std::vector<int> _include; // initialized in the readepi
+    //            std::map<std::string,int> _probe_name_map;
+    //            std::vector<double> _epi_var;
     //            /* if no probe sequence region input, its size should be 0.
     //               for the probe not for probe sequence file, the value should be
     //               set as -9, no technical eQTL would be removed from this probe.
     //             */
-    //            vector<int> _epi_start;
-    //            vector<int> _epi_end;
+    //            std::vector<int> _epi_start;
+    //            std::vector<int> _epi_end;
     //
     //            //for sparse
-    //            vector<uint64_t> _cols;
-    //            vector<uint32_t> _rowid;
-    //            vector<float> _val;
+    //            std::vector<std::uint64_t> _cols;
+    //            std::vector<std::uint32_t> _rowid;
+    //            std::vector<float> _val;
     //            // for dense
-    //            vector< vector<float> > _bxz; // first dimension is probe, second is snp
-    //            vector< vector<float> > _sexz;
+    //            std::vector< std::vector<float> > _bxz; // first dimension is probe, second is snp
+    //            std::vector< std::vector<float> > _sexz;
     //
-    //            uint64_t _probNum;
-    //            uint64_t _snpNum;
-    //            uint64_t _valNum;
+    //            std::uint64_t _probNum;
+    //            std::uint64_t _snpNum;
+    //            std::uint64_t _valNum;
     //
     //        } eqtlInfo;
 
     eqtlInfo etmp;
-    string esifile = smasNames[i] + ".esi";
+    std::string esifile = smasNames[i] + ".esi";
     // the eqtlInfo structure contain esi and epi date, and for this momment only esi date was filled.
     read_esifile(&etmp, esifile);
 
     for (int j = 0; j < etmp._snpNum; j++) {
-      // make a string which combined esi name and its position.
-      string crsbpstr = etmp._esi_rs[j] + ":" + atos(etmp._esi_bp[j]);
+      // make a std::string which combined esi name and its position.
+      std::string crsbpstr = etmp._esi_rs[j] + ":" + atos(etmp._esi_bp[j]);
 
-      rs_map.insert(pair<string, int>(etmp._esi_rs[j].c_str(), counter));
-      rsbp_map.insert(pair<string, int>(crsbpstr.c_str(), counter));
+      rs_map.insert(std::pair<std::string, int>(etmp._esi_rs[j].c_str(), counter));
+      rsbp_map.insert(std::pair<std::string, int>(crsbpstr.c_str(), counter));
       if (rs_map.size() != rsbp_map.size()) {
         // SNP in one esi file has BP1 but in another esi file has BP2
         printf("ERROR: inconsistent position for the SNP %s in different ESI files. Please check.\n",
@@ -108,19 +107,19 @@ void combine_esi(vector<snpinfolst>& snpinfo, vector<string>& smasNames, bool ge
   printf("Total %ld SNPs to be included from %ld esi files.\n", snpinfo.size(), f2r);
 }
 
-void combine_epi(vector<probeinfolst2>& probeinfo, vector<string>& smasNames) {
+void combine_epi(std::vector<probeinfolst2>& probeinfo, std::vector<std::string>& smasNames) {
   long counter = 0;
-  map<string, int> prb_map;
-  map<string, int> prbbp_map;
-  map<string, int>::iterator iter;
+  std::map<std::string, int> prb_map;
+  std::map<std::string, int> prbbp_map;
+  std::map<std::string, int>::iterator iter;
   for (int i = 0; i < smasNames.size(); i++) {
     eqtlInfo etmp;
-    string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasNames[i] + ".epi";
     read_epifile(&etmp, epifile);
     for (int j = 0; j < etmp._probNum; j++) {
-      string crsbpstr = etmp._epi_prbID[j] + ":" + atos(etmp._epi_bp[j]);
-      prb_map.insert(pair<string, int>(etmp._epi_prbID[j].c_str(), counter));
-      prbbp_map.insert(pair<string, int>(crsbpstr.c_str(), counter));
+      std::string crsbpstr = etmp._epi_prbID[j] + ":" + atos(etmp._epi_bp[j]);
+      prb_map.insert(std::pair<std::string, int>(etmp._epi_prbID[j].c_str(), counter));
+      prbbp_map.insert(std::pair<std::string, int>(crsbpstr.c_str(), counter));
       if (prb_map.size() != prbbp_map.size()) {
         printf("ERROR: inconsistent position for the probe %s  in different EPI files. Please check.\n",
                etmp._epi_prbID[j].c_str());
@@ -163,18 +162,18 @@ void combine_epi(vector<probeinfolst2>& probeinfo, vector<string>& smasNames) {
 
 
  */
-uint64_t countNotNullNum(vector<string>& smasNames, int& densefnum, int& sparsefnum) {
-  uint64_t count = 0;
+std::uint64_t countNotNullNum(std::vector<std::string>& smasNames, int& densefnum, int& sparsefnum) {
+  std::uint64_t count = 0;
   for (int i = 0; i < smasNames.size(); i++) {
     eqtlInfo etmp;
-    string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasNames[i] + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = readuint32(fptr);
-    uint64_t valnum = 0;
+    std::uint32_t filetype = readuint32(fptr);
+    std::uint64_t valnum = 0;
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == 0x40000000) {
       valnum = readuint64(fptr);
       sparsefnum++;
@@ -185,7 +184,7 @@ uint64_t countNotNullNum(vector<string>& smasNames, int& densefnum, int& sparsef
       sparsefnum++;
     }
     if (filetype == 0x3f800000) {
-      valnum = (uint64_t)readfloat(fptr);
+      valnum = (std::uint64_t)readfloat(fptr);
       sparsefnum++;
     }
     if (filetype == DENSE_FILE_TYPE_1) {
@@ -213,54 +212,55 @@ uint64_t countNotNullNum(vector<string>& smasNames, int& densefnum, int& sparsef
   return count;
 }
 
-void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<probeinfolst2>& probeinfo,
-                      vector<string>& esi_rs, vector<string>& esi_a1, vector<string>& esi_a2, int addn) {
-  map<string, int> esi_map;
+void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::vector<probeinfolst2>& probeinfo,
+                      std::vector<std::string>& esi_rs, std::vector<std::string>& esi_a1,
+                      std::vector<std::string>& esi_a2, int addn) {
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
 
   // get esd info
   long esiNum = snpinfo.size();
   int epiNum = (int)probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = DENSE_FILE_TYPE_3;
-  uint64_t bsize = (uint64_t)esiNum << 1;
+  std::uint32_t ft2save = DENSE_FILE_TYPE_3;
+  std::uint64_t bsize = (std::uint64_t)esiNum << 1;
   float* buffer = (float*)malloc(sizeof(float) * bsize);
   if (NULL == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
   bool prtscr = false;
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   eqtlInfo eqtlinfo;
   int ssck = -9;
   double dis = 0;
   for (int j = 0; j < epiNum; j++) {
     progress(j, dis, epiNum);
-    string prbname = probeinfo[j].probeId;
+    std::string prbname = probeinfo[j].probeId;
     for (int k = 0; k < bsize; k++) buffer[k] = -9;  // init
     for (int k = 0; k < probeinfo[j].besdpath.size(); k++) {
-      string besdfilepre = probeinfo[j].besdpath[k];
-      vector<string> _rs;
-      vector<float> _beta;
-      vector<float> _se;
-      vector<int> _chr;
-      vector<string> _a1;
-      vector<string> _a2;
-      vector<int> _bp;
-      vector<float> _freq;
+      std::string besdfilepre = probeinfo[j].besdpath[k];
+      std::vector<std::string> _rs;
+      std::vector<float> _beta;
+      std::vector<float> _se;
+      std::vector<int> _chr;
+      std::vector<std::string> _a1;
+      std::vector<std::string> _a2;
+      std::vector<int> _bp;
+      std::vector<float> _freq;
 
-      read_epifile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
+      read_epifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
       extract_eqtl_single_probe(&eqtlinfo, prbname, prtscr);
-      read_esifile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
-      int tmp = shown(string(probeinfo[j].besdpath[k]));
+      read_esifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
+      int tmp = shown(std::string(probeinfo[j].besdpath[k]));
       if (tmp != -9) {
         printf("The sample size is %d.\n", tmp);
         if (ssck == -9) {
@@ -272,14 +272,14 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
           }
         }
       }
-      read_besdfile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
+      read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
         // printf("No data included of probe %s from %s.\n",prbname.c_str(),probeinfo[j].besdpath[k].c_str());
         continue;
       }
       if (eqtlinfo._valNum == 0) {
-        for (uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
+        for (std::uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
           float beta = eqtlinfo._bxz[0][jj];
           float se = eqtlinfo._sexz[0][jj];
           if (fabs(se + 9) < 1e-6) continue;
@@ -298,11 +298,11 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
           exit(EXIT_FAILURE);
         }
 
-        for (uint32_t ii = 0; ii < eqtlinfo._probNum; ii++) {
-          uint64_t proid = eqtlinfo._include[ii];
-          uint64_t pos = eqtlinfo._cols[proid << 1];
-          uint64_t pos1 = eqtlinfo._cols[(proid << 1) + 1];
-          uint64_t num = pos1 - pos;
+        for (std::uint32_t ii = 0; ii < eqtlinfo._probNum; ii++) {
+          std::uint64_t proid = eqtlinfo._include[ii];
+          std::uint64_t pos = eqtlinfo._cols[proid << 1];
+          std::uint64_t pos1 = eqtlinfo._cols[(proid << 1) + 1];
+          std::uint64_t num = pos1 - pos;
           for (int jj = 0; jj < num; jj++) {
             double beta = eqtlinfo._val[pos + jj];
             double se = eqtlinfo._val[pos + jj + num];
@@ -319,11 +319,10 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
         }
       }
 
-      vector<int> rsid(_rs.size());
+      std::vector<int> rsid(_rs.size());
       for (int l = 0; l < _rs.size(); l++) {
         iter = esi_map.find(_rs[l]);
-        if (iter != esi_map.end())
-          rsid[l] = iter->second;
+        if (iter != esi_map.end()) rsid[l] = iter->second;
         else {
           printf(
               "ERROR: SNP %s is not in output SNP set. if you are using --geno-uni, please disable it then try again. "
@@ -379,7 +378,7 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       }
     }
     if (j == 0) {
-      vector<int> ten_ints(RESERVEDUNITS);
+      std::vector<int> ten_ints(RESERVEDUNITS);
       ten_ints[0] = ft2save;
       if (addn != -9) {
         printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -399,27 +398,28 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   }
   fclose(smr1);
   free(buffer);
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 }
 
-void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<probeinfolst2>& probeinfo, int addn) {
+void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::vector<probeinfolst2>& probeinfo,
+                      int addn) {
   // because read only once .esi file. so the alleles of each SNP in every .esi should be the same and in the same
   // alignment.
   //  get esd info
   long esiNum = snpinfo.size();
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = DENSE_FILE_TYPE_3;
+  std::uint32_t ft2save = DENSE_FILE_TYPE_3;
 
-  uint64_t sizeperprb = sizeof(float) * esiNum * 2;
-  uint64_t bsize = 0x7FFFFFC0;
+  std::uint64_t sizeperprb = sizeof(float) * esiNum * 2;
+  std::uint64_t bsize = 0x7FFFFFC0;
   float* buffer = (float*)malloc(bsize);
   while (NULL == buffer && bsize > sizeperprb) {
     buffer = (float*)malloc(bsize >>= 1);
@@ -432,9 +432,9 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   }
   long prbperloop = bsize / sizeperprb;
   bool prtscr = false;
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   eqtlInfo eqtlinfo;
-  read_esifile(&eqtlinfo, string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
+  read_esifile(&eqtlinfo, std::string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
   if (esiNum != eqtlinfo._snpNum) {
     printf("ERROR: the SNPs in the .esi files are not consistent. Please disable --geno-uni and have another try.\n");
     exit(EXIT_FAILURE);
@@ -444,17 +444,17 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   double dis = 0;
   for (int j = 0; j < loops; j++) {
     progress(j, dis, loops);
-    uint64_t numprbcurloop = prbperloop;
+    std::uint64_t numprbcurloop = prbperloop;
     if (j == loops - 1) numprbcurloop = epiNum - j * numprbcurloop;
-    uint64_t vnum = numprbcurloop * esiNum * 2;
+    std::uint64_t vnum = numprbcurloop * esiNum * 2;
     for (int k = 0; k < vnum; k++) buffer[k] = -9;  // init
-    map<string, int> fcurloop;
+    std::map<std::string, int> fcurloop;
     long fnum = 0;
-    vector<F2Prb> f2prb;
+    std::vector<F2Prb> f2prb;
     for (int k = 0; k < numprbcurloop; k++) {
       long curPrid = j * prbperloop + k;
       if (curPrid >= probeinfo.size()) break;
-      string prbname = probeinfo[curPrid].probeId;
+      std::string prbname = probeinfo[curPrid].probeId;
       if (probeinfo[curPrid].besdpath.size() > 1) {
         printf(
             "ERROR: the probe %s is found in %ld BESD files. Please check whether the SNPs are in consistency among "
@@ -467,7 +467,7 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       if (iter != fcurloop.end()) {
         f2prb[iter->second].pid.push_back(k);
       } else {
-        fcurloop.insert(pair<string, int>(probeinfo[curPrid].besdpath[0], fnum));
+        fcurloop.insert(std::pair<std::string, int>(probeinfo[curPrid].besdpath[0], fnum));
         F2Prb fptmp;
         fptmp.besdpath = probeinfo[curPrid].besdpath[0];
         fptmp.pid.push_back(k);
@@ -477,27 +477,27 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
     }
 
     for (int l = 0; l < f2prb.size(); l++) {
-      string besdfilepre = f2prb[l].besdpath;
+      std::string besdfilepre = f2prb[l].besdpath;
       read_epifile(&eqtlinfo, besdfilepre + ".epi", prtscr);
 
-      string besdfile = string(besdfilepre) + ".besd";
+      std::string besdfile = std::string(besdfilepre) + ".besd";
       FILE* fptr = fopen(besdfile.c_str(), "rb");
       if (!fptr) {
         printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
         exit(EXIT_FAILURE);
       }
 
-      uint32_t filetype = readuint32(fptr);
+      std::uint32_t filetype = readuint32(fptr);
       int descriptive = 1;
       if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
-      uint64_t valNum = 0;
-      uint64_t* ptr = NULL;
-      uint64_t rowSTART = 0;
-      uint64_t valSTART = 0;
+      std::uint64_t valNum = 0;
+      std::uint64_t* ptr = NULL;
+      std::uint64_t rowSTART = 0;
+      std::uint64_t valSTART = 0;
       if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-        uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
+        std::uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
         fseek(fptr, 0L, SEEK_END);
-        uint64_t lSize = ftell(fptr);
+        std::uint64_t lSize = ftell(fptr);
         fseek(fptr, 0L, SEEK_SET);
         readuint32(fptr);
         if (filetype == SPARSE_FILE_TYPE_3) {
@@ -530,45 +530,46 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
 
         valNum = readuint64(fptr);
         if (filetype == SPARSE_FILE_TYPE_3F) {
-          if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                       valNum * sizeof(float)) !=
+          if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                       valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
               0) {
             printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
             exit(EXIT_FAILURE);
           }
         } else {
-          if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                       valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+          if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                       valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
               0) {
             printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
             exit(EXIT_FAILURE);
           }
         }
 
-        uint64_t colsize = colNum * sizeof(uint64_t);
-        uint64_t* colbuf = (uint64_t*)malloc(colsize);
+        std::uint64_t colsize = colNum * sizeof(std::uint64_t);
+        std::uint64_t* colbuf = (std::uint64_t*)malloc(colsize);
         if (NULL == colbuf) {
           printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
           exit(EXIT_FAILURE);
         }
-        fread(colbuf, colNum, sizeof(uint64_t), fptr);
+        fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
 
         ptr = colbuf;
-        rowSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-        valSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+        rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+        valSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                   valNum * sizeof(std::uint32_t);
 
         for (int m = 0; m < f2prb[l].pid.size(); m++) {
           long curPrid = j * prbperloop + f2prb[l].pid[m];
-          string curprb = probeinfo[curPrid].probeId;
+          std::string curprb = probeinfo[curPrid].probeId;
           iter = eqtlinfo._probe_name_map.find(curprb);
           if (iter != eqtlinfo._probe_name_map.end()) {
-            uint64_t pid = iter->second;
-            uint64_t pos = *(ptr + (pid << 1));       // BETA START
-            uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
-            uint64_t num = pos1 - pos;
+            std::uint64_t pid = iter->second;
+            std::uint64_t pos = *(ptr + (pid << 1));       // BETA START
+            std::uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
+            std::uint64_t num = pos1 - pos;
 
             char* row_char_ptr;
-            row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(uint32_t));
+            row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(std::uint32_t));
             if (row_char_ptr == NULL) {
               fputs("Memory error", stderr);
               exit(1);
@@ -579,16 +580,16 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
               fputs("Memory error", stderr);
               exit(1);
             }
-            memset(row_char_ptr, 0, sizeof(char) * 2 * num * sizeof(uint32_t));
+            memset(row_char_ptr, 0, sizeof(char) * 2 * num * sizeof(std::uint32_t));
             memset(val_char_ptr, 0, sizeof(char) * 2 * num * sizeof(float));
-            fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-            fread(row_char_ptr, sizeof(uint32_t), 2 * num, fptr);
-            uint32_t* row_ptr = (uint32_t*)row_char_ptr;
+            fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+            fread(row_char_ptr, sizeof(std::uint32_t), 2 * num, fptr);
+            std::uint32_t* row_ptr = (std::uint32_t*)row_char_ptr;
             fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
             fread(val_char_ptr, sizeof(float), 2 * num, fptr);
             float* val_ptr = (float*)val_char_ptr;
             for (int j = 0; j < num; j++) {
-              uint32_t rid = *(row_ptr + j);
+              std::uint32_t rid = *(row_ptr + j);
               *(buffer + f2prb[l].pid[m] * esiNum * 2 + rid) = *(val_ptr + j);
               *(buffer + f2prb[l].pid[m] * esiNum * 2 + rid + esiNum) = *(val_ptr + j + num);
             }
@@ -629,10 +630,10 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
 
         for (int m = 0; m < f2prb[l].pid.size(); m++) {
           long curPrid = j * prbperloop + f2prb[l].pid[m];
-          string curprb = probeinfo[curPrid].probeId;
+          std::string curprb = probeinfo[curPrid].probeId;
           iter = eqtlinfo._probe_name_map.find(curprb);
           if (iter != eqtlinfo._probe_name_map.end()) {
-            uint64_t pid = iter->second;
+            std::uint64_t pid = iter->second;
             fseek(fptr, ((pid << 1) * eqtlinfo._snpNum + descriptive) << 2, SEEK_SET);
             float* wptr = buffer + f2prb[l].pid[m] * esiNum * 2;
             fread(wptr, sizeof(char), eqtlinfo._snpNum << 3, fptr);
@@ -645,7 +646,7 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       fclose(fptr);
     }
     if (j == 0) {
-      vector<int> ten_ints(RESERVEDUNITS);
+      std::vector<int> ten_ints(RESERVEDUNITS);
       ten_ints[0] = ft2save;
       if (addn != -9) {
         printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -665,13 +666,13 @@ void save_besds_dbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   }
   fclose(smr1);
   free(buffer);
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 }
 
-void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<probeinfolst2>& probeinfo,
-                      vector<string>& esi_rs, vector<string>& esi_a1, vector<string>& esi_a2, vector<string>& smasNames,
-                      int addn) {
+void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::vector<probeinfolst2>& probeinfo,
+                      std::vector<std::string>& esi_rs, std::vector<std::string>& esi_a1,
+                      std::vector<std::string>& esi_a2, std::vector<std::string>& smasNames, int addn) {
   // double init
   /*
   for(int j=0;j<probeinfo.size();j++)
@@ -690,27 +691,27 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   }
    */
   //
-  map<string, int> esi_map;
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
-  map<string, int> epi_map;
-  map<string, int>::iterator iter;
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int>::iterator iter;
   for (int j = 0; j < probeinfo.size(); j++) {
-    epi_map.insert(pair<string, int>(probeinfo[j].probeId, j));
+    epi_map.insert(std::pair<std::string, int>(probeinfo[j].probeId, j));
   }
 
   // get esd info
   long esiNum = snpinfo.size();
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
   bool prtscr = false;
 
   eqtlInfo etmp;
@@ -720,29 +721,29 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   for (int i = 0; i < smasNames.size(); i++) {
     progress(i, dis, (int)smasNames.size());
 
-    string esifile = smasNames[i] + ".esi";
+    std::string esifile = smasNames[i] + ".esi";
     read_esifile(&etmp, esifile, prtscr);
 
-    string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasNames[i] + ".epi";
     read_epifile(&etmp, epifile, prtscr);
 
-    string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasNames[i] + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = readuint32(fptr);
+    std::uint32_t filetype = readuint32(fptr);
     int descriptive = 1;
     if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
-    uint64_t valNum = 0;
-    uint64_t* ptr = NULL;
-    uint64_t rowSTART = 0;
-    uint64_t valSTART = 0;
+    std::uint64_t valNum = 0;
+    std::uint64_t* ptr = NULL;
+    std::uint64_t rowSTART = 0;
+    std::uint64_t valSTART = 0;
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-      uint64_t colNum = (etmp._probNum << 1) + 1;
+      std::uint64_t colNum = (etmp._probNum << 1) + 1;
       fseek(fptr, 0L, SEEK_END);
-      uint64_t lSize = 0;
+      std::uint64_t lSize = 0;
 #if defined __linux
       long fsize = 0;
       fsize = ftell(fptr);
@@ -753,7 +754,7 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       if (fsize == -1) {
         fprintf(stderr, "error, ftell function error\n");
       } else {
-        lSize = (uint64_t)fsize;
+        lSize = (std::uint64_t)fsize;
       }
 
       fseek(fptr, 0L, SEEK_SET);
@@ -788,57 +789,57 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
 
       valNum = readuint64(fptr);
       if (filetype == SPARSE_FILE_TYPE_3F) {
-        if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                     valNum * sizeof(float)) !=
+        if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       } else {
-        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                     valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       }
 
-      uint64_t colsize = colNum * sizeof(uint64_t);
-      uint64_t* colbuf = (uint64_t*)malloc(colsize);
+      std::uint64_t colsize = colNum * sizeof(std::uint64_t);
+      std::uint64_t* colbuf = (std::uint64_t*)malloc(colsize);
       if (NULL == colbuf) {
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(uint64_t), fptr);
+      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
 
       ptr = colbuf;
-      rowSTART = descriptive * sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART =
-          descriptive * sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
 
       for (int j = 0; j < etmp._probNum; j++) {
-        string curprb = etmp._epi_prbID[j];
+        std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
-          string bpaths = probeinfo[prbindx].besdpath[0];
+          std::string bpaths = probeinfo[prbindx].besdpath[0];
           for (int thid = 1; thid < probeinfo[prbindx].besdpath.size(); thid++)
             bpaths += ", " + probeinfo[prbindx].besdpath[thid];
           printf("Reading summary data of the probe %s from %ld BESD files(%s).\n", curprb.c_str(),
                  probeinfo[prbindx].besdpath.size(), bpaths.c_str());
         }
 
-        uint64_t pos = *(ptr + (j << 1));       // BETA START
-        uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
-        uint64_t num = pos1 - pos;
+        std::uint64_t pos = *(ptr + (j << 1));       // BETA START
+        std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
+        std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          uint32_t* ridbuff = (uint32_t*)malloc(num * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(num * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, num * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(num * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
@@ -847,13 +848,13 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
           }
           memset(betasebuff, 0, num * 2 * sizeof(float));
 
-          fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-          fread(ridbuff, sizeof(uint32_t), 2 * num, fptr);
+          fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+          fread(ridbuff, sizeof(std::uint32_t), 2 * num, fptr);
           fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
           fread(betasebuff, sizeof(float), 2 * num, fptr);
-          vector<string> _rs;
-          vector<string> _a1;
-          vector<string> _a2;
+          std::vector<std::string> _rs;
+          std::vector<std::string> _a1;
+          std::vector<std::string> _a2;
           _rs.reserve(num);
           _a1.reserve(num);
           _a2.reserve(num);
@@ -889,15 +890,15 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
             probeinfo[prbindx].beta_se = betasebuff;
             probeinfo[prbindx].vnum = num;
           } else {
-            map<int, int> rid_map;
+            std::map<int, int> rid_map;
             for (int l = 0; l < probeinfo[prbindx].vnum; l++) {
-              rid_map.insert(pair<int, int>(probeinfo[prbindx].rowid[l], l));
+              rid_map.insert(std::pair<int, int>(probeinfo[prbindx].rowid[l], l));
             }
             int ridsize = rid_map.size();
-            vector<int> keepid;
+            std::vector<int> keepid;
             for (int l = 0; l < num; l++) {
               if (fabs(betasebuff[l + num] + 9) > 1e-6) {
-                rid_map.insert(pair<int, int>(ridbuff[l], ridsize));
+                rid_map.insert(std::pair<int, int>(ridbuff[l], ridsize));
                 if (ridsize < rid_map.size()) {
                   keepid.push_back(l);
                   ridsize++;
@@ -913,12 +914,12 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
               }
             }
             long num_new = probeinfo[prbindx].vnum + keepid.size();
-            uint32_t* rid_new = (uint32_t*)malloc(num_new * 2 * sizeof(uint32_t));
+            std::uint32_t* rid_new = (std::uint32_t*)malloc(num_new * 2 * sizeof(std::uint32_t));
             if (NULL == rid_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
             }
-            memset(rid_new, 0, num_new * 2 * sizeof(uint32_t));
+            memset(rid_new, 0, num_new * 2 * sizeof(std::uint32_t));
             float* betase_new = (float*)malloc(num_new * 2 * sizeof(float));
             if (NULL == betase_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
@@ -927,10 +928,10 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
             memset(betase_new, 0, num_new * 2 * sizeof(float));
 
             if (keepid.size() < num) {
-              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(uint32_t));
+              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(std::uint32_t));
               for (int l = 0; l < keepid.size(); l++) *(rid_new + probeinfo[prbindx].vnum + l) = *(ridbuff + keepid[l]);
               memcpy(rid_new + probeinfo[prbindx].vnum + keepid.size(), rid_new,
-                     (probeinfo[prbindx].vnum + keepid.size()) * sizeof(uint32_t));
+                     (probeinfo[prbindx].vnum + keepid.size()) * sizeof(std::uint32_t));
 
               memcpy(betase_new, probeinfo[prbindx].beta_se, probeinfo[prbindx].vnum * sizeof(float));
               for (int l = 0; l < keepid.size(); l++)
@@ -941,10 +942,10 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
                 *(betase_new + 2 * probeinfo[prbindx].vnum + keepid.size() + l) = *(betasebuff + num + keepid[l]);
 
             } else {
-              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(uint32_t));
-              memcpy(rid_new + probeinfo[prbindx].vnum, ridbuff, num * sizeof(uint32_t));
+              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(std::uint32_t));
+              memcpy(rid_new + probeinfo[prbindx].vnum, ridbuff, num * sizeof(std::uint32_t));
               memcpy(rid_new + probeinfo[prbindx].vnum + num, rid_new,
-                     (probeinfo[prbindx].vnum + num) * sizeof(uint32_t));
+                     (probeinfo[prbindx].vnum + num) * sizeof(std::uint32_t));
 
               memcpy(betase_new, probeinfo[prbindx].beta_se, probeinfo[prbindx].vnum * sizeof(float));
               memcpy(betase_new + probeinfo[prbindx].vnum, betasebuff, num * sizeof(float));
@@ -1003,11 +1004,11 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       }
 
       for (int j = 0; j < etmp._probNum; j++) {
-        string curprb = etmp._epi_prbID[j];
+        std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
-          string bpaths = probeinfo[prbindx].besdpath[0];
+          std::string bpaths = probeinfo[prbindx].besdpath[0];
           for (int thid = 1; thid < probeinfo[prbindx].besdpath.size(); thid++)
             bpaths += ", " + probeinfo[prbindx].besdpath[thid];
           printf("Reading summary data of the probe %s from %ld BESD files(%s).\n", curprb.c_str(),
@@ -1016,25 +1017,25 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
         memset(tmpbetase, 0, sizeof(float) * etmp._snpNum << 1);
         fseek(fptr, ((j << 1) * etmp._snpNum + descriptive) << 2, SEEK_SET);
         fread(tmpbetase, sizeof(float), etmp._snpNum << 1, fptr);
-        uint64_t realnum = 0;
+        std::uint64_t realnum = 0;
         for (int k = 0; k < etmp._snpNum; k++)
           if (tmpbetase[etmp._snpNum + k] + 9 > 1e-6) realnum++;
         if (realnum > 0) {
-          uint32_t* ridbuff = (uint32_t*)malloc(realnum * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(realnum * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, realnum * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, realnum * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(realnum * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(betasebuff, 0, realnum * 2 * sizeof(uint32_t));
-          uint64_t numcount = 0;
+          memset(betasebuff, 0, realnum * 2 * sizeof(std::uint32_t));
+          std::uint64_t numcount = 0;
           for (int k = 0; k < etmp._snpNum; k++) {
             if (tmpbetase[etmp._snpNum + k] + 9 > 1e-6) {
               ridbuff[numcount] = k;
@@ -1045,9 +1046,9 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
             }
           }
 
-          vector<string> _rs;
-          vector<string> _a1;
-          vector<string> _a2;
+          std::vector<std::string> _rs;
+          std::vector<std::string> _a1;
+          std::vector<std::string> _a2;
           _rs.reserve(realnum);
           _a1.reserve(realnum);
           _a2.reserve(realnum);
@@ -1083,15 +1084,15 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
             probeinfo[prbindx].beta_se = betasebuff;
             probeinfo[prbindx].vnum = realnum;
           } else {
-            map<int, int> rid_map;
+            std::map<int, int> rid_map;
             for (int l = 0; l < probeinfo[prbindx].vnum; l++) {
-              rid_map.insert(pair<int, int>(probeinfo[prbindx].rowid[l], l));
+              rid_map.insert(std::pair<int, int>(probeinfo[prbindx].rowid[l], l));
             }
             int ridsize = rid_map.size();
-            vector<int> keepid;
+            std::vector<int> keepid;
             for (int l = 0; l < realnum; l++) {
               if (fabs(betasebuff[l + realnum] + 9) > 1e-6) {
-                rid_map.insert(pair<int, int>(ridbuff[l], ridsize));
+                rid_map.insert(std::pair<int, int>(ridbuff[l], ridsize));
                 if (ridsize < rid_map.size()) {
                   keepid.push_back(l);
                   ridsize++;
@@ -1107,12 +1108,12 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
               }
             }
             long num_new = probeinfo[prbindx].vnum + keepid.size();
-            uint32_t* rid_new = (uint32_t*)malloc(num_new * 2 * sizeof(uint32_t));
+            std::uint32_t* rid_new = (std::uint32_t*)malloc(num_new * 2 * sizeof(std::uint32_t));
             if (NULL == rid_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
             }
-            memset(rid_new, 0, num_new * 2 * sizeof(uint32_t));
+            memset(rid_new, 0, num_new * 2 * sizeof(std::uint32_t));
             float* betase_new = (float*)malloc(num_new * 2 * sizeof(float));
             if (NULL == betase_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
@@ -1121,10 +1122,10 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
             memset(betase_new, 0, num_new * 2 * sizeof(float));
 
             if (keepid.size() < realnum) {
-              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(uint32_t));
+              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(std::uint32_t));
               for (int l = 0; l < keepid.size(); l++) *(rid_new + probeinfo[prbindx].vnum + l) = *(ridbuff + keepid[l]);
               memcpy(rid_new + probeinfo[prbindx].vnum + keepid.size(), rid_new,
-                     (probeinfo[prbindx].vnum + keepid.size()) * sizeof(uint32_t));
+                     (probeinfo[prbindx].vnum + keepid.size()) * sizeof(std::uint32_t));
 
               memcpy(betase_new, probeinfo[prbindx].beta_se, probeinfo[prbindx].vnum * sizeof(float));
               for (int l = 0; l < keepid.size(); l++)
@@ -1135,10 +1136,10 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
                 *(betase_new + 2 * probeinfo[prbindx].vnum + keepid.size() + l) = *(betasebuff + realnum + keepid[l]);
 
             } else {
-              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(uint32_t));
-              memcpy(rid_new + probeinfo[prbindx].vnum, ridbuff, realnum * sizeof(uint32_t));
+              memcpy(rid_new, probeinfo[prbindx].rowid, probeinfo[prbindx].vnum * sizeof(std::uint32_t));
+              memcpy(rid_new + probeinfo[prbindx].vnum, ridbuff, realnum * sizeof(std::uint32_t));
               memcpy(rid_new + probeinfo[prbindx].vnum + realnum, rid_new,
-                     (probeinfo[prbindx].vnum + realnum) * sizeof(uint32_t));
+                     (probeinfo[prbindx].vnum + realnum) * sizeof(std::uint32_t));
 
               memcpy(betase_new, probeinfo[prbindx].beta_se, probeinfo[prbindx].vnum * sizeof(float));
               memcpy(betase_new + probeinfo[prbindx].vnum, betasebuff, realnum * sizeof(float));
@@ -1166,17 +1167,17 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
     }
     fclose(fptr);
   }
-  vector<uint64_t> cols((epiNum << 1) + 1);
-  uint64_t valNum = 0;
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+  std::uint64_t valNum = 0;
   cols[0] = 0;
 
   for (int j = 0; j < epiNum; j++) {
-    uint64_t real_num = probeinfo[j].vnum;
+    std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -1192,12 +1193,12 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
     progress(j, disp, (int)epiNum);
-    fwrite(probeinfo[j].rowid, sizeof(uint32_t), probeinfo[j].vnum * 2, smr1);
+    fwrite(probeinfo[j].rowid, sizeof(std::uint32_t), probeinfo[j].vnum * 2, smr1);
   }
   for (int j = 0; j < epiNum; j++) {
     fwrite(probeinfo[j].beta_se, sizeof(float), probeinfo[j].vnum * 2, smr1);
@@ -1209,31 +1210,31 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
     free(probeinfo[j].rowid);
     probeinfo[j].rowid = NULL;
   }
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 }
-void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<probeinfolst2>& probeinfo,
-                      vector<string>& smasNames, int addn) {
-  map<string, int> epi_map;
-  map<string, int>::iterator iter;
+void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::vector<probeinfolst2>& probeinfo,
+                      std::vector<std::string>& smasNames, int addn) {
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int>::iterator iter;
   for (int j = 0; j < probeinfo.size(); j++) {
-    epi_map.insert(pair<string, int>(probeinfo[j].probeId, j));
+    epi_map.insert(std::pair<std::string, int>(probeinfo[j].probeId, j));
   }
   // get esd info
   long esiNum = snpinfo.size();
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
   bool prtscr = false;
 
   eqtlInfo etmp;
-  read_esifile(&etmp, string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
+  read_esifile(&etmp, std::string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
   if (esiNum != etmp._snpNum) {
     printf("ERROR: The SNPs in your .esi files are not in consistency, please disable --geno-uni, then have a try.\n");
     exit(EXIT_FAILURE);
@@ -1245,26 +1246,26 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   for (int i = 0; i < smasNames.size(); i++) {
     progress(i, disp, (int)smasNames.size());
 
-    string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasNames[i] + ".epi";
     read_epifile(&etmp, epifile, prtscr);
 
-    string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasNames[i] + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = readuint32(fptr);
+    std::uint32_t filetype = readuint32(fptr);
     int descriptive = 1;
     if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
-    uint64_t valNum = 0;
-    uint64_t* ptr = NULL;
-    uint64_t rowSTART = 0;
-    uint64_t valSTART = 0;
+    std::uint64_t valNum = 0;
+    std::uint64_t* ptr = NULL;
+    std::uint64_t rowSTART = 0;
+    std::uint64_t valSTART = 0;
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-      uint64_t colNum = (etmp._probNum << 1) + 1;
+      std::uint64_t colNum = (etmp._probNum << 1) + 1;
       fseek(fptr, 0L, SEEK_END);
-      uint64_t lSize = ftell(fptr);
+      std::uint64_t lSize = ftell(fptr);
       fseek(fptr, 0L, SEEK_SET);
       readuint32(fptr);
       if (filetype == SPARSE_FILE_TYPE_3) {
@@ -1296,35 +1297,36 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       }
       valNum = readuint64(fptr);
       if (filetype == SPARSE_FILE_TYPE_3F) {
-        if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                     valNum * sizeof(float)) !=
+        if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       } else {
-        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                     valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       }
 
-      uint64_t colsize = colNum * sizeof(uint64_t);
-      uint64_t* colbuf = (uint64_t*)malloc(colsize);
+      std::uint64_t colsize = colNum * sizeof(std::uint64_t);
+      std::uint64_t* colbuf = (std::uint64_t*)malloc(colsize);
       if (NULL == colbuf) {
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(uint64_t), fptr);
+      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
 
       ptr = colbuf;
-      rowSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
 
       for (int j = 0; j < etmp._probNum; j++) {
-        string curprb = etmp._epi_prbID[j];
+        std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1)  // or if(probeinfo[prbindx].beta_se.size()>0)
@@ -1337,17 +1339,17 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
           exit(EXIT_FAILURE);
         }
 
-        uint64_t pos = *(ptr + (j << 1));       // BETA START
-        uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
-        uint64_t num = pos1 - pos;
+        std::uint64_t pos = *(ptr + (j << 1));       // BETA START
+        std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
+        std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          uint32_t* ridbuff = (uint32_t*)malloc(num * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(num * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, num * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(num * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
@@ -1356,8 +1358,8 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
           }
           memset(betasebuff, 0, num * 2 * sizeof(float));
 
-          fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-          fread(ridbuff, sizeof(uint32_t), 2 * num, fptr);
+          fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+          fread(ridbuff, sizeof(std::uint32_t), 2 * num, fptr);
           probeinfo[prbindx].rowid = ridbuff;
           fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
           fread(betasebuff, sizeof(float), 2 * num, fptr);
@@ -1407,7 +1409,7 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
       }
 
       for (int j = 0; j < etmp._probNum; j++) {
-        string curprb = etmp._epi_prbID[j];
+        std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
@@ -1429,24 +1431,24 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
         memset(tmpbetase, 0, sizeof(float) * etmp._snpNum << 1);
         fseek(fptr, ((j << 1) * etmp._snpNum + descriptive) << 2, SEEK_SET);
         fread(tmpbetase, sizeof(float), etmp._snpNum << 1, fptr);
-        uint64_t realnum = 0;
+        std::uint64_t realnum = 0;
         for (int k = 0; k < etmp._snpNum; k++)
           if (fabs(tmpbetase[etmp._snpNum + k] + 9 > 1e-6)) realnum++;
         probeinfo[prbindx].vnum = realnum;
-        uint32_t* ridbuff = (uint32_t*)malloc(realnum * 2 * sizeof(uint32_t));
+        std::uint32_t* ridbuff = (std::uint32_t*)malloc(realnum * 2 * sizeof(std::uint32_t));
         if (NULL == ridbuff) {
           printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                  besdfile.c_str());
           exit(EXIT_FAILURE);
         }
-        memset(ridbuff, 0, realnum * 2 * sizeof(uint32_t));
+        memset(ridbuff, 0, realnum * 2 * sizeof(std::uint32_t));
         float* betasebuff = (float*)malloc(realnum * 2 * sizeof(float));
         if (NULL == betasebuff) {
           printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                  besdfile.c_str());
           exit(EXIT_FAILURE);
         }
-        memset(betasebuff, 0, realnum * 2 * sizeof(uint32_t));
+        memset(betasebuff, 0, realnum * 2 * sizeof(std::uint32_t));
         realnum = 0;
         for (int k = 0; k < etmp._snpNum; k++) {
           if (fabs(tmpbetase[etmp._snpNum + k] + 9 > 1e-6)) {
@@ -1473,18 +1475,18 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
     fclose(fptr);
   }
 
-  vector<uint64_t> cols((epiNum << 1) + 1);
-  uint64_t valNum = 0;
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+  std::uint64_t valNum = 0;
   cols[0] = 0;
 
   for (int j = 0; j < epiNum; j++) {
-    uint64_t real_num = probeinfo[j].vnum;
+    std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
 
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -1500,11 +1502,11 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
   disp = 0;
   for (int j = 0; j < epiNum; j++) {
-    fwrite(probeinfo[j].rowid, sizeof(uint32_t), probeinfo[j].vnum * 2, smr1);
+    fwrite(probeinfo[j].rowid, sizeof(std::uint32_t), probeinfo[j].vnum * 2, smr1);
   }
 
   for (int j = 0; j < epiNum; j++) {
@@ -1518,53 +1520,54 @@ void save_besds_sbesd(char* outFileName, vector<snpinfolst>& snpinfo, vector<pro
     free(probeinfo[j].rowid);
     probeinfo[j].rowid = NULL;
   }
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a file [" + esdfile + "]." << std::endl;
 }
 
-void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, vector<string>& esi_rs,
-                           vector<string>& esi_a1, vector<string>& esi_a2, int cis_itvl, int trans_itvl,
-                           float transThres, float restThres, vector<string>& smasNames, int addn) {
-  map<string, int> esi_map;
+void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probeinfo, std::vector<std::string>& esi_rs,
+                           std::vector<std::string>& esi_a1, std::vector<std::string>& esi_a2, int cis_itvl,
+                           int trans_itvl, float transThres, float restThres, std::vector<std::string>& smasNames,
+                           int addn) {
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
 
-  map<string, int> epi_map;
-  map<string, int>::iterator iter;
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int>::iterator iter;
   for (int j = 0; j < probeinfo.size(); j++) {
-    epi_map.insert(pair<string, int>(probeinfo[j].probeId, j));
+    epi_map.insert(std::pair<std::string, int>(probeinfo[j].probeId, j));
   }
 
   // get esd info
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
 
-  vector<uint64_t> cols((epiNum << 1) + 1);
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
   ;
-  vector<uint32_t> rowids;
-  vector<float> val;
+  std::vector<std::uint32_t> rowids;
+  std::vector<float> val;
   cols[0] = 0;
   bool prtscr = false;
 
   // log file
   FILE* logfile = NULL;
-  string logfname = string(outFileName) + ".summary";
+  std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
     printf("Error: Failed to open log file.\n");
     exit(1);
   }
-  string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                  "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                  dtos(restThres) + "\n";
+  std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                       "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                       dtos(restThres) + "\n";
   logstr +=
       "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\ntrans region is indicated \
             by <Chr, Start bp, End bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -1577,72 +1580,72 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
   cis_itvl = cis_itvl * 1000;
   trans_itvl = trans_itvl * 1000;
 
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
   int ssck = -9;
   double disp = 0;
   eqtlInfo eqtlinfo;
 
   for (int j = 0; j < epiNum; j++) {
     //        typedef struct{
-    //            c vector<int> _esi_chr;
-    //            c vector<string> _esi_rs;
-    //            c vector<int> _esi_gd;
-    //            c vector<int> _esi_bp;
-    //            c vector<string> _esi_allele1;
-    //            c vector<string> _esi_allele2;
-    //            c vector<int> _esi_include; // initialized in the readesi
-    //            c map<string,int> _snp_name_map;
-    //            c vector<float> _esi_freq;
+    //            c std::vector<int> _esi_chr;
+    //            c std::vector<std::string> _esi_rs;
+    //            c std::vector<int> _esi_gd;
+    //            c std::vector<int> _esi_bp;
+    //            c std::vector<std::string> _esi_allele1;
+    //            c std::vector<std::string> _esi_allele2;
+    //            c std::vector<int> _esi_include; // initialized in the readesi
+    //            c std::map<std::string,int> _snp_name_map;
+    //            c std::vector<float> _esi_freq;
     //
-    //            c vector<int> _epi_chr;
-    //            c vector<string> _epi_prbID;
-    //            c vector<int> _epi_gd;
-    //            c vector<int> _epi_bp;
-    //            c vector<string> _epi_gene;
-    //            c vector<char> _epi_orien;
-    //            c vector<int> _include; // initialized in the readepi
-    //            c map<string,int> _probe_name_map;
-    //            vector<double> _epi_var;
+    //            c std::vector<int> _epi_chr;
+    //            c std::vector<std::string> _epi_prbID;
+    //            c std::vector<int> _epi_gd;
+    //            c std::vector<int> _epi_bp;
+    //            c std::vector<std::string> _epi_gene;
+    //            c std::vector<char> _epi_orien;
+    //            c std::vector<int> _include; // initialized in the readepi
+    //            c std::map<std::string,int> _probe_name_map;
+    //            std::vector<double> _epi_var;
     //            /* if no probe sequence region input, its size should be 0.
     //               for the probe not for probe sequence file, the value should be
     //               set as -9, no technical eQTL would be removed from this probe.
     //             */
-    //            vector<int> _epi_start;
-    //            vector<int> _epi_end;
+    //            std::vector<int> _epi_start;
+    //            std::vector<int> _epi_end;
     //
     //            //for sparse
-    //            c vector<uint64_t> _cols;
-    //            c vector<uint32_t> _rowid;
-    //            c vector<float> _val;
+    //            c std::vector<std::uint64_t> _cols;
+    //            c std::vector<std::uint32_t> _rowid;
+    //            c std::vector<float> _val;
     //            // for dense
-    //            c vector< vector<float> > _bxz; // first dimension is probe, second is snp
-    //            c vector< vector<float> > _sexz;
+    //            c std::vector< std::vector<float> > _bxz; // first dimension is probe, second is snp
+    //            c std::vector< std::vector<float> > _sexz;
     //
-    //            uint64_t _probNum;
-    //            uint64_t _snpNum;
-    //            uint64_t _valNum;
+    //            std::uint64_t _probNum;
+    //            std::uint64_t _snpNum;
+    //            std::uint64_t _valNum;
     //
     //        } eqtlInfo;
 
-    cout << eqtlinfo._esi_rs.size() << endl;
-    cout << eqtlinfo._epi_prbID.size() << endl;
-    cout << val.size() << endl;
+    std::cout << eqtlinfo._esi_rs.size() << std::endl;
+    std::cout << eqtlinfo._epi_prbID.size() << std::endl;
+    std::cout << val.size() << std::endl;
 
     progress(j, disp, (int)epiNum);
 
-    string prbname = probeinfo[j].probeId;
-    cout << "probe name:" << prbname << endl;
-    vector<uint32_t> tmprid;
-    vector<float> tmpse;
+    std::string prbname = probeinfo[j].probeId;
+    std::cout << "probe name:" << prbname << std::endl;
+    std::vector<std::uint32_t> tmprid;
+    std::vector<float> tmpse;
 
     snpinfo.clear();
-    map<string, int> snp_map;
+    std::map<std::string, int> snp_map;
     long snpmapsize = 0;
     for (int k = 0; k < probeinfo[j].besdpath.size(); k++) {
-      read_epifile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
+      read_epifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
       extract_eqtl_single_probe(&eqtlinfo, prbname, prtscr);
-      read_esifile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
-      int tmp = shown(string(probeinfo[j].besdpath[k]));
+      read_esifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
+      int tmp = shown(std::string(probeinfo[j].besdpath[k]));
       if (tmp != -9) {
         printf("The sample size is %d.\n", tmp);
         if (ssck == -9) {
@@ -1655,18 +1658,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
         }
       }
 
-      read_besdfile(&eqtlinfo, string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
+      read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
         // No data included of this file of the current probe does not mean no data in other files of the current probe;
         continue;
       }
       if (eqtlinfo._valNum == 0) {
-        for (uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
+        for (std::uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
           float beta = eqtlinfo._bxz[0][jj];
           float se = eqtlinfo._sexz[0][jj];
           if (fabs(se + 9) < 1e-6) continue;
-          snp_map.insert(pair<string, int>(eqtlinfo._esi_rs[jj], snpmapsize));
+          snp_map.insert(std::pair<std::string, int>(eqtlinfo._esi_rs[jj], snpmapsize));
           if (snpmapsize < snp_map.size()) {
             snpinfolst tmpinfo;
             tmpinfo.beta = beta;
@@ -1688,18 +1691,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           throw("Error: No data extracted from the input, please check.\n");
         }
 
-        for (uint32_t ii = 0; ii < eqtlinfo._probNum; ii++)  // eqtlinfo._probNum should be 1 here
+        for (std::uint32_t ii = 0; ii < eqtlinfo._probNum; ii++)  // eqtlinfo._probNum should be 1 here
         {
-          uint64_t proid = eqtlinfo._include[ii];
-          uint64_t pos = eqtlinfo._cols[proid << 1];
-          uint64_t pos1 = eqtlinfo._cols[(proid << 1) + 1];
-          uint64_t num = pos1 - pos;
+          std::uint64_t proid = eqtlinfo._include[ii];
+          std::uint64_t pos = eqtlinfo._cols[proid << 1];
+          std::uint64_t pos1 = eqtlinfo._cols[(proid << 1) + 1];
+          std::uint64_t num = pos1 - pos;
           for (int jj = 0; jj < num; jj++) {
             double beta = eqtlinfo._val[pos + jj];
             double se = eqtlinfo._val[pos + jj + num];
             if (fabs(se + 9) < 1e-6) continue;
             int rowid = eqtlinfo._rowid[pos + jj];
-            snp_map.insert(pair<string, int>(eqtlinfo._esi_rs[jj], snpmapsize));
+            snp_map.insert(std::pair<std::string, int>(eqtlinfo._esi_rs[jj], snpmapsize));
             if (snpmapsize < snp_map.size()) {
               snpinfolst tmpinfo;
               tmpinfo.beta = beta;
@@ -1730,13 +1733,13 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
       prbifo.probechr = probeinfo[j].probechr;
       strcpy2(&prbifo.probeId, probeinfo[j].probeId);
 
-      vector<int> slct_idx;
+      std::vector<int> slct_idx;
       slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                           false);  // slct_idx with no order if there are trans-rgeions
       free2(&prbifo.probeId);
-      stable_sort(slct_idx.begin(), slct_idx.end());
-      vector<string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
-      vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
+      std::stable_sort(slct_idx.begin(), slct_idx.end());
+      std::vector<std::string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
+      std::vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
 
       for (int l = 0; l < slct_idx.size(); l++) {
         _rs[l] = snpinfo[slct_idx[l]].snprs;
@@ -1745,11 +1748,10 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
         _beta[l] = snpinfo[slct_idx[l]].beta;
         _se[l] = snpinfo[slct_idx[l]].se;
       }
-      vector<int> rsid(_rs.size());
+      std::vector<int> rsid(_rs.size());
       for (int l = 0; l < _rs.size(); l++) {
         iter = esi_map.find(_rs[l]);
-        if (iter != esi_map.end())
-          rsid[l] = iter->second;
+        if (iter != esi_map.end()) rsid[l] = iter->second;
         else {
           printf(
               "ERROR: SNP %s is not in output SNP set. if you are using --geno-uni, \
@@ -1758,15 +1760,15 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           exit(EXIT_FAILURE);
         }
       }
-      // map<string, int> rsa_map;
+      // std::map<std::string, int> rsa_map;
       //  long rsNum=0;
       for (int l = 0; l < rsid.size(); l++)  // here rsid is not in order, so the rowids in the file is not in order
       {
         // if(fabs(_se[l]+9)>1e-6) // can move this. the NA is controled in slct_sparse_per_prb
         // {
-        //    string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-        //   rsa_map.insert(pair<string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent selecting
-        //   duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
+        //    std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
+        //   rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
+        //   selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
         //  {
 
         if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
@@ -1832,7 +1834,7 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
         val.push_back(tmpse[k]);
         rowids.push_back(tmprid[k]);
       }
-      uint64_t real_num = tmpse.size();
+      std::uint64_t real_num = tmpse.size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
       cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
     } else {
@@ -1842,7 +1844,7 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
     free_snplist(snpinfo);
   }
 
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -1858,54 +1860,55 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  uint64_t valNum = val.size();
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
-  fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+  std::uint64_t valNum = val.size();
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
+  fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
   fwrite(&val[0], sizeof(float), val.size(), smr1);
   fclose(smr1);
   printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-  cout << "\nEffect sizes (beta) and SE for " << epiNum << " Probes have been saved in a binary file [" + esdfile + "]."
-       << endl;
+  std::cout << "\nEffect sizes (beta) and SE for " << epiNum
+            << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
   fclose(logfile);
 }
 
-void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, vector<string>& esi_rs,
-                             vector<string>& esi_a1, vector<string>& esi_a2, int cis_itvl, int trans_itvl,
-                             float transThres, float restThres, vector<string>& smasNames, int addn) {
-  map<string, int> esi_map;
+void save_slct_sparses_sbesd(char* outFileName, std::vector<probeinfolst2>& probeinfo, std::vector<std::string>& esi_rs,
+                             std::vector<std::string>& esi_a1, std::vector<std::string>& esi_a2, int cis_itvl,
+                             int trans_itvl, float transThres, float restThres, std::vector<std::string>& smasNames,
+                             int addn) {
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
-  map<string, int> epi_map;
-  map<string, int>::iterator iter;
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int>::iterator iter;
   for (int j = 0; j < probeinfo.size(); j++) {
-    epi_map.insert(pair<string, int>(probeinfo[j].probeId, j));
+    epi_map.insert(std::pair<std::string, int>(probeinfo[j].probeId, j));
   }
   // get esd info
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
 
   bool prtscr = false;
 
   // log file
   FILE* logfile = NULL;
-  string logfname = string(outFileName) + ".summary";
+  std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
     printf("Error: Failed to open log file.\n");
     exit(1);
   }
-  string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                  "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                  dtos(restThres) + "\n";
+  std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                       "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                       dtos(restThres) + "\n";
   logstr +=
       "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\ntrans region is indicated by <Chr, Start bp, End "
       "bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -1924,29 +1927,29 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
   double disp = 0;
   for (int i = 0; i < smasNames.size(); i++) {
     progress(i, disp, (int)smasNames.size());
-    string esifile = smasNames[i] + ".esi";
+    std::string esifile = smasNames[i] + ".esi";
     read_esifile(&eqtlinfo, esifile, prtscr);
 
-    string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasNames[i] + ".epi";
     read_epifile(&eqtlinfo, epifile, prtscr);
 
-    string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasNames[i] + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = readuint32(fptr);
+    std::uint32_t filetype = readuint32(fptr);
     int descriptive = 1;
     if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
-    uint64_t valNum = 0;
-    uint64_t* ptr = NULL;
-    uint64_t rowSTART = 0;
-    uint64_t valSTART = 0;
+    std::uint64_t valNum = 0;
+    std::uint64_t* ptr = NULL;
+    std::uint64_t rowSTART = 0;
+    std::uint64_t valSTART = 0;
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-      uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
+      std::uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
       fseek(fptr, 0L, SEEK_END);
-      uint64_t lSize = ftell(fptr);
+      std::uint64_t lSize = ftell(fptr);
       fseek(fptr, 0L, SEEK_SET);
       readuint32(fptr);
       if (filetype == SPARSE_FILE_TYPE_3) {
@@ -1979,56 +1982,57 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
 
       valNum = readuint64(fptr);
       if (filetype == SPARSE_FILE_TYPE_3F) {
-        if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                     valNum * sizeof(float)) !=
+        if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       } else {
-        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                     valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       }
 
-      uint64_t colsize = colNum * sizeof(uint64_t);
-      uint64_t* colbuf = (uint64_t*)malloc(colsize);
+      std::uint64_t colsize = colNum * sizeof(std::uint64_t);
+      std::uint64_t* colbuf = (std::uint64_t*)malloc(colsize);
       if (NULL == colbuf) {
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(uint64_t), fptr);
+      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
 
       ptr = colbuf;
-      rowSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART = descriptive * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
 
       for (int j = 0; j < eqtlinfo._probNum; j++) {
-        string curprb = eqtlinfo._epi_prbID[j];
+        std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
-          string bpaths = probeinfo[prbindx].besdpath[0];
+          std::string bpaths = probeinfo[prbindx].besdpath[0];
           for (int thid = 1; thid < probeinfo[prbindx].besdpath.size(); thid++)
             bpaths += ", " + probeinfo[prbindx].besdpath[thid];
           printf("Reading summary data of the probe %s from %ld BESD files(%s).\n", curprb.c_str(),
                  probeinfo[prbindx].besdpath.size(), bpaths.c_str());
         }
 
-        uint64_t pos = *(ptr + (j << 1));       // BETA START
-        uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
-        uint64_t num = pos1 - pos;
+        std::uint64_t pos = *(ptr + (j << 1));       // BETA START
+        std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
+        std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          uint32_t* ridbuff = (uint32_t*)malloc(num * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(num * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, num * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(num * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when reading the probe %s in the file %s.\n", curprb.c_str(),
@@ -2037,8 +2041,8 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
           }
           memset(betasebuff, 0, num * 2 * sizeof(float));
 
-          fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-          fread(ridbuff, sizeof(uint32_t), 2 * num, fptr);
+          fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+          fread(ridbuff, sizeof(std::uint32_t), 2 * num, fptr);
           fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
           fread(betasebuff, sizeof(float), 2 * num, fptr);
 
@@ -2060,13 +2064,13 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
               tmpsinfo[jj].se = se;
               tmpsinfo[jj].snpchr = eqtlinfo._esi_chr[rowid];
               tmpsinfo[jj].snprs = new char[eqtlinfo._esi_rs[rowid].size() + 1];
-              copy(eqtlinfo._esi_rs[rowid].begin(), eqtlinfo._esi_rs[rowid].end(), tmpsinfo[jj].snprs);
+              std::copy(eqtlinfo._esi_rs[rowid].begin(), eqtlinfo._esi_rs[rowid].end(), tmpsinfo[jj].snprs);
               tmpsinfo[jj].snprs[eqtlinfo._esi_rs[rowid].size()] = '\0';
               tmpsinfo[jj].a1 = new char[eqtlinfo._esi_allele1[rowid].size() + 1];
-              copy(eqtlinfo._esi_allele1[rowid].begin(), eqtlinfo._esi_allele1[rowid].end(), tmpsinfo[jj].a1);
+              std::copy(eqtlinfo._esi_allele1[rowid].begin(), eqtlinfo._esi_allele1[rowid].end(), tmpsinfo[jj].a1);
               tmpsinfo[jj].a1[eqtlinfo._esi_allele1[rowid].size()] = '\0';
               tmpsinfo[jj].a2 = new char[eqtlinfo._esi_allele2[rowid].size() + 1];
-              copy(eqtlinfo._esi_allele2[rowid].begin(), eqtlinfo._esi_allele2[rowid].end(), tmpsinfo[jj].a2);
+              std::copy(eqtlinfo._esi_allele2[rowid].begin(), eqtlinfo._esi_allele2[rowid].end(), tmpsinfo[jj].a2);
               tmpsinfo[jj].a2[eqtlinfo._esi_allele2[rowid].size()] = '\0';
               tmpsinfo[jj].bp = eqtlinfo._esi_bp[rowid];
             }
@@ -2074,17 +2078,17 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
             probeinfo[prbindx].vnum = num;
 
           } else {
-            map<string, int> rsmap;
+            std::map<std::string, int> rsmap;
             for (int l = 0; l < probeinfo[prbindx].vnum; l++) {
-              rsmap.insert(pair<string, int>(probeinfo[prbindx].sinfo[l].snprs, l));
+              rsmap.insert(std::pair<std::string, int>(probeinfo[prbindx].sinfo[l].snprs, l));
             }
             int rssize = rsmap.size();
-            vector<int> keepid;
+            std::vector<int> keepid;
             for (int jj = 0; jj < num; jj++) {
               double se = betasebuff[jj + num];
               if (fabs(se + 9) < 1e-6) continue;
               int rowid = ridbuff[jj];
-              rsmap.insert(pair<string, int>(eqtlinfo._esi_rs[rowid], rssize));
+              rsmap.insert(std::pair<std::string, int>(eqtlinfo._esi_rs[rowid], rssize));
               if (rssize < rsmap.size()) {
                 keepid.push_back(jj);
                 rssize++;
@@ -2114,16 +2118,16 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
                 sinfo_new[probeinfo[prbindx].vnum + l].se = se;
                 sinfo_new[probeinfo[prbindx].vnum + l].snpchr = eqtlinfo._esi_chr[rowid];
                 sinfo_new[probeinfo[prbindx].vnum + l].snprs = new char[eqtlinfo._esi_rs[rowid].size() + 1];
-                copy(eqtlinfo._esi_rs[rowid].begin(), eqtlinfo._esi_rs[rowid].end(),
-                     sinfo_new[probeinfo[prbindx].vnum + l].snprs);
+                std::copy(eqtlinfo._esi_rs[rowid].begin(), eqtlinfo._esi_rs[rowid].end(),
+                          sinfo_new[probeinfo[prbindx].vnum + l].snprs);
                 sinfo_new[probeinfo[prbindx].vnum + l].snprs[eqtlinfo._esi_rs[rowid].size()] = '\0';
                 sinfo_new[probeinfo[prbindx].vnum + l].a1 = new char[eqtlinfo._esi_allele1[rowid].size() + 1];
-                copy(eqtlinfo._esi_allele1[rowid].begin(), eqtlinfo._esi_allele1[rowid].end(),
-                     sinfo_new[probeinfo[prbindx].vnum + l].a1);
+                std::copy(eqtlinfo._esi_allele1[rowid].begin(), eqtlinfo._esi_allele1[rowid].end(),
+                          sinfo_new[probeinfo[prbindx].vnum + l].a1);
                 sinfo_new[probeinfo[prbindx].vnum + l].a1[eqtlinfo._esi_allele1[rowid].size()] = '\0';
                 sinfo_new[probeinfo[prbindx].vnum + l].a2 = new char[eqtlinfo._esi_allele2[rowid].size() + 1];
-                copy(eqtlinfo._esi_allele2[rowid].begin(), eqtlinfo._esi_allele2[rowid].end(),
-                     sinfo_new[probeinfo[prbindx].vnum + l].a2);
+                std::copy(eqtlinfo._esi_allele2[rowid].begin(), eqtlinfo._esi_allele2[rowid].end(),
+                          sinfo_new[probeinfo[prbindx].vnum + l].a2);
                 sinfo_new[probeinfo[prbindx].vnum + l].a2[eqtlinfo._esi_allele2[rowid].size()] = '\0';
                 sinfo_new[probeinfo[prbindx].vnum + l].bp = eqtlinfo._esi_bp[rowid];
               }
@@ -2157,7 +2161,7 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
       prbifo.bp = probeinfo[j].bp;
       prbifo.probechr = probeinfo[j].probechr;
       strcpy2(&prbifo.probeId, probeinfo[j].probeId);
-      vector<snpinfolst> snpinfo(probeinfo[j].vnum);
+      std::vector<snpinfolst> snpinfo(probeinfo[j].vnum);
       for (int k = 0; k < probeinfo[j].vnum; k++) {
         snpinfo[k].snprs = probeinfo[j].sinfo[k].snprs;
         snpinfo[k].a1 = probeinfo[j].sinfo[k].a1;
@@ -2168,17 +2172,17 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
         snpinfo[k].snpchr = probeinfo[j].sinfo[k].snpchr;
       }
 
-      vector<int> slct_idx;
+      std::vector<int> slct_idx;
       slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                           false);  // slct_idx with no order if there are trans-rgeions
-      stable_sort(slct_idx.begin(), slct_idx.end());
+      std::stable_sort(slct_idx.begin(), slct_idx.end());
       free2(&prbifo.probeId);
-      uint32_t* ridbuff = (uint32_t*)malloc(slct_idx.size() * 2 * sizeof(uint32_t));
+      std::uint32_t* ridbuff = (std::uint32_t*)malloc(slct_idx.size() * 2 * sizeof(std::uint32_t));
       if (NULL == ridbuff) {
         printf("ERROR: Memory allocation error when when dealing with probe %s.\n", probeinfo[j].probeId);
         exit(EXIT_FAILURE);
       }
-      memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(uint32_t));
+      memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(std::uint32_t));
       float* betasebuff = (float*)malloc(slct_idx.size() * 2 * sizeof(float));
       if (NULL == betasebuff) {
         printf("ERROR: Memory allocation error when when dealing with probe %s.\n", probeinfo[j].probeId);
@@ -2231,17 +2235,17 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
       probeinfo[j].sinfo = NULL;
     }
   }
-  vector<uint64_t> cols((epiNum << 1) + 1);
-  uint64_t valNum = 0;
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+  std::uint64_t valNum = 0;
   cols[0] = 0;
 
   for (int j = 0; j < epiNum; j++) {
-    uint64_t real_num = probeinfo[j].vnum;
+    std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -2257,11 +2261,11 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
 
   for (int j = 0; j < epiNum; j++) {
-    fwrite(probeinfo[j].rowid, sizeof(uint32_t), probeinfo[j].vnum * 2, smr1);
+    fwrite(probeinfo[j].rowid, sizeof(std::uint32_t), probeinfo[j].vnum * 2, smr1);
   }
   disp = 0;
   for (int j = 0; j < epiNum; j++) {
@@ -2276,42 +2280,42 @@ void save_slct_sparses_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo
     probeinfo[j].rowid = NULL;
   }
   printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-  cout << "\nEffect sizes (beta) and SE for " << epiNum << " Probes have been saved in a binary file [" + esdfile + "]."
-       << endl;
+  std::cout << "\nEffect sizes (beta) and SE for " << epiNum
+            << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
   fclose(logfile);
 }
 
-void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, int cis_itvl, int trans_itvl,
-                           float transThres, float restThres, vector<string>& smasNames, int addn) {
-  map<string, int> epi_map;
-  map<string, int>::iterator iter;
+void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probeinfo, int cis_itvl, int trans_itvl,
+                           float transThres, float restThres, std::vector<std::string>& smasNames, int addn) {
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int>::iterator iter;
   for (int j = 0; j < probeinfo.size(); j++) {
-    epi_map.insert(pair<string, int>(probeinfo[j].probeId, j));
+    epi_map.insert(std::pair<std::string, int>(probeinfo[j].probeId, j));
   }
   // get esd info
   long epiNum = probeinfo.size();
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
 
   bool prtscr = false;
 
   // log file
   FILE* logfile = NULL;
-  string logfname = string(outFileName) + ".summary";
+  std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
     printf("Error: Failed to open log file.\n");
     exit(1);
   }
-  string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                  "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                  dtos(restThres) + "\n";
+  std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                       "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                       dtos(restThres) + "\n";
   logstr +=
       "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\ntrans region is indicated by <Chr, Start bp, End "
       "bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -2323,35 +2327,35 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
   fflush(logfile);
   cis_itvl = cis_itvl * 1000;
   trans_itvl = trans_itvl * 1000;
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
   eqtlInfo eqtlinfo;
 
-  read_esifile(&eqtlinfo, string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
+  read_esifile(&eqtlinfo, std::string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
   int ssck = -9;
   double disp = 0;
   for (int i = 0; i < smasNames.size(); i++) {
     progress(i, disp, (int)smasNames.size());
 
-    string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasNames[i] + ".epi";
     read_epifile(&eqtlinfo, epifile, prtscr);
 
-    string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasNames[i] + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = readuint32(fptr);
+    std::uint32_t filetype = readuint32(fptr);
     int descriptive = 1;
     if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
-    uint64_t valNum = 0;
-    uint64_t* ptr = NULL;
-    uint64_t rowSTART = 0;
-    uint64_t valSTART = 0;
+    std::uint64_t valNum = 0;
+    std::uint64_t* ptr = NULL;
+    std::uint64_t rowSTART = 0;
+    std::uint64_t valSTART = 0;
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-      uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
+      std::uint64_t colNum = (eqtlinfo._probNum << 1) + 1;
       fseek(fptr, 0L, SEEK_END);
-      uint64_t lSize = ftell(fptr);
+      std::uint64_t lSize = ftell(fptr);
       fseek(fptr, 0L, SEEK_SET);
       readuint32(fptr);
       if (filetype == SPARSE_FILE_TYPE_3) {
@@ -2384,37 +2388,37 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
 
       valNum = readuint64(fptr);
       if (filetype == SPARSE_FILE_TYPE_3F) {
-        if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                     valNum * sizeof(float)) !=
+        if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       } else {
-        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                     valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+        if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                     valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
             0) {
           printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
           exit(EXIT_FAILURE);
         }
       }
 
-      uint64_t colsize = colNum * sizeof(uint64_t);
-      uint64_t* colbuf = (uint64_t*)malloc(colsize);
+      std::uint64_t colsize = colNum * sizeof(std::uint64_t);
+      std::uint64_t* colbuf = (std::uint64_t*)malloc(colsize);
       if (NULL == colbuf) {
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(uint64_t), fptr);
+      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
 
       ptr = colbuf;
-      rowSTART = descriptive * sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART =
-          descriptive * sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
 
       for (int j = 0; j < eqtlinfo._probNum; j++) {
         snpinfo.clear();
-        string curprb = eqtlinfo._epi_prbID[j];
+        std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1)  // or if(probeinfo[prbindx].beta_se.size()>0)
@@ -2426,18 +2430,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
               curprb.c_str(), probeinfo[prbindx].besdpath.size());
           exit(EXIT_FAILURE);
         }
-        vector<uint32_t> rowidx;
-        uint64_t pos = *(ptr + (j << 1));       // BETA START
-        uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
-        uint64_t num = pos1 - pos;
+        std::vector<std::uint32_t> rowidx;
+        std::uint64_t pos = *(ptr + (j << 1));       // BETA START
+        std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
+        std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          uint32_t* ridbuff = (uint32_t*)malloc(num * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(num * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, num * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(num * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
@@ -2446,8 +2450,8 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           }
           memset(betasebuff, 0, num * 2 * sizeof(float));
 
-          fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-          fread(ridbuff, sizeof(uint32_t), 2 * num, fptr);
+          fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+          fread(ridbuff, sizeof(std::uint32_t), 2 * num, fptr);
           fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
           fread(betasebuff, sizeof(float), 2 * num, fptr);
           for (int jj = 0; jj < num; jj++) {
@@ -2484,18 +2488,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           prbifo.probechr = eqtlinfo._epi_chr[j];  // probeinfo[prbindx].probechr;
           strcpy2(&prbifo.probeId, curprb);        // probeinfo[prbindx].probeId;
 
-          vector<int> slct_idx;
+          std::vector<int> slct_idx;
           slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                               false);  // slct_idx with no order if there are trans-rgeions
-          stable_sort(slct_idx.begin(), slct_idx.end());
+          std::stable_sort(slct_idx.begin(), slct_idx.end());
           free2(&prbifo.probeId);
-          uint32_t* ridbuff = (uint32_t*)malloc(slct_idx.size() * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(slct_idx.size() * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(slct_idx.size() * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
@@ -2505,9 +2509,9 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           memset(betasebuff, 0, slct_idx.size() * 2 * sizeof(float));
           /*
            // have relaced this with rowidx
-          vector<string> _rs(slct_idx.size());
+          std::vector<std::string> _rs(slct_idx.size());
           for(int l=0;l<slct_idx.size();l++) _rs[l]=snpinfo[slct_idx[l]].snprs;
-          vector<uint32_t> rsid(_rs.size());
+          std::vector<std::uint32_t> rsid(_rs.size());
           for (int l = 0; l<_rs.size(); l++){
               iter = esi_map.find(_rs[l]);
               if (iter != esi_map.end()) rsid[l]=iter->second;
@@ -2574,8 +2578,8 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
 
       for (int j = 0; j < eqtlinfo._probNum; j++) {
         snpinfo.clear();
-        vector<uint32_t> rowidx;
-        string curprb = eqtlinfo._epi_prbID[j];
+        std::vector<std::uint32_t> rowidx;
+        std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
@@ -2589,7 +2593,7 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
         memset(tmpbetase, 0, sizeof(float) * eqtlinfo._snpNum << 1);
         fseek(fptr, ((j << 1) * eqtlinfo._snpNum + descriptive) << 2, SEEK_SET);
         fread(tmpbetase, sizeof(float), eqtlinfo._snpNum << 1, fptr);
-        for (uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
+        for (std::uint32_t jj = 0; jj < eqtlinfo._snpNum; jj++) {
           float beta = tmpbetase[jj];
           float se = tmpbetase[jj + eqtlinfo._snpNum];
           if (fabs(se + 9) < 1e-6) continue;
@@ -2617,18 +2621,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
           prbifo.probechr = eqtlinfo._epi_chr[j];  // probeinfo[prbindx].probechr;
           strcpy2(&prbifo.probeId, curprb);        // probeinfo[prbindx].probeId;
 
-          vector<int> slct_idx;
+          std::vector<int> slct_idx;
           slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                               false);  // slct_idx with no order if there are trans-rgeions
-          stable_sort(slct_idx.begin(), slct_idx.end());
+          std::stable_sort(slct_idx.begin(), slct_idx.end());
           free2(&prbifo.probeId);
-          uint32_t* ridbuff = (uint32_t*)malloc(slct_idx.size() * 2 * sizeof(uint32_t));
+          std::uint32_t* ridbuff = (std::uint32_t*)malloc(slct_idx.size() * 2 * sizeof(std::uint32_t));
           if (NULL == ridbuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
-          memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(uint32_t));
+          memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(std::uint32_t));
           float* betasebuff = (float*)malloc(slct_idx.size() * 2 * sizeof(float));
           if (NULL == betasebuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
@@ -2662,18 +2666,18 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
     fclose(fptr);
   }
 
-  vector<uint64_t> cols((epiNum << 1) + 1);
-  uint64_t valNum = 0;
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+  std::uint64_t valNum = 0;
   cols[0] = 0;
 
   for (int j = 0; j < epiNum; j++) {
-    uint64_t real_num = probeinfo[j].vnum;
+    std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
 
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -2689,11 +2693,11 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
 
   for (int j = 0; j < epiNum; j++) {
-    fwrite(probeinfo[j].rowid, sizeof(uint32_t), probeinfo[j].vnum * 2, smr1);
+    fwrite(probeinfo[j].rowid, sizeof(std::uint32_t), probeinfo[j].vnum * 2, smr1);
   }
   disp = 0;
   for (int j = 0; j < epiNum; j++) {
@@ -2709,14 +2713,14 @@ void save_slct_besds_sbesd(char* outFileName, vector<probeinfolst2>& probeinfo, 
     probeinfo[j].rowid = NULL;
   }
   printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-  cout << "\nEffect sizes (beta) and SE for " << epiNum << " Probes have been saved in a binary file [" + esdfile + "]."
-       << endl;
+  std::cout << "\nEffect sizes (beta) and SE for " << epiNum
+            << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
   fclose(logfile);
 }
 
 void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag, int cis_itvl, int trans_itvl,
                  float transThres, float restThres, bool genouni, int addn) {
-  vector<string> smasNames;
+  std::vector<std::string> smasNames;
 
   /*typedef struct{
       char* snprs;
@@ -2730,26 +2734,26 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
       float freq;
       float estn;
   } snpinfolst;*/
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
 
   /*typedef struct{
       // string vector used to contain samp probed id but differenct file file name information.
-      vector<string> besdpath;
+      std::vector<std::string> besdpath;
       char* probeId;
       char* genename;
       int probechr;
       int gd;
       int bp;
       char orien;
-      uint64_t vnum;
-      uint32_t* rowid;
+      std::uint64_t vnum;
+      std::uint32_t* rowid;
       float* beta_se;
       snpinfolst* sinfo;
 
   } probeinfolst2;*/
-  vector<probeinfolst2> probeinfo;
+  std::vector<probeinfolst2> probeinfo;
 
-  // cout << "in the combineBesd function..." << endl;
+  // std::cout << "in the combineBesd function..." << std::endl;
 
   if (genouni) {
     printf(
@@ -2758,14 +2762,14 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   }
 
   // read beqtl-summary list.
-  read_smaslist(smasNames, string(eqtlsmaslstName));
-  for (string ss : smasNames) {
-    cout << ss << endl;
+  read_smaslist(smasNames, std::string(eqtlsmaslstName));
+  for (std::string ss : smasNames) {
+    std::cout << ss << std::endl;
   }
-  if (smasNames.size() == 0) throw("No eqtl summary file list in [ " + string(eqtlsmaslstName) + " ]");
+  if (smasNames.size() == 0) throw("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
 
   /*
-     read lines of all smas file. and store lines infor into snpinfo vector.
+     read lines of all smas file. and store lines infor into snpinfo std::vector.
      esi id duplication was checked during this process. same esi id but different
      position was checked too.
    */
@@ -2779,8 +2783,8 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   qsort(esiptr, snpinfo.size(), sizeof(snpinfolst), comp_esi);
 
   /*
-      read and load all probe information into probeinfolst2 vector, and probe sorce file was
-      recored by besdpath vector. and if there multi probe showed in different file, the file
+      read and load all probe information into probeinfolst2 std::vector, and probe sorce file was
+      recored by besdpath std::vector. and if there multi probe showed in different file, the file
       name was appended.
    */
   combine_epi(probeinfo, smasNames);
@@ -2793,8 +2797,8 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   qsort(epiptr, probeinfo.size(), sizeof(probeinfolst2), comp2);
 
   printf("\nGenerating the .epi file...\n");
-  string epifile = string(outFileName) + string(".epi");
-  ofstream epi(epifile.c_str());
+  std::string epifile = std::string(outFileName) + std::string(".epi");
+  std::ofstream epi(epifile.c_str());
   if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
 
   for (int j = 0; j < probeinfo.size(); j++) {
@@ -2805,23 +2809,23 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   printf("%ld probes have been saved in the file %s.\n", probeinfo.size(), epifile.c_str());
 
   for (probeinfolst2 line : probeinfo) {
-    cout << line.probeId << endl;
-    for (string pp : line.besdpath) {
-      cout << pp << endl;
+    std::cout << line.probeId << std::endl;
+    for (std::string pp : line.besdpath) {
+      std::cout << pp << std::endl;
     }
-    cout << "-----------" << endl;
+    std::cout << "-----------" << std::endl;
   }
 
   printf("\nGenerating the .esi file...\n");
-  vector<string> esi_rs, esi_a1, esi_a2;
+  std::vector<std::string> esi_rs, esi_a1, esi_a2;
   if (!genouni) {
     esi_rs.resize(snpinfo.size());
     esi_a1.resize(snpinfo.size());
     esi_a2.resize(snpinfo.size());
   }
 
-  string esifile = string(outFileName) + string(".esi");
-  ofstream esi(esifile.c_str());
+  std::string esifile = std::string(outFileName) + std::string(".esi");
+  std::ofstream esi(esifile.c_str());
   if (!esi) throw("Error: can not open the ESI file to save!");
   for (long j = 0; j < snpinfo.size(); j++) {
     esi << snpinfo[j].snpchr << '\t' << snpinfo[j].snprs << '\t' << snpinfo[j].gd << '\t' << snpinfo[j].bp << '\t'
@@ -2847,7 +2851,7 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   printf("\nGenerating the .besd file...\n");
 
   // count dense besd file amount and sparse besd file num, and return totall value number.
-  uint64_t valnum = countNotNullNum(smasNames, densefnum, sparsefnum);
+  std::uint64_t valnum = countNotNullNum(smasNames, densefnum, sparsefnum);
   // here valnum is used to calcultate sparsity value.
   printf(">>%d %d %lu\n", densefnum, sparsefnum, valnum);
 
@@ -2855,17 +2859,13 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
     double sparsity = 1.0 * valnum / (probeinfo.size() * snpinfo.size());
     if (sparsity >= 0.4) {
       printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
-      if (genouni)
-        save_besds_dbesd(outFileName, snpinfo, probeinfo, addn);
-      else
-        save_besds_dbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, addn);
+      if (genouni) save_besds_dbesd(outFileName, snpinfo, probeinfo, addn);
+      else save_besds_dbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, addn);
       // if the sparsity is less than 0.4, sparse format will be used even save_dense_flag is true.
     } else {
       printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
-      if (genouni)
-        save_besds_sbesd(outFileName, snpinfo, probeinfo, smasNames, addn);
-      else
-        save_besds_sbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, smasNames, addn);
+      if (genouni) save_besds_sbesd(outFileName, snpinfo, probeinfo, smasNames, addn);
+      else save_besds_sbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, smasNames, addn);
     }
   } else {
     long esiNum = snpinfo.size();
@@ -2876,8 +2876,7 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
         save_besds_sbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, smasNames, addn);
       // save_slct_sparses_sbesd(outFileName, probeinfo,esi_rs,esi_a1,esi_a2, cis_itvl,  trans_itvl,  transThres,
       // restThres,smasNames,addn);
-      else
-        printf("hererheher\n");
+      else printf("hererheher\n");
       save_slct_besds_sbesd(outFileName, probeinfo, esi_rs, esi_a1, esi_a2, cis_itvl, trans_itvl, transThres, restThres,
                             smasNames, addn);
     }
@@ -2890,13 +2889,14 @@ float est_sample_size(float freq, float beta, float se) {
   return (1.0 - 2 * freq * (1 - freq) * beta * beta) / (2 * freq * (1 - freq) * se * se);
 }
 
-void get_snpinfo_cur_prb_sparse(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_t pid, uint64_t* ptr, uint64_t rowSTART,
-                                uint64_t valSTART, eqtlInfo* etmp, map<int, int>& _incld_id_map, bool qcflag,
-                                bool rmTechnicaleQTL, bool& techHit, double pTech, double pinsnp, double pexsnp) {
-  uint64_t pos = *(ptr + (pid << 1));       // BETA START
-  uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
-  uint64_t num = pos1 - pos;
-  uint64_t real_num = 0;
+void get_snpinfo_cur_prb_sparse(std::vector<snpinfolst>& snpinfo, FILE* fptr, std::uint64_t pid, std::uint64_t* ptr,
+                                std::uint64_t rowSTART, std::uint64_t valSTART, eqtlInfo* etmp,
+                                std::map<int, int>& _incld_id_map, bool qcflag, bool rmTechnicaleQTL, bool& techHit,
+                                double pTech, double pinsnp, double pexsnp) {
+  std::uint64_t pos = *(ptr + (pid << 1));       // BETA START
+  std::uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
+  std::uint64_t num = pos1 - pos;
+  std::uint64_t real_num = 0;
   int probechr = etmp->_epi_chr[pid];
   int hybridstart = -9;
   int hybridend = -9;
@@ -2906,7 +2906,7 @@ void get_snpinfo_cur_prb_sparse(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_
   }
   bool nufreqwarnflg = false;
   char* row_char_ptr;
-  row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(uint32_t));
+  row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(std::uint32_t));
   if (row_char_ptr == NULL) {
     fputs("Memory error", stderr);
     exit(1);
@@ -2917,20 +2917,20 @@ void get_snpinfo_cur_prb_sparse(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_
     fputs("Memory error", stderr);
     exit(1);
   }
-  memset(row_char_ptr, 0, sizeof(char) * 2 * num * sizeof(uint32_t));
+  memset(row_char_ptr, 0, sizeof(char) * 2 * num * sizeof(std::uint32_t));
   memset(val_char_ptr, 0, sizeof(char) * 2 * num * sizeof(float));
-  fseek(fptr, rowSTART + pos * sizeof(uint32_t), SEEK_SET);
-  fread(row_char_ptr, sizeof(uint32_t), 2 * num, fptr);
+  fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
+  fread(row_char_ptr, sizeof(std::uint32_t), 2 * num, fptr);
 
-  uint32_t* row_ptr = (uint32_t*)row_char_ptr;
+  std::uint32_t* row_ptr = (std::uint32_t*)row_char_ptr;
   fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
   fread(val_char_ptr, sizeof(float), 2 * num, fptr);
   float* val_ptr = (float*)val_char_ptr;
   for (int j = 0; j < num; j++) {
     snpinfolst snpinfotmp;
-    uint32_t rid = *(row_ptr + j);
+    std::uint32_t rid = *(row_ptr + j);
 
-    map<int, int>::iterator iter;
+    std::map<int, int>::iterator iter;
     iter = _incld_id_map.find(rid);
     if (iter != _incld_id_map.end()) {
       strcpy2(&snpinfotmp.snprs, etmp->_esi_rs[rid]);
@@ -2978,14 +2978,15 @@ void get_snpinfo_cur_prb_sparse(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_
       }
 
       // int sid=iter->second;
-      // cout<<rid<<":"<<etmp._esi_include[sid]<<endl; // test passed
+      // std::cout<<rid<<":"<<etmp._esi_include[sid]<<std::endl; // test passed
       real_num++;
     }
   }
   free(row_char_ptr);
   free(val_char_ptr);
 }
-void get_snpinfo_cur_prb_dense(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_t pid, char** buffer, eqtlInfo* etmp) {
+void get_snpinfo_cur_prb_dense(std::vector<snpinfolst>& snpinfo, FILE* fptr, std::uint64_t pid, char** buffer,
+                               eqtlInfo* etmp) {
   fseek(fptr, ((pid << 1) * etmp->_snpNum + 1) << 2, SEEK_SET);
 
   memset(*buffer, 0, sizeof(char) * etmp->_snpNum << 3);
@@ -3010,7 +3011,7 @@ void get_snpinfo_cur_prb_dense(vector<snpinfolst>& snpinfo, FILE* fptr, uint64_t
   }
 }
 
-void qc(vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int z_thresh, vector<float>& suminfo,
+void qc(std::vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int z_thresh, std::vector<float>& suminfo,
         FILE* outlierfptr) {
   snpinfolst* sortptr = &snpinfo[0];
   qsort(sortptr, snpinfo.size(), sizeof(snpinfolst), comp_estn);
@@ -3045,17 +3046,13 @@ void qc(vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int z_thr
   } else if (qc_mtd == 1) {
     for (long i = 0; i < ttlnum; i++) {
       float z = (snpinfo[i].estn - avgn) / sdn;
-      if (fabs(z) > 3)
-        lowidx = i;
-      else
-        break;
+      if (fabs(z) > 3) lowidx = i;
+      else break;
     }
     for (long i = ttlnum - 1; i >= 0; i--) {
       float z = (snpinfo[i].estn - avgn) / sdn;
-      if (fabs(z) > z_thresh)
-        upidx = i;
-      else
-        break;
+      if (fabs(z) > z_thresh) upidx = i;
+      else break;
     }
 
   } else if (qc_mtd == 2) {
@@ -3064,22 +3061,22 @@ void qc(vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int z_thr
   }
   if (lowidx > -1) {
     for (long i = 0; i <= lowidx; i++) {
-      string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
-                      snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
-                      prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
-                      prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
-                      atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
+      std::string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
+                           snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
+                           prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
+                           prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
+                           atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
       fputs(logstr.c_str(), outlierfptr);
       fflush(outlierfptr);
     }
   }
   if (upidx < ttlnum) {
     for (long i = ttlnum - 1; i >= upidx; i--) {
-      string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
-                      snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
-                      prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
-                      prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
-                      atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
+      std::string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
+                           snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
+                           prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
+                           prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
+                           atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
       fputs(logstr.c_str(), outlierfptr);
       fflush(outlierfptr);
     }
@@ -3118,17 +3115,17 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   bool rmTechnicaleQTL = false;
   bool techHit = false;
   if (extract_cis_only) printf("Only cis information would be extracted.\n");
-  read_esifile(&etmp, string(eqtlFileName) + ".esi");
+  read_esifile(&etmp, std::string(eqtlFileName) + ".esi");
   esi_man(&etmp, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag,
           cis_itvl, prbname);
   if (snplst2exclde != NULL) exclude_eqtl_snp(&etmp, snplst2exclde);
-  read_epifile(&etmp, string(eqtlFileName) + ".epi");
+  read_epifile(&etmp, std::string(eqtlFileName) + ".epi");
   if (prbseqregion != NULL) {
     rmTechnicaleQTL = true;
     read_epistartend(&etmp, prbseqregion);
 
     if (rmTechnicaleQTL) {
-      string tmp = string(outFileName) + ".technical_eQTL.txt";
+      std::string tmp = std::string(outFileName) + ".technical_eQTL.txt";
       techeQTLfile = fopen(tmp.c_str(), "w");
       if (!(techeQTLfile)) {
         printf("Error: Failed to open techeQTL file.\n");
@@ -3136,7 +3133,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       }
     }
     if (techeQTLfile) {
-      string tmp = "SNP\tChr\tBP\tA1\tA2\tFreq\tProbe\tProbe_Chr\tProbe_bp\tGene\tOrientation\tb\tSE\tp\n";
+      std::string tmp = "SNP\tChr\tBP\tA1\tA2\tFreq\tProbe\tProbe_Chr\tProbe_bp\tGene\tOrientation\tb\tSE\tp\n";
       fputs(tmp.c_str(), techeQTLfile);
       fflush(techeQTLfile);
     }
@@ -3146,8 +3143,8 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   if (problst2exclde != NULL) exclude_prob(&etmp, problst2exclde);
 
   printf("\nGenerating the .epi file...\n");
-  string epifile = string(outFileName) + string(".epi");
-  ofstream epi(epifile.c_str());
+  std::string epifile = std::string(outFileName) + std::string(".epi");
+  std::ofstream epi(epifile.c_str());
   if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < etmp._include.size(); j++) {
     epi << etmp._epi_chr[etmp._include[j]] << '\t' << etmp._epi_prbID[etmp._include[j]] << '\t'
@@ -3158,19 +3155,19 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   printf("%ld probes have been saved in the file %s.\n", etmp._include.size(), epifile.c_str());
 
   printf("\nGenerating the .esi file...\n");
-  map<string, int> esi_map;
-  vector<string> esi_rs(etmp._esi_include.size());
-  vector<string> esi_a1(etmp._esi_include.size());
-  vector<string> esi_a2(etmp._esi_include.size());
-  string esifile = string(outFileName) + string(".esi");
-  ofstream esi(esifile.c_str());
+  std::map<std::string, int> esi_map;
+  std::vector<std::string> esi_rs(etmp._esi_include.size());
+  std::vector<std::string> esi_a1(etmp._esi_include.size());
+  std::vector<std::string> esi_a2(etmp._esi_include.size());
+  std::string esifile = std::string(outFileName) + std::string(".esi");
+  std::ofstream esi(esifile.c_str());
   if (!esi) throw("Error: can not open the ESI file to save.\n");
   for (long j = 0; j < etmp._esi_include.size(); j++) {
     esi << etmp._esi_chr[etmp._esi_include[j]] << '\t' << etmp._esi_rs[etmp._esi_include[j]] << '\t'
         << etmp._esi_gd[etmp._esi_include[j]] << '\t' << etmp._esi_bp[etmp._esi_include[j]] << '\t'
         << etmp._esi_allele1[etmp._esi_include[j]] << '\t' << etmp._esi_allele2[etmp._esi_include[j]] << '\t'
         << etmp._esi_freq[etmp._esi_include[j]] << '\n';
-    esi_map.insert(pair<string, int>(etmp._esi_rs[etmp._esi_include[j]], j));
+    esi_map.insert(std::pair<std::string, int>(etmp._esi_rs[etmp._esi_include[j]], j));
     esi_rs[j] = etmp._esi_rs[etmp._esi_include[j]];
     esi_a1[j] = etmp._esi_allele1[etmp._esi_include[j]];
     esi_a2[j] = etmp._esi_allele2[etmp._esi_include[j]];
@@ -3179,48 +3176,48 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   printf("%ld SNPs have been saved in the file %s.\n", etmp._esi_include.size(), esifile.c_str());
 
   printf("\nGenerating the .besd file...\n");
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t ft2save = SPARSE_FILE_TYPE_3;
+  std::uint32_t ft2save = SPARSE_FILE_TYPE_3;
   int ssck = -9;
 
-  vector<uint64_t> cols((etmp._include.size() << 1) + 1);
+  std::vector<std::uint64_t> cols((etmp._include.size() << 1) + 1);
   ;
-  vector<uint32_t> rowids;
-  vector<float> val;
+  std::vector<std::uint32_t> rowids;
+  std::vector<float> val;
   cols[0] = 0;
-  string besdfile = string(eqtlFileName) + ".besd";
+  std::string besdfile = std::string(eqtlFileName) + ".besd";
   FILE* fptr = fopen(besdfile.c_str(), "rb");
   if (!fptr) {
     printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
     exit(EXIT_FAILURE);
   }
 
-  map<int, int> _incld_id_map;
+  std::map<int, int> _incld_id_map;
   long size = 0;
   for (int i = 0; i < etmp._esi_include.size(); i++) {
-    _incld_id_map.insert(pair<int, int>(etmp._esi_include[i], i));
+    _incld_id_map.insert(std::pair<int, int>(etmp._esi_include[i], i));
     if (size == _incld_id_map.size())
       throw("Error: Duplicated SNP IDs found: \"" + etmp._esi_rs[etmp._esi_include[i]] + "\".");
     size = _incld_id_map.size();
   }
-  uint32_t filetype = readuint32(fptr);
+  std::uint32_t filetype = readuint32(fptr);
   int descriptive = 1;
   if (filetype == SPARSE_FILE_TYPE_3 || filetype == DENSE_FILE_TYPE_3) descriptive = RESERVEDUNITS;
   char* buffer = NULL;
-  uint64_t valNum = 0;
-  uint64_t* ptr = NULL;
-  uint64_t rowSTART = 0;
-  uint64_t valSTART = 0;
+  std::uint64_t valNum = 0;
+  std::uint64_t* ptr = NULL;
+  std::uint64_t rowSTART = 0;
+  std::uint64_t valSTART = 0;
   if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3) {
-    uint64_t colNum = (etmp._probNum << 1) + 1;
+    std::uint64_t colNum = (etmp._probNum << 1) + 1;
     fseek(fptr, 0L, SEEK_END);
-    uint64_t lSize = ftell(fptr);
+    std::uint64_t lSize = ftell(fptr);
     fseek(fptr, 0L, SEEK_SET);
     readuint32(fptr);
     if (filetype == SPARSE_FILE_TYPE_3) {
@@ -3245,21 +3242,21 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
 
     valNum = readuint64(fptr);
     if (filetype == SPARSE_FILE_TYPE_3F) {
-      if (lSize - (sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t) +
-                   valNum * sizeof(float)) !=
+      if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                   valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
           0) {
         printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
         exit(EXIT_FAILURE);
       }
     } else {
-      if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) +
-                   valNum * sizeof(uint32_t) + valNum * sizeof(float)) !=
+      if (lSize - (RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                   valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
           0) {
         printf("ERROR: wrong value number. File %s is ruined.\n", besdfile.c_str());
         exit(EXIT_FAILURE);
       }
     }
-    uint64_t colsize = colNum * sizeof(uint64_t);
+    std::uint64_t colsize = colNum * sizeof(std::uint64_t);
     buffer = (char*)malloc(sizeof(char) * (colsize));
     if (buffer == NULL) {
       fputs("Memory error when reading sparse BESD file.", stderr);
@@ -3267,13 +3264,15 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     }
     fread(buffer, colsize, sizeof(char), fptr);
 
-    ptr = (uint64_t*)buffer;
+    ptr = (std::uint64_t*)buffer;
     if (filetype == SPARSE_FILE_TYPE_3F) {
-      rowSTART = sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART = sizeof(uint32_t) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
     } else {
-      rowSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t);
-      valSTART = RESERVEDUNITS * sizeof(int) + sizeof(uint64_t) + colNum * sizeof(uint64_t) + valNum * sizeof(uint32_t);
+      rowSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
+      valSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
+                 valNum * sizeof(std::uint32_t);
     }
 
   } else if (filetype == DENSE_FILE_TYPE_1 || filetype == DENSE_FILE_TYPE_3) {
@@ -3309,15 +3308,15 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
 
   // log file
   FILE* logfile = NULL;
-  string logfname = string(outFileName) + ".summary";
+  std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
     printf("Error: Failed to open log file.\n");
     exit(1);
   }
-  string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                  "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                  dtos(restThres) + "\n";
+  std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                       "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                       dtos(restThres) + "\n";
   logstr +=
       "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\ntrans region is indicated by <Chr, Start bp, End "
       "bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -3329,13 +3328,13 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   fflush(logfile);
   cis_itvl = cis_itvl * 1000;
   trans_itvl = trans_itvl * 1000;
-  vector<snpinfolst> snpinfo;
-  map<string, int>::iterator iter;
+  std::vector<snpinfolst> snpinfo;
+  std::map<std::string, int>::iterator iter;
   FILE* outlierfptr = NULL;
   FILE* qcsryfptr = NULL;
   if (qcflag) {
     // outlier file
-    string outlierfname = string(outFileName) + ".outlier";
+    std::string outlierfname = std::string(outFileName) + ".outlier";
     outlierfptr = fopen(outlierfname.c_str(), "w");
     if (!(outlierfptr)) {
       printf("Error: Failed to open log file.\n");
@@ -3345,7 +3344,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     fputs(logstr.c_str(), outlierfptr);
     fflush(outlierfptr);
     // qc summary file
-    string qcsryfname = string(outFileName) + ".qc.summary";
+    std::string qcsryfname = std::string(outFileName) + ".qc.summary";
     qcsryfptr = fopen(qcsryfname.c_str(), "w");
     if (!(qcsryfptr)) {
       printf("Error: Failed to open log file.\n");
@@ -3361,12 +3360,12 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
 
     techHit = false;
     bool nufreqwarnflg = false;
-    string prbname = etmp._epi_prbID[etmp._include[i]];
+    std::string prbname = etmp._epi_prbID[etmp._include[i]];
     int prbbp = etmp._epi_bp[etmp._include[i]];
-    vector<uint32_t> tmprid;
-    vector<float> tmpse;
+    std::vector<std::uint32_t> tmprid;
+    std::vector<float> tmpse;
     snpinfo.clear();
-    uint64_t pid = etmp._include[i];
+    std::uint64_t pid = etmp._include[i];
     if (filetype == SPARSE_FILE_TYPE_3F || filetype == SPARSE_FILE_TYPE_3)
       get_snpinfo_cur_prb_sparse(snpinfo, fptr, pid, ptr, rowSTART, valSTART, &etmp, _incld_id_map, qcflag,
                                  rmTechnicaleQTL, techHit, ptech, pinsnp, pexsnp);
@@ -3452,7 +3451,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
 
     //  QC
     if (qcflag && snpinfo.size() > 0) {
-      vector<float> suminfo;  // maxn,minn,avgn,mediann,sdn,ttnum,rmnum
+      std::vector<float> suminfo;  // maxn,minn,avgn,mediann,sdn,ttnum,rmnum
       qc(snpinfo, &prbifo, qc_mtd, z_thresh, suminfo, outlierfptr);
       logstr = prbname;
       for (int j = 0; j < suminfo.size(); j++) {
@@ -3467,12 +3466,12 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     snpinfolst* sortptr = &snpinfo[0];
     qsort(sortptr, snpinfo.size(), sizeof(snpinfolst), comp_esi);
 
-    vector<int> slct_idx;
+    std::vector<int> slct_idx;
     slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                         extract_cis_only, techHit);  // slct_idx with no order if there are trans-rgeions
-    stable_sort(slct_idx.begin(), slct_idx.end());
-    vector<string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
-    vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
+    std::stable_sort(slct_idx.begin(), slct_idx.end());
+    std::vector<std::string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
+    std::vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
 
     for (int l = 0; l < slct_idx.size(); l++) {
       _rs[l] = snpinfo[slct_idx[l]].snprs;
@@ -3481,24 +3480,23 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       _beta[l] = snpinfo[slct_idx[l]].beta;
       _se[l] = snpinfo[slct_idx[l]].se;
     }
-    vector<int> rsid(_rs.size());
+    std::vector<int> rsid(_rs.size());
     for (int l = 0; l < _rs.size(); l++) {
       iter = esi_map.find(_rs[l]);
-      if (iter != esi_map.end())
-        rsid[l] = iter->second;
+      if (iter != esi_map.end()) rsid[l] = iter->second;
       else {
         printf("ERROR: SNP is not in SNP map. Please report this bug.");
         exit(EXIT_FAILURE);
       }
     }
-    map<string, int> rsa_map;
+    std::map<std::string, int> rsa_map;
     long rsNum = 0;
     for (int l = 0; l < rsid.size(); l++) {
       if (fabs(_se[l] + 9) > 1e-6)  // can move this. the NA is controled in slct_sparse_per_prb
       {
-        // string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-        //  rsa_map.insert(pair<string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent selecting
-        //  duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
+        // std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
+        //  rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
+        //  selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
         //  {
 
         if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
@@ -3564,7 +3562,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       val.push_back(tmpse[k]);
       rowids.push_back(tmprid[k]);
     }
-    uint64_t real_num = tmpse.size();
+    std::uint64_t real_num = tmpse.size();
     cols[(i << 1) + 1] = real_num + cols[i << 1];
     cols[i + 1 << 1] = (real_num << 1) + cols[i << 1];
 
@@ -3573,7 +3571,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     free2(&prbifo.genename);
   }
 
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = ft2save;
   if (addn != -9) {
     printf("Adding the sample size  %d to the file %s.\n", addn, esdfile.c_str());
@@ -3589,16 +3587,16 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  uint64_t valNum2write = val.size();
-  fwrite(&valNum2write, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
-  fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+  std::uint64_t valNum2write = val.size();
+  fwrite(&valNum2write, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
+  fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
   fwrite(&val[0], sizeof(float), val.size(), smr1);
   fclose(smr1);
 
   printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-  cout << "\nEffect sizes (beta) and SE for " << etmp._include.size()
-       << " Probes have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "\nEffect sizes (beta) and SE for " << etmp._include.size()
+            << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
 
   if (buffer) free(buffer);
   fclose(fptr);
@@ -3613,9 +3611,9 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
 void beqtl_qc_se(eqtlInfo* eqtlinfo, int qc_mtd, int z_thresh, char* outFileName) {
   FILE* outlierfptr = NULL;
   FILE* qcsryfptr = NULL;
-  string logstr = "";
+  std::string logstr = "";
   // outlier file
-  string outlierfname = string(outFileName) + ".outlier";
+  std::string outlierfname = std::string(outFileName) + ".outlier";
   outlierfptr = fopen(outlierfname.c_str(), "w");
   if (!(outlierfptr)) {
     printf("Error: Failed to open log file.\n");
@@ -3625,7 +3623,7 @@ void beqtl_qc_se(eqtlInfo* eqtlinfo, int qc_mtd, int z_thresh, char* outFileName
   fputs(logstr.c_str(), outlierfptr);
   fflush(outlierfptr);
   // qc summary file
-  string qcsryfname = string(outFileName) + ".qc.summary";
+  std::string qcsryfname = std::string(outFileName) + ".qc.summary";
   qcsryfptr = fopen(qcsryfname.c_str(), "w");
   if (!(qcsryfptr)) {
     printf("Error: Failed to open log file.\n");
@@ -3636,13 +3634,13 @@ void beqtl_qc_se(eqtlInfo* eqtlinfo, int qc_mtd, int z_thresh, char* outFileName
   fflush(qcsryfptr);
 
   bool warnnullfrqflag = false;
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
   double disp = 0;
   for (int i = 0; i < eqtlinfo->_include.size(); i++) {
     progress(i, disp, (int)eqtlinfo->_include.size());
 
     int prbidx = eqtlinfo->_include[i];
-    string prbid = eqtlinfo->_epi_prbID[prbidx];
+    std::string prbid = eqtlinfo->_epi_prbID[prbidx];
     snpinfo.clear();
     if (eqtlinfo->_rowid.empty()) {
       for (int j = 0; j < eqtlinfo->_esi_include.size();
@@ -3680,9 +3678,9 @@ void beqtl_qc_se(eqtlInfo* eqtlinfo, int qc_mtd, int z_thresh, char* outFileName
         }
       }
     } else {
-      uint64_t beta_start = eqtlinfo->_cols[prbidx << 1];
-      uint64_t se_start = eqtlinfo->_cols[1 + (prbidx << 1)];
-      uint64_t numsnps = se_start - beta_start;
+      std::uint64_t beta_start = eqtlinfo->_cols[prbidx << 1];
+      std::uint64_t se_start = eqtlinfo->_cols[1 + (prbidx << 1)];
+      std::uint64_t numsnps = se_start - beta_start;
       for (int j = 0; j < numsnps; j++) {
         int snpidx = eqtlinfo->_rowid[beta_start + j];
         snpinfolst snptmp;
@@ -3724,7 +3722,7 @@ void beqtl_qc_se(eqtlInfo* eqtlinfo, int qc_mtd, int z_thresh, char* outFileName
 
     //  QC
     if (snpinfo.size() > 0) {
-      vector<float> suminfo;  // maxn,minn,avgn,mediann,sdn,ttnum,rmnum
+      std::vector<float> suminfo;  // maxn,minn,avgn,mediann,sdn,ttnum,rmnum
       qc(snpinfo, &prbifo, qc_mtd, z_thresh, suminfo, outlierfptr);
       logstr = prbifo.probeId;
       for (int j = 0; j < suminfo.size(); j++) {

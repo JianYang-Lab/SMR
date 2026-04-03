@@ -18,8 +18,6 @@ using namespace StatFunc;
 using namespace StrFunc;
 using namespace CommFunc;
 
-using namespace std;
-
 FILE* techeQTLfile = NULL;
 namespace SMRDATA {
 double adjSE(double beta, double p) {
@@ -47,16 +45,16 @@ double calSE(double beta, double t_stat) {
 }
 
 // below for txt 2 besd
-int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
-  ifstream flptr(syllabusName);
+int read_probeinfolst(std::vector<probeinfolst>& prbiflst, char* syllabusName) {
+  std::ifstream flptr(syllabusName);
   if (!flptr) {
     printf("ERROR: can not open the file %s to read.\n", syllabusName);
     exit(EXIT_FAILURE);
   }
   printf("Reading eQTL probe information from \"%s\".\n", syllabusName);
-  map<string, int> probe_map;
-  map<string, int> probe_cp_map;
-  map<string, int> probe_cpb_map;
+  std::map<std::string, int> probe_map;
+  std::map<std::string, int> probe_cp_map;
+  std::map<std::string, int> probe_cpb_map;
   long mapsize = 0;
   char buf[MAX_LINE_SIZE];
   flptr.getline(buf, MAX_LINE_SIZE);  // header
@@ -64,7 +62,7 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
     printf("ERROR: the first row of the file %s is empty.\n", syllabusName);
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -76,8 +74,8 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
     flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') lineNum++;
   }
-  flptr.clear(ios::goodbit);
-  flptr.seekg(0, ios::beg);
+  flptr.clear(std::ios::goodbit);
+  flptr.seekg(0, std::ios::beg);
   flptr.getline(buf, MAX_LINE_SIZE);  // header
   int fcount = 0;
   while (!flptr.eof()) {
@@ -104,11 +102,11 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
         printf("ERROR: ESD file path of probe %s is missing in row %d.\n", vs_buf[1].c_str(), fcount + 2);
         exit(EXIT_FAILURE);
       }
-      string cpstr = vs_buf[0] + ":" + vs_buf[1];
-      string cpbstr = vs_buf[0] + ":" + vs_buf[1] + ":" + vs_buf[3];
-      probe_cp_map.insert(pair<string, int>(cpstr, fcount));
-      probe_cpb_map.insert(pair<string, int>(cpbstr, fcount));
-      probe_map.insert(pair<string, int>(vs_buf[6], fcount));
+      std::string cpstr = vs_buf[0] + ":" + vs_buf[1];
+      std::string cpbstr = vs_buf[0] + ":" + vs_buf[1] + ":" + vs_buf[3];
+      probe_cp_map.insert(std::pair<std::string, int>(cpstr, fcount));
+      probe_cpb_map.insert(std::pair<std::string, int>(cpbstr, fcount));
+      probe_map.insert(std::pair<std::string, int>(vs_buf[6], fcount));
       if (probe_cp_map.size() != probe_cpb_map.size()) {
         printf("ERROR: probe %s has multiple positions.\n", vs_buf[1].c_str());
         exit(EXIT_FAILURE);
@@ -121,12 +119,9 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
       }
       probeinfolst tmpinfo;
       int tmpchr;
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[0].c_str());
       tmpinfo.probechr = tmpchr;
       strcpy2(&tmpinfo.probeId, vs_buf[1]);
       tmpinfo.gd = atoi(vs_buf[2].c_str());
@@ -136,8 +131,7 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
       strcpy2(&tmpinfo.esdpath, vs_buf[6]);
       if (col_num == 8) {
         strcpy2(&tmpinfo.bfilepath, vs_buf[7]);
-      } else
-        tmpinfo.bfilepath = NULL;
+      } else tmpinfo.bfilepath = NULL;
       prbiflst.push_back(tmpinfo);
       fcount++;
     }
@@ -147,10 +141,11 @@ int read_probeinfolst(vector<probeinfolst>& prbiflst, char* syllabusName) {
   return lineNum;
 }
 
-void read_smr_sa(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<string>& a1, vector<string>& a2,
-                 vector<float>& freq, vector<float>& beta, vector<float>& se, string esdpath) {
+void read_smr_sa(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
+                 std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float>& freq,
+                 std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -162,33 +157,29 @@ void read_smr_sa(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<s
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL summary data from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL summary data from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
     printf("ERROR: the headers should start with \"Chr\"");
     exit(EXIT_FAILURE);
   }
-  map<string, int> currs_map;
+  std::map<std::string, int> currs_map;
   long currssize = 0;
   while (!flptr.eof() && !gzeof(gzfile)) {
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       col_num = split_string(buf, vs_buf, ", \t\n");
@@ -200,20 +191,17 @@ void read_smr_sa(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<s
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
       }
-      string tmpstr = vs_buf[0] + ":" + vs_buf[1];
-      currs_map.insert(pair<string, int>(tmpstr, lineNum));
+      std::string tmpstr = vs_buf[0] + ":" + vs_buf[1];
+      currs_map.insert(std::pair<std::string, int>(tmpstr, lineNum));
       if (currssize < currs_map.size()) {
         if (vs_buf[0] == "NA" || vs_buf[0] == "na") {
           printf("ERROR: the chromosome is \'NA\' in row %d.\n", lineNum + 2);
           exit(EXIT_FAILURE);
         }
         int tmpchr;
-        if (vs_buf[0] == "X" || vs_buf[0] == "x")
-          tmpchr = 23;
-        else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-          tmpchr = 24;
-        else
-          tmpchr = atoi(vs_buf[0].c_str());
+        if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+        else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+        else tmpchr = atoi(vs_buf[0].c_str());
         chr.push_back(tmpchr);
         rs.push_back(vs_buf[1]);
         if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
@@ -257,16 +245,14 @@ void read_smr_sa(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<s
     }
   }
 
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
-  cout << lineNum << " SNPs to be included from [" + string(esdpath) + "]." << endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
+  std::cout << lineNum << " SNPs to be included from [" + std::string(esdpath) + "]." << std::endl;
 }
 
-void read_smr_sa(vector<snpinfolst>& snpinfo, string esdpath) {
+void read_smr_sa(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -278,34 +264,30 @@ void read_smr_sa(vector<snpinfolst>& snpinfo, string esdpath) {
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
     printf("ERROR: the headers should start with \"Chr\"");
     exit(EXIT_FAILURE);
   }
-  map<string, int> currs_map;
+  std::map<std::string, int> currs_map;
   long currssize = 0;
   while (!flptr.eof() && !gzeof(gzfile)) {
     snpinfolst tmpesd;
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       col_num = split_string(buf, vs_buf, ", \t\n");
@@ -317,19 +299,16 @@ void read_smr_sa(vector<snpinfolst>& snpinfo, string esdpath) {
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
       }
-      string tmpstr = vs_buf[0] + ":" + vs_buf[1];
-      currs_map.insert(pair<string, int>(tmpstr, lineNum));
+      std::string tmpstr = vs_buf[0] + ":" + vs_buf[1];
+      currs_map.insert(std::pair<std::string, int>(tmpstr, lineNum));
       if (currssize < currs_map.size()) {
         if (vs_buf[0] == "NA" || vs_buf[0] == "na") {
           printf("ERROR: the chromosome is \'NA\' in row %d.\n", lineNum + 2);
           exit(EXIT_FAILURE);
         }
-        if (vs_buf[0] == "X" || vs_buf[0] == "x")
-          tmpesd.snpchr = 23;
-        else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-          tmpesd.snpchr = 24;
-        else
-          tmpesd.snpchr = atoi(vs_buf[0].c_str());
+        if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpesd.snpchr = 23;
+        else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpesd.snpchr = 24;
+        else tmpesd.snpchr = atoi(vs_buf[0].c_str());
         strcpy2(&tmpesd.snprs, vs_buf[1]);
         if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
           printf("ERROR: the SNP position is \'NA\' in row %d.\n", lineNum + 2);
@@ -373,16 +352,14 @@ void read_smr_sa(vector<snpinfolst>& snpinfo, string esdpath) {
     }
   }
 
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
-  cout << lineNum << " SNPs infomation to be included from [" + string(esdpath) + "]." << endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
+  std::cout << lineNum << " SNPs infomation to be included from [" + std::string(esdpath) + "]." << std::endl;
 }
 
-void read_plink_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<float>& beta, vector<float>& se,
-                          string esdpath) {
-  cout << "Reading summary information from [" + esdpath + "]." << endl;
+void read_plink_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
+                          std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
+  std::cout << "Reading summary information from [" + esdpath + "]." << std::endl;
   char tbuf[MAX_LINE_SIZE];
   gzFile gzfile = gzopen(esdpath.c_str(), "rb");
   if (!(gzfile)) {
@@ -395,7 +372,7 @@ void read_plink_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<int>& bp,
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(tbuf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -421,12 +398,9 @@ void read_plink_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<int>& bp,
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[0].c_str());
       chr.push_back(tmpchr);
       rs.push_back(vs_buf[1]);
       if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
@@ -451,14 +425,14 @@ void read_plink_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<int>& bp,
     }
   }
   gzclose(gzfile);
-  cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << endl;
+  std::cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << std::endl;
 }
 
-void read_plink_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<float>& beta, vector<float>& se,
-                       string esdpath) {
-  ifstream flptr(esdpath.c_str());
-  if (!flptr) throw("Error: can not open the file [" + string(esdpath) + "] to read.");
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+void read_plink_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
+                       std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
+  std::ifstream flptr(esdpath.c_str());
+  if (!flptr) throw("Error: can not open the file [" + std::string(esdpath) + "] to read.");
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
@@ -467,7 +441,7 @@ void read_plink_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -492,12 +466,9 @@ void read_plink_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[0].c_str());
       chr.push_back(tmpchr);
       rs.push_back(vs_buf[1]);
       if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
@@ -521,12 +492,12 @@ void read_plink_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
     }
   }
   flptr.close();
-  cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << endl;
+  std::cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << std::endl;
 }
 
-void read_plink_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
+void read_plink_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -538,19 +509,17 @@ void read_plink_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -559,10 +528,8 @@ void read_plink_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
   }
   while (!flptr.eof() && !gzeof(gzfile)) {
     snpinfolst tmpesd;
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -578,12 +545,9 @@ void read_plink_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
       }
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpesd.snpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpesd.snpchr = 24;
-      else
-        tmpesd.snpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpesd.snpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpesd.snpchr = 24;
+      else tmpesd.snpchr = atoi(vs_buf[0].c_str());
       strcpy2(&tmpesd.snprs, vs_buf[1]);
       if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
         printf("ERROR: the SNP position is \'NA\' in row %d.\n", lineNum + 2);
@@ -606,16 +570,15 @@ void read_plink_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
       lineNum++;
     }
   }
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
-  cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
+  std::cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << std::endl;
 }
 
-void read_merlin_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<string>& a1, vector<string>& a2,
-                           vector<float> freq, vector<float>& beta, vector<float>& se, string esdpath) {
-  cout << "Reading summary information from [" + esdpath + "]." << endl;
+void read_merlin_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<std::string>& a1,
+                           std::vector<std::string>& a2, std::vector<float> freq, std::vector<float>& beta,
+                           std::vector<float>& se, std::string esdpath) {
+  std::cout << "Reading summary information from [" + esdpath + "]." << std::endl;
   char tbuf[MAX_LINE_SIZE];
   gzFile gzfile = gzopen(esdpath.c_str(), "rb");
   if (!(gzfile)) {
@@ -628,7 +591,7 @@ void read_merlin_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<string>&
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(tbuf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -654,12 +617,9 @@ void read_merlin_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<string>&
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[0].c_str());
       chr.push_back(tmpchr);
       rs.push_back(vs_buf[1]);
 
@@ -694,13 +654,14 @@ void read_merlin_qassoc_gz(vector<string>& rs, vector<int>& chr, vector<string>&
     }
   }
   gzclose(gzfile);
-  cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << endl;
+  std::cout << lineNum << " SNPs summary info to be included from [" + esdpath + "]." << std::endl;
 }
 
-void read_gemma_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<string>& a1, vector<string>& a2,
-                       vector<float> freq, vector<float>& beta, vector<float>& se, string esdpath) {
+void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
+                       std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
+                       std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -712,20 +673,18 @@ void read_gemma_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -734,10 +693,8 @@ void read_gemma_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
   }
 
   while (!flptr.eof() && !gzeof(gzfile)) {
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -754,12 +711,9 @@ void read_gemma_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[0].c_str());
       chr.push_back(tmpchr);
 
       rs.push_back(vs_buf[1]);
@@ -800,17 +754,16 @@ void read_gemma_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, ve
     }
   }
 
-  cout << lineNum << " SNPs infomation to be included from [" + string(esdpath) + "]." << endl;
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
+  std::cout << lineNum << " SNPs infomation to be included from [" + std::string(esdpath) + "]." << std::endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
 }
 
-void read_bolt_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vector<string>& a1, vector<string>& a2,
-                      vector<float> freq, vector<float>& beta, vector<float>& se, string esdpath) {
+void read_bolt_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
+                      std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
+                      std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -822,20 +775,18 @@ void read_bolt_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vec
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "SNP") {
@@ -844,10 +795,8 @@ void read_bolt_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vec
   }
 
   while (!flptr.eof() && !gzeof(gzfile)) {
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -865,12 +814,9 @@ void read_bolt_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vec
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[1] == "X" || vs_buf[1] == "x")
-        tmpchr = 23;
-      else if (vs_buf[1] == "Y" || vs_buf[1] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[1].c_str());
+      if (vs_buf[1] == "X" || vs_buf[1] == "x") tmpchr = 23;
+      else if (vs_buf[1] == "Y" || vs_buf[1] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[1].c_str());
       chr.push_back(tmpchr);
 
       rs.push_back(vs_buf[0]);
@@ -909,16 +855,14 @@ void read_bolt_qassoc(vector<string>& rs, vector<int>& chr, vector<int>& bp, vec
     }
   }
 
-  cout << lineNum << " SNPs infomation to be included from [" + string(esdpath) + "]." << endl;
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
+  std::cout << lineNum << " SNPs infomation to be included from [" + std::string(esdpath) + "]." << std::endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
 }
 
-void read_gemma_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
+void read_gemma_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -930,20 +874,18 @@ void read_gemma_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "CHR") {
@@ -953,10 +895,8 @@ void read_gemma_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
 
   while (!flptr.eof() && !gzeof(gzfile)) {
     snpinfolst tmpesd;
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -972,12 +912,9 @@ void read_gemma_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
         printf("ERROR: the SNP name is \'NA\' in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
       }
-      if (vs_buf[0] == "X" || vs_buf[0] == "x")
-        tmpesd.snpchr = 23;
-      else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-        tmpesd.snpchr = 24;
-      else
-        tmpesd.snpchr = atoi(vs_buf[0].c_str());
+      if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpesd.snpchr = 23;
+      else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpesd.snpchr = 24;
+      else tmpesd.snpchr = atoi(vs_buf[0].c_str());
       strcpy2(&tmpesd.snprs, vs_buf[1]);
       if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
         printf("ERROR: the SNP position is \'NA\' in row %d.\n", lineNum + 2);
@@ -1016,16 +953,14 @@ void read_gemma_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
     }
   }
 
-  cout << lineNum << " SNPs infomation to be included from [" + string(esdpath) + "]." << endl;
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
+  std::cout << lineNum << " SNPs infomation to be included from [" + std::string(esdpath) + "]." << std::endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
 }
 
-void read_bolt_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
+void read_bolt_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
   gzFile gzfile = NULL;
-  ifstream flptr;
+  std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
     gzfile = gzopen(esdpath.c_str(), "rb");
@@ -1037,20 +972,18 @@ void read_bolt_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
     flptr.open(esdpath.c_str());
     if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
   }
-  cout << "Reading eQTL information from [" + string(esdpath) + "]." << endl;
+  std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
-  if (gzflag)
-    gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-  else
-    flptr.getline(buf, MAX_LINE_SIZE);  // the header
+  if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+  else flptr.getline(buf, MAX_LINE_SIZE);          // the header
   /* check headers */
   if (buf[0] == '\0') {
     printf("ERROR: the first row of the file %s is empty.\n", esdpath.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num = split_string(buf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "SNP") {
@@ -1060,10 +993,8 @@ void read_bolt_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
 
   while (!flptr.eof() && !gzeof(gzfile)) {
     snpinfolst tmpesd;
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else flptr.getline(buf, MAX_LINE_SIZE);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -1081,12 +1012,9 @@ void read_bolt_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
         exit(EXIT_FAILURE);
       }
       int tmpchr;
-      if (vs_buf[1] == "X" || vs_buf[1] == "x")
-        tmpchr = 23;
-      else if (vs_buf[1] == "Y" || vs_buf[1] == "y")
-        tmpchr = 24;
-      else
-        tmpchr = atoi(vs_buf[1].c_str());
+      if (vs_buf[1] == "X" || vs_buf[1] == "x") tmpchr = 23;
+      else if (vs_buf[1] == "Y" || vs_buf[1] == "y") tmpchr = 24;
+      else tmpchr = atoi(vs_buf[1].c_str());
       tmpesd.snpchr = tmpchr;
       strcpy2(&tmpesd.snprs, vs_buf[0]);
       if (vs_buf[2] == "NA" || vs_buf[2] == "na") {
@@ -1126,22 +1054,20 @@ void read_bolt_qassoc(vector<snpinfolst>& snpinfo, string esdpath) {
     }
   }
 
-  cout << lineNum << " SNPs infomation to be included from [" + string(esdpath) + "]." << endl;
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    flptr.close();
+  std::cout << lineNum << " SNPs infomation to be included from [" + std::string(esdpath) + "]." << std::endl;
+  if (gzflag) gzclose(gzfile);
+  else flptr.close();
 }
 
-void read_mapfile(bInfo* bdata, string bimfile) {
+void read_mapfile(bInfo* bdata, std::string bimfile) {
   // Read mapfile in the format as: chr snp bp
   int ibuf = 0;
-  string cbuf = "0";
+  std::string cbuf = "0";
   double dbuf = 0.0;
-  string str_buf;
-  ifstream Bim(bimfile.c_str());
+  std::string str_buf;
+  std::ifstream Bim(bimfile.c_str());
   if (!Bim) throw("Error: can not open the file [" + bimfile + "] to read.");
-  cout << "Reading PLINK BIM file from [" + bimfile + "]." << endl;
+  std::cout << "Reading PLINK BIM file from [" + bimfile + "]." << std::endl;
   bdata->_chr.clear();
   bdata->_snp_name.clear();
   bdata->_genet_dst.clear();
@@ -1159,7 +1085,7 @@ void read_mapfile(bInfo* bdata, string bimfile) {
   }
   Bim.close();
   bdata->_snp_num = (int)bdata->_chr.size();
-  cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << endl;
+  std::cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << std::endl;
 
   // Initialize _include
   bdata->_include.clear();
@@ -1169,33 +1095,33 @@ void read_mapfile(bInfo* bdata, string bimfile) {
   for (int i = 0; i < bdata->_snp_num; i++) {
     bdata->_include[i] = i;
     if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end()) {
-      cout << "Warning: Duplicated SNP ID \"" + bdata->_snp_name[i] + "\" ";
-      stringstream ss;
+      std::cout << "Warning: Duplicated SNP ID \"" + bdata->_snp_name[i] + "\" ";
+      std::stringstream ss;
       ss << bdata->_snp_name[i] << "_" << i + 1;
       bdata->_snp_name[i] = ss.str();
-      cout << "has been changed to \"" + bdata->_snp_name[i] + "\".\n";
+      std::cout << "has been changed to \"" + bdata->_snp_name[i] + "\".\n";
     }
-    bdata->_snp_name_map.insert(pair<string, int>(bdata->_snp_name[i], i));
+    bdata->_snp_name_map.insert(std::pair<std::string, int>(bdata->_snp_name[i], i));
   }
 }
 
-uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int prb_num, int fformat) {
+std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int prb_num, int fformat) {
   probeinfolst* locinfolst = *prbiflst;
-  map<string, int> rs_map;
-  // map<string, int> rsbp_map;
-  // map<string, int> rsaa_map;
+  std::map<std::string, int> rs_map;
+  // std::map<std::string, int> rsbp_map;
+  // std::map<std::string, int> rsaa_map;
   long size = 0;
-  uint64_t ttl_value_num = 0;
+  std::uint64_t ttl_value_num = 0;
   char buf[MAX_LINE_SIZE];
   double disp = 0;
   for (int j = 0; j < prb_num; j++) {
     progress(j, disp, (int)prb_num);
 
-    // map<string, int> currs_map;
+    // std::map<std::string, int> currs_map;
     // long currssize=0;
-    string esdfilename = (locinfolst + j)->esdpath;
+    std::string esdfilename = (locinfolst + j)->esdpath;
     gzFile gzfile = NULL;
-    ifstream flptr;
+    std::ifstream flptr;
     bool gzflag = has_suffix(esdfilename, "gz");
     if (gzflag) {
       gzfile = gzopen(esdfilename.c_str(), "rb");
@@ -1205,14 +1131,12 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
       }
     } else {
       flptr.open((locinfolst + j)->esdpath);
-      if (!flptr) throw("Error: can not open the file [" + string((locinfolst + j)->esdpath) + "] to read.");
+      if (!flptr) throw("Error: can not open the file [" + std::string((locinfolst + j)->esdpath) + "] to read.");
     }
 
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-    else
-      flptr.getline(buf, MAX_LINE_SIZE);  // the header
-    vector<string> vs_buf;
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+    else flptr.getline(buf, MAX_LINE_SIZE);          // the header
+    std::vector<std::string> vs_buf;
     if (buf[0] == '\0') {
       printf("ERROR: the first row of the file %s is empty.\n", esdfilename.c_str());
       exit(EXIT_FAILURE);
@@ -1231,10 +1155,8 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
     if (fformat == 0) {
       int lineNum = 0;
       while (!flptr.eof() && !gzeof(gzfile)) {
-        if (gzflag)
-          gzgets(gzfile, buf, MAX_LINE_SIZE);
-        else
-          flptr.getline(buf, MAX_LINE_SIZE);
+        if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+        else flptr.getline(buf, MAX_LINE_SIZE);
         if (buf[0] != '\0') {
           ttl_value_num++;
           vs_buf.clear();
@@ -1252,7 +1174,7 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
             exit(EXIT_FAILURE);
           }
           /*
-          currs_map.insert(pair<string, int>(vs_buf[1].c_str(), lineNum));
+          currs_map.insert(std::pair<std::string, int>(vs_buf[1].c_str(), lineNum));
           if(currs_map.size()==currssize)
           {
               printf("WARING: duplicate SNP %s found in file %s.\n", vs_buf[1].c_str(),esdfilename.c_str());
@@ -1268,13 +1190,13 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
                                 incorrect positive/negative sign of effect size when conducting allele check.\n",
                 lineNum + 2, esdfilename.c_str());
           }
-          string crsstr = vs_buf[0] + ":" + vs_buf[1];
-          // string crsbpstr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2];
-          // string crsbpaastr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[3]+":"+vs_buf[4];
-          // string crsbpaastr_iv=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[4]+":"+vs_buf[3];
-          rs_map.insert(pair<string, int>(crsstr.c_str(), lineNum));
-          // rsbp_map.insert(pair<string, int>(crsbpstr.c_str(), lineNum));
-          // rsaa_map.insert(pair<string, int>(crsbpaastr.c_str(), lineNum));
+          std::string crsstr = vs_buf[0] + ":" + vs_buf[1];
+          // std::string crsbpstr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2];
+          // std::string crsbpaastr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[3]+":"+vs_buf[4];
+          // std::string crsbpaastr_iv=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[4]+":"+vs_buf[3];
+          rs_map.insert(std::pair<std::string, int>(crsstr.c_str(), lineNum));
+          // rsbp_map.insert(std::pair<std::string, int>(crsbpstr.c_str(), lineNum));
+          // rsaa_map.insert(std::pair<std::string, int>(crsbpaastr.c_str(), lineNum));
           // if(rs_map.size() != rsbp_map.size())
           //{
           //     printf("ERROR: SNP %s on Chromosome %s has multiple BPs, please check.\n", vs_buf[1].c_str(),
@@ -1289,30 +1211,27 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
                if(rs_map.size() != rsaa_map.size())
                {
                    long tmpsize=rsaa_map.size();
-                   rsaa_map.insert(pair<string, int>(crsbpaastr_iv.c_str(), lineNum));
+                   rsaa_map.insert(std::pair<std::string, int>(crsbpaastr_iv.c_str(), lineNum));
                    if(tmpsize==rsaa_map.size())
                    {
                        printf("WARING: switched ref allele with alt allele of SNP %s found.\n", vs_buf[1].c_str());
                    } else {
                        newsnp=true;
                        printf("WARING: multi-allelic SNPs with duplicate SNP ID %s found.\n", vs_buf[1].c_str());
-                       rs_map.insert(pair<string, int>((crsbpaastr+"_m").c_str(), lineNum));
-                       rsbp_map.insert(pair<string, int>((crsbpaastr+"_m").c_str(), lineNum));
+                       rs_map.insert(std::pair<std::string, int>((crsbpaastr+"_m").c_str(), lineNum));
+                       rsbp_map.insert(std::pair<std::string, int>((crsbpaastr+"_m").c_str(), lineNum));
                    }
-                   rs_map.insert(pair<string, int>((crsbpaastr+"_").c_str(), lineNum));
-                   rsbp_map.insert(pair<string, int>((crsbpaastr+"_").c_str(), lineNum));
+                   rs_map.insert(std::pair<std::string, int>((crsbpaastr+"_").c_str(), lineNum));
+                   rsbp_map.insert(std::pair<std::string, int>((crsbpaastr+"_").c_str(), lineNum));
                    size = rs_map.size();
                }
            }*/
           if (newsnp) {
             snpinfolst snptmp;
             int tmpchr;
-            if (vs_buf[0] == "X" || vs_buf[0] == "x")
-              tmpchr = 23;
-            else if (vs_buf[0] == "Y" || vs_buf[0] == "y")
-              tmpchr = 24;
-            else
-              tmpchr = atoi(vs_buf[0].c_str());
+            if (vs_buf[0] == "X" || vs_buf[0] == "x") tmpchr = 23;
+            else if (vs_buf[0] == "Y" || vs_buf[0] == "y") tmpchr = 24;
+            else tmpchr = atoi(vs_buf[0].c_str());
             snptmp.snpchr = tmpchr;
             strcpy2(&snptmp.snprs, vs_buf[1]);
             snptmp.bp = atoi(vs_buf[2].c_str());
@@ -1331,42 +1250,37 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
       }
     } else if (fformat == 1) {
       bInfo binfo;
-      string bimfname = string((locinfolst + j)->bfilepath) + ".bim";
+      std::string bimfname = std::string((locinfolst + j)->bfilepath) + ".bim";
       read_bimfile(&binfo, bimfname);
 
       while (!flptr.eof() && !gzeof(gzfile)) {
-        if (gzflag)
-          gzgets(gzfile, buf, MAX_LINE_SIZE);
-        else
-          flptr.getline(buf, MAX_LINE_SIZE);
+        if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+        else flptr.getline(buf, MAX_LINE_SIZE);
         if (buf[0] != '\0') {
-          string tmpStr;
+          std::string tmpStr;
           int tmpchr;
           snpinfolst snptmp;
           ttl_value_num++;
-          istringstream iss(buf);
+          std::istringstream iss(buf);
           iss >> tmpStr;  // chr
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: chromosome  can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          if (tmpStr == "X" || tmpStr == "x")
-            tmpchr = 23;
-          else if (tmpStr == "Y" || tmpStr == "y")
-            tmpchr = 24;
-          else
-            tmpchr = atoi(tmpStr.c_str());
+          if (tmpStr == "X" || tmpStr == "x") tmpchr = 23;
+          else if (tmpStr == "Y" || tmpStr == "y") tmpchr = 24;
+          else tmpchr = atoi(tmpStr.c_str());
           iss >> tmpStr;  // rs
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: SNP name  can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
 
-          if (tmpStr[0] != '\0') rs_map.insert(pair<string, int>(tmpStr.c_str(), tmpchr));
+          if (tmpStr[0] != '\0') rs_map.insert(std::pair<std::string, int>(tmpStr.c_str(), tmpchr));
           if (size < rs_map.size()) {
             snptmp.snpchr = tmpchr;
             strcpy2(&snptmp.snprs, tmpStr);
-            map<string, int>::iterator iter;
+            std::map<std::string, int>::iterator iter;
             iter = binfo._snp_name_map.find(tmpStr);
             if (iter != binfo._snp_name_map.end()) {
               strcpy2(&snptmp.a1, binfo._allele1[iter->second]);
@@ -1391,33 +1305,28 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
       }
     } else if (fformat == 2) {
       while (!flptr.eof() && !gzeof(gzfile)) {
-        if (gzflag)
-          gzgets(gzfile, buf, MAX_LINE_SIZE);
-        else
-          flptr.getline(buf, MAX_LINE_SIZE);
+        if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+        else flptr.getline(buf, MAX_LINE_SIZE);
         if (buf[0] != '\0') {
-          string tmpStr;
+          std::string tmpStr;
           int tmpchr;
           snpinfolst snptmp;
           ttl_value_num++;
-          istringstream iss(buf);
+          std::istringstream iss(buf);
           iss >> tmpStr;  // chr
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: chromosome can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          if (tmpStr == "X" || tmpStr == "x")
-            tmpchr = 23;
-          else if (tmpStr == "Y" || tmpStr == "y")
-            tmpchr = 24;
-          else
-            tmpchr = atoi(tmpStr.c_str());
+          if (tmpStr == "X" || tmpStr == "x") tmpchr = 23;
+          else if (tmpStr == "Y" || tmpStr == "y") tmpchr = 24;
+          else tmpchr = atoi(tmpStr.c_str());
           iss >> tmpStr;  // rs
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: SNP name can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          if (tmpStr[0] != '\0') rs_map.insert(pair<string, int>(tmpStr.c_str(), tmpchr));
+          if (tmpStr[0] != '\0') rs_map.insert(std::pair<std::string, int>(tmpStr.c_str(), tmpchr));
           if (size < rs_map.size()) {
             snptmp.snpchr = tmpchr;
             strcpy2(&snptmp.snprs, tmpStr);
@@ -1448,22 +1357,20 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
       }
     } else if (fformat == 3) {
       while (!flptr.eof() && !gzeof(gzfile)) {
-        if (gzflag)
-          gzgets(gzfile, buf, MAX_LINE_SIZE);
-        else
-          flptr.getline(buf, MAX_LINE_SIZE);
+        if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+        else flptr.getline(buf, MAX_LINE_SIZE);
         if (buf[0] != '\0') {
-          string tmpStr;
+          std::string tmpStr;
           int tmpchr;
           snpinfolst snptmp;
           ttl_value_num++;
-          istringstream iss(buf);
+          std::istringstream iss(buf);
           iss >> tmpStr;  // rs
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: SNP name can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          if (tmpStr[0] != '\0') rs_map.insert(pair<string, int>(tmpStr.c_str(), tmpchr));
+          if (tmpStr[0] != '\0') rs_map.insert(std::pair<std::string, int>(tmpStr.c_str(), tmpchr));
           if (size < rs_map.size()) {
             strcpy2(&snptmp.snprs, tmpStr);
             iss >> tmpStr;  // chr
@@ -1471,12 +1378,9 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
               printf("ERROR: chromosome can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
               exit(EXIT_FAILURE);
             }
-            if (tmpStr == "X" || tmpStr == "x")
-              tmpchr = 23;
-            else if (tmpStr == "Y" || tmpStr == "y")
-              tmpchr = 24;
-            else
-              tmpchr = atoi(tmpStr.c_str());
+            if (tmpStr == "X" || tmpStr == "x") tmpchr = 23;
+            else if (tmpStr == "Y" || tmpStr == "y") tmpchr = 24;
+            else tmpchr = atoi(tmpStr.c_str());
             snptmp.snpchr = tmpchr;
             iss >> tmpStr;  // BP
             if (tmpStr == "NA" || tmpStr == "na") {
@@ -1506,35 +1410,30 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
     } else if (fformat == 4) {
       // NOTE: only for personal use with BSGS data.
       bInfo binfo;
-      string bimfname = string((locinfolst + j)->bfilepath);
+      std::string bimfname = std::string((locinfolst + j)->bfilepath);
       read_mapfile(&binfo, bimfname);
       while (!flptr.eof() && !gzeof(gzfile)) {
-        if (gzflag)
-          gzgets(gzfile, buf, MAX_LINE_SIZE);
-        else
-          flptr.getline(buf, MAX_LINE_SIZE);
+        if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+        else flptr.getline(buf, MAX_LINE_SIZE);
         if (buf[0] != '\0') {
-          string tmpStr;
+          std::string tmpStr;
           int tmpchr;
-          string a1;
-          string a2;
-          string frqstr;
+          std::string a1;
+          std::string a2;
+          std::string frqstr;
           float frq;
 
           snpinfolst snptmp;
           ttl_value_num++;
-          istringstream iss(buf);
+          std::istringstream iss(buf);
           iss >> tmpStr;  // chr
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: chromosome  can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          if (tmpStr == "X" || tmpStr == "x")
-            tmpchr = 23;
-          else if (tmpStr == "Y" || tmpStr == "y")
-            tmpchr = 24;
-          else
-            tmpchr = atoi(tmpStr.c_str());
+          if (tmpStr == "X" || tmpStr == "x") tmpchr = 23;
+          else if (tmpStr == "Y" || tmpStr == "y") tmpchr = 24;
+          else tmpchr = atoi(tmpStr.c_str());
           iss >> tmpStr;  // rs
           if (tmpStr == "NA" || tmpStr == "na") {
             printf("ERROR: SNP name  can't be \"NA\" in  file \"%s\"!\n", esdfilename.c_str());
@@ -1551,16 +1450,15 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
               printf("ERROR: allele frequency should be between 0 and 1 in file %s.\n", esdfilename.c_str());
               exit(EXIT_FAILURE);
             }
-          } else
-            frq = -9;
+          } else frq = -9;
 
-          if (tmpStr[0] != '\0') rs_map.insert(pair<string, int>(tmpStr.c_str(), tmpchr));
+          if (tmpStr[0] != '\0') rs_map.insert(std::pair<std::string, int>(tmpStr.c_str(), tmpchr));
           if (size < rs_map.size()) {
             snptmp.snpchr = tmpchr;
             strcpy2(&snptmp.snprs, tmpStr);
             strcpy2(&snptmp.a1, a1);
             strcpy2(&snptmp.a2, a2);
-            map<string, int>::iterator iter;
+            std::map<std::string, int>::iterator iter;
             iter = binfo._snp_name_map.find(tmpStr);
             if (iter != binfo._snp_name_map.end()) {
               snptmp.bp = binfo._bp[iter->second];
@@ -1579,18 +1477,19 @@ uint64_t get_esi_info(vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int 
   }
   return ttl_value_num;
 }
-void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, vector<int>& epi2esd, probeinfolst* prbiflst,
-                     int fformat, vector<string>& esi_rs, vector<string>& esi_a1, vector<string>& esi_a2, int addn) {
+void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<int>& epi2esd, probeinfolst* prbiflst,
+                     int fformat, std::vector<std::string>& esi_rs, std::vector<std::string>& esi_a1,
+                     std::vector<std::string>& esi_a2, int addn) {
   // get esd info
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t filetype = DENSE_FILE_TYPE_3;
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::uint32_t filetype = DENSE_FILE_TYPE_3;
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
@@ -1599,18 +1498,18 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, vector<int>& e
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  uint64_t bsize = (uint64_t)esiNum << 1;
+  std::uint64_t bsize = (std::uint64_t)esiNum << 1;
   float* buffer = (float*)malloc(sizeof(float) * bsize);
   if (NULL == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  map<string, int> esi_map;
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
 
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
     progress(j, disp, (int)epiNum);
@@ -1618,25 +1517,23 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, vector<int>& e
     printf("Reading the probe %s from %d text file(s).\n", prbiflst[epi2esd[j]].probeId, esdnumcurprb);
     for (int k = 0; k < bsize; k++) buffer[k] = -9;  // init
     for (int k = epi2esd[j]; k < epi2esd[j + 1]; k++) {
-      vector<string> _rs;
-      vector<float> _beta;
-      vector<float> _se;
-      vector<int> _chr;
-      vector<string> _a1;
-      vector<string> _a2;
-      vector<int> _bp;
-      vector<float> _freq;
-      string zname = prbiflst[k].esdpath;
+      std::vector<std::string> _rs;
+      std::vector<float> _beta;
+      std::vector<float> _se;
+      std::vector<int> _chr;
+      std::vector<std::string> _a1;
+      std::vector<std::string> _a2;
+      std::vector<int> _bp;
+      std::vector<float> _freq;
+      std::string zname = prbiflst[k].esdpath;
       bool gzflag = has_suffix(zname, "gz");
       switch (fformat) {
         case 0:
           read_smr_sa(_rs, _chr, _bp, _a1, _a2, _freq, _beta, _se, prbiflst[k].esdpath);
           break;
         case 1:
-          if (gzflag)
-            read_plink_qassoc_gz(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
-          else
-            read_plink_qassoc(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
+          if (gzflag) read_plink_qassoc_gz(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
+          else read_plink_qassoc(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
           break;
         case 2:
           read_gemma_qassoc(_rs, _chr, _bp, _a1, _a2, _freq, _beta, _se, prbiflst[k].esdpath);
@@ -1650,11 +1547,10 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, vector<int>& e
       }
       // when users using --geno-uni, even the SNPs in each files are the same, but can't guarantee in the same order.
       // so this step is mandatory
-      vector<int> rsid(_rs.size());
+      std::vector<int> rsid(_rs.size());
       for (int l = 0; l < _rs.size(); l++) {
         iter = esi_map.find(_rs[l]);
-        if (iter != esi_map.end())
-          rsid[l] = iter->second;
+        if (iter != esi_map.end()) rsid[l] = iter->second;
         else {
           printf(
               "ERROR: SNP %s is not in output SNP set. If you are using --geno-uni, please disable it then try again. "
@@ -1718,21 +1614,21 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, vector<int>& e
   }
   fclose(smr1);
   free(buffer);
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 }
 
-void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<int>& epi2esd, probeinfolst* prbiflst,
-                          int fformat, vector<string>& esi_rs, vector<string>& esi_a1, vector<string>& esi_a2,
-                          int addn) {
-  map<string, int> esi_map;
+void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vector<int>& epi2esd,
+                          probeinfolst* prbiflst, int fformat, std::vector<std::string>& esi_rs,
+                          std::vector<std::string>& esi_a1, std::vector<std::string>& esi_a2, int addn) {
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
 
   // get esd info
 
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
@@ -1740,8 +1636,8 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
     exit(EXIT_FAILURE);
   }
 
-  uint32_t filetype = SPARSE_FILE_TYPE_3;
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::uint32_t filetype = SPARSE_FILE_TYPE_3;
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
@@ -1750,44 +1646,42 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  vector<uint64_t> cols((epiNum << 1) + 1);
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
   ;
-  vector<uint32_t> rowids;
-  vector<float> val;
+  std::vector<std::uint32_t> rowids;
+  std::vector<float> val;
   cols[0] = 0;
 
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
     progress(j, disp, (int)epiNum);
     int esdnumcurprb = epi2esd[j + 1] - epi2esd[j];
     printf("\nReading %d text file(s) of probe %s.\n", esdnumcurprb, prbiflst[epi2esd[j]].probeId);
 
-    map<string, int> rsa_map;
+    std::map<std::string, int> rsa_map;
     long rsNum = 0;
 
-    vector<uint32_t> tmprid;
-    vector<float> tmpse;
+    std::vector<std::uint32_t> tmprid;
+    std::vector<float> tmpse;
     for (int k = epi2esd[j]; k < epi2esd[j + 1]; k++) {
-      vector<string> _rs;
-      vector<float> _beta;
-      vector<float> _se;
-      vector<int> _chr;
-      vector<string> _a1;
-      vector<string> _a2;
-      vector<int> _bp;
-      vector<float> _freq;
-      string zname = prbiflst[k].esdpath;
+      std::vector<std::string> _rs;
+      std::vector<float> _beta;
+      std::vector<float> _se;
+      std::vector<int> _chr;
+      std::vector<std::string> _a1;
+      std::vector<std::string> _a2;
+      std::vector<int> _bp;
+      std::vector<float> _freq;
+      std::string zname = prbiflst[k].esdpath;
       bool gzflag = has_suffix(zname, "gz");
       switch (fformat) {
         case 0:
           read_smr_sa(_rs, _chr, _bp, _a1, _a2, _freq, _beta, _se, prbiflst[k].esdpath);
           break;
         case 1:
-          if (gzflag)
-            read_plink_qassoc_gz(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
-          else
-            read_plink_qassoc(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
+          if (gzflag) read_plink_qassoc_gz(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
+          else read_plink_qassoc(_rs, _chr, _bp, _beta, _se, prbiflst[k].esdpath);
           break;
         case 2:
           read_gemma_qassoc(_rs, _chr, _bp, _a1, _a2, _freq, _beta, _se, prbiflst[k].esdpath);
@@ -1800,11 +1694,10 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
           break;
       }
 
-      vector<int> rsid(_rs.size());
+      std::vector<int> rsid(_rs.size());
       for (int l = 0; l < _rs.size(); l++) {
         iter = esi_map.find(_rs[l]);
-        if (iter != esi_map.end())
-          rsid[l] = iter->second;
+        if (iter != esi_map.end()) rsid[l] = iter->second;
         else {
           printf(
               "ERROR: SNP %s is not in output SNP set. If you are using --geno-uni, please disable it then try again. "
@@ -1815,8 +1708,8 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
       }
       for (int l = 0; l < rsid.size(); l++) {
         if (fabs(_se[l] + 9) > 1e-6) {
-          string chckstr = (fformat == 1 ? _rs[l] : (_rs[l] + ":" + _a1[l] + ":" + _a2[l]));
-          rsa_map.insert(pair<string, int>(chckstr, l));
+          std::string chckstr = (fformat == 1 ? _rs[l] : (_rs[l] + ":" + _a1[l] + ":" + _a2[l]));
+          rsa_map.insert(std::pair<std::string, int>(chckstr, l));
           if (rsNum < rsa_map.size()) {
             if (fformat != 1) {
               if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
@@ -1888,42 +1781,42 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
       val.push_back(tmpse[k]);
       rowids.push_back(tmprid[k]);
     }
-    uint64_t real_num = tmpse.size();
+    std::uint64_t real_num = tmpse.size();
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
   }
-  uint64_t valNum = val.size();
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
-  fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+  std::uint64_t valNum = val.size();
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
+  fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
   fwrite(&val[0], sizeof(float), val.size(), smr1);
   fclose(smr1);
 
-  cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-       << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+  std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+            << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 }
 
 // Has been reviewed.
-void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snpinfolst>& snpinfo, long cis_itvl,
-                         long trans_itvl, double transThres, double restThres, FILE* logfile, bool extract_cis_only,
-                         bool techHit) {
+void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::vector<snpinfolst>& snpinfo,
+                         long cis_itvl, long trans_itvl, double transThres, double restThres, FILE* logfile,
+                         bool extract_cis_only, bool techHit) {
   // no null se in snpinfo has been guaranteed before here.
   // for log file
-  map<string, int> rsa_map;
-  map<string, int>::iterator iter;
+  std::map<std::string, int> rsa_map;
+  std::map<std::string, int>::iterator iter;
   long rsNum = 0;
 
-  vector<int> tran_chr;
-  vector<uint64_t> lowerBp;
-  vector<uint64_t> upperBp;
-  vector<uint64_t> nsnp;
-  vector<bool> extend;
-  vector<bool> merge;
-  vector<int> cis_idx;
-  map<string, int> other_idx;
+  std::vector<int> tran_chr;
+  std::vector<std::uint64_t> lowerBp;
+  std::vector<std::uint64_t> upperBp;
+  std::vector<std::uint64_t> nsnp;
+  std::vector<bool> extend;
+  std::vector<bool> merge;
+  std::vector<int> cis_idx;
+  std::map<std::string, int> other_idx;
 
   // extract info
-  string probid = prbifo->probeId;
+  std::string probid = prbifo->probeId;
   long probbp = prbifo->bp;
   long probchr = prbifo->probechr;  // long type is too lager for chromosome
   long cisuperBounder = probbp + cis_itvl;
@@ -1940,11 +1833,11 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
           // printf("The following SNP in the cis-region is excluded due to the technical eQTL.\n");
           double z = (snpinfo[l].beta / snpinfo[l].se);
           double p = pchisq(z * z, 1);
-          string tmp = atos(snpinfo[l].snprs) + "\t" + atos(snpinfo[l].snpchr) + "\t" + atos(snpinfo[l].bp) + "\t" +
-                       atos(snpinfo[l].a1) + "\t" + atos(snpinfo[l].a2) + "\t" + atos(snpinfo[l].freq) + "\t" +
-                       atos(prbifo->probeId) + "\t" + atos(prbifo->probechr) + "\t" + atos(prbifo->bp) + "\t" +
-                       atos(prbifo->genename) + "\t" + atos(prbifo->orien) + "\t" + atos(snpinfo[l].beta) + "\t" +
-                       atos(snpinfo[l].se) + "\t" + dtos(p) + "\n";
+          std::string tmp = atos(snpinfo[l].snprs) + "\t" + atos(snpinfo[l].snpchr) + "\t" + atos(snpinfo[l].bp) +
+                            "\t" + atos(snpinfo[l].a1) + "\t" + atos(snpinfo[l].a2) + "\t" + atos(snpinfo[l].freq) +
+                            "\t" + atos(prbifo->probeId) + "\t" + atos(prbifo->probechr) + "\t" + atos(prbifo->bp) +
+                            "\t" + atos(prbifo->genename) + "\t" + atos(prbifo->orien) + "\t" + atos(snpinfo[l].beta) +
+                            "\t" + atos(snpinfo[l].se) + "\t" + dtos(p) + "\n";
           if (techeQTLfile) {
             fputs(tmp.c_str(), techeQTLfile);
             fflush(techeQTLfile);
@@ -1953,9 +1846,10 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
           printf("%s\n", tmp.c_str());
 
         } else {
-          string chckstr = string(snpinfo[l].snprs);
-          // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr += ":"+string(snpinfo[l].a1)+":"+string(snpinfo[l].a2);
-          rsa_map.insert(pair<string, int>(chckstr, rsNum));
+          std::string chckstr = std::string(snpinfo[l].snprs);
+          // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr +=
+          // ":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
+          rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
           if (rsNum < rsa_map.size()) {
             slct_idx.push_back(l);
             rsNum = rsa_map.size();
@@ -1964,11 +1858,11 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
         }
 
       } else if (!extract_cis_only && pxz <= transThres) {
-        uint64_t transNum = 0;
+        std::uint64_t transNum = 0;
         int curChr = snpinfo[l].snpchr;
-        string chckstr = string(snpinfo[l].snprs);
-        // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr += ":"+string(snpinfo[l].a1)+":"+string(snpinfo[l].a2);
-        rsa_map.insert(pair<string, int>(chckstr, rsNum));
+        std::string chckstr = std::string(snpinfo[l].snprs);
+        // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr += ":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
+        rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
         if (rsNum < rsa_map.size()) {
           slct_idx.push_back(l);
           rsNum = rsa_map.size();
@@ -1997,16 +1891,16 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
             {
               break;
             }
-            string chckstr = string(snpinfo[startptr].snprs);
+            std::string chckstr = std::string(snpinfo[startptr].snprs);
             // if(snpinfo[startptr].a1 && snpinfo[startptr].a2) chckstr +=
-            // ":"+string(snpinfo[startptr].a1)+":"+string(snpinfo[startptr].a2);
+            // ":"+std::string(snpinfo[startptr].a1)+":"+std::string(snpinfo[startptr].a2);
             iter = other_idx.find(chckstr);
             if (iter != other_idx.end())  // trans merges other eqtl
             {
               other_idx.erase(iter->first);
               transNum++;
             } else {
-              rsa_map.insert(pair<string, int>(chckstr, rsNum));
+              rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
               if (rsNum < rsa_map.size()) {
                 slct_idx.push_back(startptr);
                 rsNum = rsa_map.size();
@@ -2028,10 +1922,10 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
               break;
 
             } else {
-              string chckstr = string(snpinfo[startptr].snprs);
+              std::string chckstr = std::string(snpinfo[startptr].snprs);
               // if(snpinfo[startptr].a1 && snpinfo[startptr].a2) chckstr +=
-              // ":"+string(snpinfo[startptr].a1)+":"+string(snpinfo[startptr].a2);
-              rsa_map.insert(pair<string, int>(chckstr, rsNum));
+              // ":"+std::string(snpinfo[startptr].a1)+":"+std::string(snpinfo[startptr].a2);
+              rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
               if (rsNum < rsa_map.size()) {
                 slct_idx.push_back(startptr);
                 rsNum = rsa_map.size();
@@ -2064,13 +1958,13 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
         }
 
       } else if (!extract_cis_only && pxz < restThres) {
-        string chckstr = string(snpinfo[l].snprs);
-        //+":"+string(snpinfo[l].a1)+":"+string(snpinfo[l].a2);
-        rsa_map.insert(pair<string, int>(chckstr, rsNum));
+        std::string chckstr = std::string(snpinfo[l].snprs);
+        //+":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
+        rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
         if (rsNum < rsa_map.size()) {
           slct_idx.push_back(l);
           rsNum = rsa_map.size();
-          other_idx.insert(pair<string, int>(chckstr, l));
+          other_idx.insert(std::pair<std::string, int>(chckstr, l));
         }
       }
     } else {
@@ -2093,31 +1987,28 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
   // log
 
   if (cis_idx.size() || nsnp.size() || other_idx.size()) {
-    string logstr = "{" + probid + "," + atos(probchr) + "," + atos(probbp) + "}\t";
+    std::string logstr = "{" + probid + "," + atos(probchr) + "," + atos(probbp) + "}\t";
     if (cis_idx.size() > 0) {
       logstr += "[" + atos(probchr) + "," + atos(snpinfo[cis_idx[0]].bp) + "," +
                 atos(snpinfo[cis_idx[cis_idx.size() - 1]].bp) + "," + atos(cis_idx.size()) + "]\t";
-    } else
-      logstr += "[]\t";
+    } else logstr += "[]\t";
     if (nsnp.size() > 0) {
       for (int h = 0; h < nsnp.size(); h++) {
         logstr +=
             "<" + atos(tran_chr[h]) + "," + atos(lowerBp[h]) + "," + atos(upperBp[h]) + "," + atos(nsnp[h]) + ">\t";
       }
-    } else
-      logstr += "<>\t";
+    } else logstr += "<>\t";
 
     if (other_idx.size() > 0) {
       // for(iter=other_idx.begin();iter!=other_idx.end();iter++) logstr+="("+atos(snpinfo[iter->second].bp)+"), ";
       // logstr+="\n";
       logstr += "(" + atos(other_idx.size()) + ")\n";
-    } else
-      logstr += "()\n";
+    } else logstr += "()\n";
 
     fputs(logstr.c_str(), logfile);
     fflush(logfile);
   } else {
-    string logstr = "{" + probid + "," + atos(probchr) + "," + atos(probbp) + "}\t";
+    std::string logstr = "{" + probid + "," + atos(probchr) + "," + atos(probbp) + "}\t";
     logstr += "[]\t";
     logstr += "<>\t";
     logstr += "()\n";
@@ -2126,24 +2017,25 @@ void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snp
   }
 }
 
-void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<int>& epi2esd, probeinfolst* prbiflst,
-                          int fformat, vector<string>& esi_rs, vector<string>& esi_a1, vector<string>& esi_a2,
-                          int cis_itvl, int trans_itvl, float transThres, float restThres, int addn) {
-  map<string, int> esi_map;
+void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vector<int>& epi2esd,
+                          probeinfolst* prbiflst, int fformat, std::vector<std::string>& esi_rs,
+                          std::vector<std::string>& esi_a1, std::vector<std::string>& esi_a2, int cis_itvl,
+                          int trans_itvl, float transThres, float restThres, int addn) {
+  std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
-    esi_map.insert(pair<string, int>(esi_rs[j], j));
+    esi_map.insert(std::pair<std::string, int>(esi_rs[j], j));
   }
 
   // get esd info
-  string esdfile = string(outFileName) + string(".besd");
+  std::string esdfile = std::string(outFileName) + std::string(".besd");
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
   if (!(smr1)) {
     printf("ERROR: failed to open file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
-  uint32_t filetype = SPARSE_FILE_TYPE_3;
-  vector<int> ten_ints(RESERVEDUNITS);
+  std::uint32_t filetype = SPARSE_FILE_TYPE_3;
+  std::vector<int> ten_ints(RESERVEDUNITS);
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
@@ -2152,25 +2044,25 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  vector<uint64_t> cols((epiNum << 1) + 1);
+  std::vector<std::uint64_t> cols((epiNum << 1) + 1);
   ;
-  vector<uint32_t> rowids;
-  vector<float> val;
+  std::vector<std::uint32_t> rowids;
+  std::vector<float> val;
   cols[0] = 0;
 
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
 
   // log file
   FILE* logfile = NULL;
-  string logfname = string(outFileName) + ".summary";
+  std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
     printf("Error: Failed to open log file.\n");
     exit(1);
   }
-  string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                  "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                  dtos(restThres) + "\n";
+  std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                       "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                       dtos(restThres) + "\n";
   logstr +=
       "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\ntrans region is indicated by <Chr, Start bp, End "
       "bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -2182,17 +2074,17 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
   fflush(logfile);
   cis_itvl = cis_itvl * 1000;
   trans_itvl = trans_itvl * 1000;
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
     progress(j, disp, (int)epiNum);
-    vector<uint32_t> tmprid;
-    vector<float> tmpse;
+    std::vector<std::uint32_t> tmprid;
+    std::vector<float> tmpse;
     int esdnumcurprb = epi2esd[j + 1] - epi2esd[j];
     printf("\nReading %d text file(s) of probe %s.\n", esdnumcurprb, prbiflst[epi2esd[j]].probeId);
     snpinfo.clear();
     for (int k = epi2esd[j]; k < epi2esd[j + 1]; k++) {
-      string zname = prbiflst[k].esdpath;
+      std::string zname = prbiflst[k].esdpath;
       bool gzflag = has_suffix(zname, "gz");
       switch (fformat) {
         case 0:
@@ -2213,12 +2105,12 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
     qsort(sortptr, snpinfo.size(), sizeof(snpinfolst), comp_esi);
 
     probeinfolst prbifo = prbiflst[epi2esd[j]];
-    vector<int> slct_idx;
+    std::vector<int> slct_idx;
     slct_sparse_per_prb(slct_idx, &prbifo, snpinfo, cis_itvl, trans_itvl, transThres, restThres, logfile,
                         false);  // slct_idx with no order if there are trans-rgeions
-    stable_sort(slct_idx.begin(), slct_idx.end());
-    vector<string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
-    vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
+    std::stable_sort(slct_idx.begin(), slct_idx.end());
+    std::vector<std::string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
+    std::vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
 
     for (int l = 0; l < slct_idx.size(); l++) {
       _rs[l] = snpinfo[slct_idx[l]].snprs;
@@ -2229,11 +2121,10 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
     }
 
     // when using --geno-uni, rsid is not the same as slct_idx, if there are NA values in the raw files.
-    vector<int> rsid(_rs.size());
+    std::vector<int> rsid(_rs.size());
     for (int l = 0; l < _rs.size(); l++) {
       iter = esi_map.find(_rs[l]);
-      if (iter != esi_map.end())
-        rsid[l] = iter->second;
+      if (iter != esi_map.end()) rsid[l] = iter->second;
       else {
         printf(
             "ERROR: SNP %s is not in the output SNP set. If you are using --geno-uni, please disable it then try "
@@ -2242,14 +2133,14 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
         exit(EXIT_FAILURE);
       }
     }
-    //  map<string, int> rsa_map;
+    //  std::map<std::string, int> rsa_map;
     //  long rsNum=0;
     for (int l = 0; l < rsid.size(); l++) {
       // if(fabs(_se[l]+9)>1e-6) // can move this. the NA is controled in slct_sparse_per_prb
       //{
-      //   string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-      //   rsa_map.insert(pair<string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent selecting
-      //   duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here.
+      //   std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
+      //   rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
+      //   selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here.
       //  if(rsNum<rsa_map.size())
       //  {
       if (fformat != 1)  // not for plink format
@@ -2322,7 +2213,7 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
       val.push_back(tmpse[k]);
       rowids.push_back(tmprid[k]);
     }
-    uint64_t real_num = tmpse.size();
+    std::uint64_t real_num = tmpse.size();
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
 
@@ -2332,16 +2223,16 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, vector<in
       delete (snpinfo[k].snprs);
     }
   }
-  uint64_t valNum = val.size();
-  fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-  fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
-  fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+  std::uint64_t valNum = val.size();
+  fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+  fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
+  fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
   fwrite(&val[0], sizeof(float), val.size(), smr1);
   fclose(smr1);
 
   printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-  cout << "\nEffect sizes (beta) and SE for " << epiNum << " Probes have been saved in a binary file [" + esdfile + "]."
-       << endl;
+  std::cout << "\nEffect sizes (beta) and SE for " << epiNum
+            << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
   fclose(logfile);
 }
 
@@ -2378,24 +2269,24 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
   }
   if (flagcount == 0 || flagcount > 1)
     throw("ERROR: please verify the file format flags. Only one flag can be specified.\n");
-  vector<probeinfolst> prbiflstinfo;
+  std::vector<probeinfolst> prbiflstinfo;
   int esdfileNum = read_probeinfolst(prbiflstinfo, syllabusName);
   probeinfolst* prbiflst = &prbiflstinfo[0];
   qsort(prbiflst, esdfileNum, sizeof(probeinfolst), comp);
 
   // get epi
   printf("Generating the .epi file...\n");
-  map<string, int> epi_map;
+  std::map<std::string, int> epi_map;
   long epiNum = 0;
-  string epifile = string(outFileName) + string(".epi");
-  ofstream epi(epifile.c_str());
+  std::string epifile = std::string(outFileName) + std::string(".epi");
+  std::ofstream epi(epifile.c_str());
   if (!epi) {
     printf("ERROR: can not open the EPI file %s to save!\n", epifile.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<int> epi2esd;
+  std::vector<int> epi2esd;
   for (int j = 0; j < esdfileNum; j++) {
-    epi_map.insert(pair<string, int>(prbiflst[j].probeId, epiNum));
+    epi_map.insert(std::pair<std::string, int>(prbiflst[j].probeId, epiNum));
     if (epiNum < epi_map.size()) {
       epi2esd.push_back(j);
       epi << prbiflst[j].probechr << '\t' << prbiflst[j].probeId << '\t' << 0 << '\t' << prbiflst[+j].bp << '\t'
@@ -2408,23 +2299,21 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
   printf("%ld probes have been saved in the file \"%s\".\n", epiNum, epifile.c_str());
 
   // get esi: from bim file
-  vector<snpinfolst> snpinfo;
+  std::vector<snpinfolst> snpinfo;
   printf("\nScaning %d ESD files to generate ESI file...\n", esdfileNum);
   int filenum2scan = 0;
-  if (samegeno)
-    filenum2scan = 1;
-  else
-    filenum2scan = esdfileNum;
-  uint64_t ttlv = get_esi_info(snpinfo, &prbiflst, filenum2scan, fformat);
+  if (samegeno) filenum2scan = 1;
+  else filenum2scan = esdfileNum;
+  std::uint64_t ttlv = get_esi_info(snpinfo, &prbiflst, filenum2scan, fformat);
   if (samegeno) ttlv *= esdfileNum;
   long esiNum = snpinfo.size();
   snpinfolst* esiptr = &snpinfo[0];
   qsort(esiptr, esiNum, sizeof(snpinfolst), comp_esi);
-  vector<string> esi_rs(esiNum);
-  vector<string> esi_a1(esiNum);
-  vector<string> esi_a2(esiNum);
-  string esifile = string(outFileName) + string(".esi");
-  ofstream esi(esifile.c_str());
+  std::vector<std::string> esi_rs(esiNum);
+  std::vector<std::string> esi_a1(esiNum);
+  std::vector<std::string> esi_a2(esiNum);
+  std::string esifile = std::string(outFileName) + std::string(".esi");
+  std::ofstream esi(esifile.c_str());
   if (!esi) throw("ERROR: can not open the ESI file to save!");
   for (int j = 0; j < esiNum; j++) {
     esi << snpinfo[j].snpchr << '\t' << snpinfo[j].snprs << '\t' << snpinfo[j].gd << '\t' << snpinfo[j].bp << '\t'
@@ -2435,7 +2324,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
     esi_a2[j] = snpinfo[j].a2;
   }
   esi.close();
-  cout << esiNum << " SNPs have been saved in the file [" + esifile + "]." << endl;
+  std::cout << esiNum << " SNPs have been saved in the file [" + esifile + "]." << std::endl;
   printf("\nScaning %d ESD files to generate BESD file...\n", esdfileNum);
   if (save_dense_flag) {
     double sparsity = 1.0 * ttlv / (esiNum * epiNum);
@@ -2530,25 +2419,23 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   }
 
   printf("Reading eQTL summary data from %s ...\n", fmatfileName);
-  vector<string> prbs;
-  vector<string> snps;
-  vector<int> prbchr;
-  vector<int> prbbp;
-  vector<string> prbstrand;
-  vector<int> rschr;
-  vector<int> rsbp;
-  vector<vector<uint32_t>> _ttl_rsid;
-  vector<vector<float>> _ttl_beta;
-  vector<vector<float>> _ttl_se;
-  vector<vector<float>> _ttl_t_stat;
+  std::vector<std::string> prbs;
+  std::vector<std::string> snps;
+  std::vector<int> prbchr;
+  std::vector<int> prbbp;
+  std::vector<std::string> prbstrand;
+  std::vector<int> rschr;
+  std::vector<int> rsbp;
+  std::vector<std::vector<std::uint32_t>> _ttl_rsid;
+  std::vector<std::vector<float>> _ttl_beta;
+  std::vector<std::vector<float>> _ttl_se;
+  std::vector<std::vector<float>> _ttl_t_stat;
 
   char buf[MAX_LINE_SIZE];
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   if (mateqtlflag) {
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
-    else
-      fgets(buf, MAX_LINE_SIZE, qfile);  // header
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
+    else fgets(buf, MAX_LINE_SIZE, qfile);           // header
     if (buf[0] == '\0') {
       printf("ERROR: the first row of the file %s is empty.\n", fmatfileName);
       exit(EXIT_FAILURE);
@@ -2574,17 +2461,15 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   long lineNum(0);
   long esiNum(0);
   long epiNum(0);
-  map<string, int> esi_map;
-  map<string, int>::iterator iter;
-  map<string, int> epi_map;
-  map<string, int> rs_prb_map;
+  std::map<std::string, int> esi_map;
+  std::map<std::string, int>::iterator iter;
+  std::map<std::string, int> epi_map;
+  std::map<std::string, int> rs_prb_map;
   long rsprbmapsize(0);
   while ((qfile != NULL && !feof(qfile)) || (gzfile != NULL && !gzeof(gzfile))) {
     buf[0] = '\0';
-    if (gzflag)
-      gzgets(gzfile, buf, MAX_LINE_SIZE);
-    else
-      fgets(buf, MAX_LINE_SIZE, qfile);
+    if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
+    else fgets(buf, MAX_LINE_SIZE, qfile);
     if (buf[0] != '\0') {
       vs_buf.clear();
       int col_num = split_string(buf, vs_buf, ", \t\n");
@@ -2621,8 +2506,8 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
         printf("%s\n", buf);
         exit(EXIT_FAILURE);
       }
-      string rsprb = vs_buf[rspos] + ":" + vs_buf[prbpos];
-      rs_prb_map.insert(pair<string, int>(rsprb.c_str(), lineNum));
+      std::string rsprb = vs_buf[rspos] + ":" + vs_buf[prbpos];
+      rs_prb_map.insert(std::pair<std::string, int>(rsprb.c_str(), lineNum));
       if (rsprbmapsize < rs_prb_map.size()) {
         rsprbmapsize = rs_prb_map.size();
       } else {
@@ -2633,18 +2518,16 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
       int rsid = -9;
       iter = esi_map.find(vs_buf[rspos]);
       if (iter == esi_map.end()) {
-        esi_map.insert(pair<string, int>(vs_buf[rspos].c_str(), esiNum));
+        esi_map.insert(std::pair<std::string, int>(vs_buf[rspos].c_str(), esiNum));
         snps.push_back(vs_buf[rspos].c_str());
         if (rschrpos >= 0) {
-          string chrstrtmp = vs_buf[rschrpos];
+          std::string chrstrtmp = vs_buf[rschrpos];
           if (has_prefix(vs_buf[rschrpos], "chr") || has_prefix(vs_buf[rschrpos], "CHR")) chrstrtmp.erase(0, 3);
           rschr.push_back(atoi(chrstrtmp.c_str()));
-        } else
-          rschr.push_back(-9);
+        } else rschr.push_back(-9);
         if (rsbppos >= 0 && (qtltoolsnflag || qtltoolspflag))
           rsbp.push_back((atoi(vs_buf[rsbppos].c_str()) + atoi(vs_buf[rsbppos + 1].c_str())) / 2);
-        else
-          rsbp.push_back(-9);
+        else rsbp.push_back(-9);
         rsid = (int)esiNum++;
       } else {
         rsid = iter->second;
@@ -2675,32 +2558,28 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
           _ttl_se[idx].push_back(adjSE(betatmp, ptmp));
         }
       } else {
-        epi_map.insert(pair<string, int>(vs_buf[prbpos], epiNum));
+        epi_map.insert(std::pair<std::string, int>(vs_buf[prbpos], epiNum));
         prbs.push_back(vs_buf[prbpos].c_str());
         if (prbchrpos >= 0) {
-          string chrstrtmp = vs_buf[prbchrpos];
+          std::string chrstrtmp = vs_buf[prbchrpos];
           if (has_prefix(vs_buf[prbchrpos], "chr") || has_prefix(vs_buf[prbchrpos], "CHR")) chrstrtmp.erase(0, 3);
           prbchr.push_back(atoi(chrstrtmp.c_str()));
-        } else
-          prbchr.push_back(-9);
+        } else prbchr.push_back(-9);
         if (prbbppos >= 0 && (qtltoolsnflag || qtltoolspflag))
           prbbp.push_back((atoi(vs_buf[prbbppos].c_str()) + atoi(vs_buf[prbbppos + 1].c_str())) / 2);
-        else
-          prbbp.push_back(-9);
-        if (prbstrandpos >= 0)
-          prbstrand.push_back(vs_buf[prbstrandpos]);
-        else
-          prbstrand.push_back("NA");
-        vector<uint32_t> rsidtmp;
+        else prbbp.push_back(-9);
+        if (prbstrandpos >= 0) prbstrand.push_back(vs_buf[prbstrandpos]);
+        else prbstrand.push_back("NA");
+        std::vector<std::uint32_t> rsidtmp;
         rsidtmp.push_back(rsid);
         _ttl_rsid.push_back(rsidtmp);
         double betatmp = atof(vs_buf[betapos].c_str());
         double ptmp = atof(vs_buf[ppos].c_str());
         double t_stattmp = atof(vs_buf[t_statpos].c_str());
-        vector<float> btmp;
+        std::vector<float> btmp;
         btmp.push_back(betatmp);
         _ttl_beta.push_back(btmp);
-        vector<float> setmp;
+        std::vector<float> setmp;
         if (mateqtlflag) {
           if (vs_buf[t_statpos] != "NA") {
             double t_stattmp = atof(vs_buf[t_statpos].c_str());
@@ -2726,15 +2605,13 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     }
   }
   printf("%ld rows to be included from %s.\n", lineNum, fmatfileName);
-  if (gzflag)
-    gzclose(gzfile);
-  else
-    fclose(qfile);
+  if (gzflag) gzclose(gzfile);
+  else fclose(qfile);
 
   printf("\nGenerating the .epi file...\n");
 
-  string epifile = string(outFileName) + string(".epi");
-  ofstream epi(epifile.c_str());
+  std::string epifile = std::string(outFileName) + std::string(".epi");
+  std::ofstream epi(epifile.c_str());
   if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < epiNum; j++) {
     epi << (prbchr[j] > 0 ? atos(prbchr[j]) : "NA") << '\t' << prbs[j] << '\t' << 0 << '\t'
@@ -2744,15 +2621,15 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   printf("%ld probes have been saved in the file %s.\n", epiNum, epifile.c_str());
 
   printf("\nGenerating the .esi file...\n");
-  string esifile = string(outFileName) + string(".esi");
-  ofstream esi(esifile.c_str());
+  std::string esifile = std::string(outFileName) + std::string(".esi");
+  std::ofstream esi(esifile.c_str());
   if (!esi) throw("Error: can not open the ESI file to save!");
   esi_map.clear();
   epi_map.clear();
   for (int j = 0; j < esiNum; j++) {
     esi << (rschr[j] > 0 ? atos(rschr[j]) : "NA") << '\t' << snps[j] << '\t' << 0 << '\t'
         << (rsbp[j] > 0 ? atos(rsbp[j]) : "NA") << '\t' << "NA" << '\t' << "NA" << '\t' << "NA" << '\n';
-    esi_map.insert(pair<string, int>(snps[j], j));
+    esi_map.insert(std::pair<std::string, int>(snps[j], j));
   }
   esi.close();
   printf("%ld SNPs have been saved in the file %s.\n", esiNum, esifile.c_str());
@@ -2764,15 +2641,15 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   if (sparsity > 0.4) {
     // printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
 
-    string esdfile = string(outFileName) + string(".besd");
+    std::string esdfile = std::string(outFileName) + std::string(".besd");
     FILE* smr1;
     smr1 = fopen(esdfile.c_str(), "wb");
     if (!(smr1)) {
       printf("ERROR: failed to open file %s.\n", esdfile.c_str());
       exit(EXIT_FAILURE);
     }
-    uint32_t filetype = DENSE_FILE_TYPE_3;
-    vector<int> ten_ints(RESERVEDUNITS);
+    std::uint32_t filetype = DENSE_FILE_TYPE_3;
+    std::vector<int> ten_ints(RESERVEDUNITS);
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving the sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
@@ -2781,7 +2658,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-    uint64_t bsize = (uint64_t)esiNum << 1;
+    std::uint64_t bsize = (std::uint64_t)esiNum << 1;
     float* buffer = (float*)malloc(sizeof(float) * bsize);
     if (NULL == buffer) {
       fprintf(stderr, "Malloc failed\n");
@@ -2800,13 +2677,13 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     }
     fclose(smr1);
     free(buffer);
-    cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-         << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+    std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+              << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 
   } else {
     // printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
 
-    string esdfile = string(outFileName) + string(".besd");
+    std::string esdfile = std::string(outFileName) + std::string(".besd");
     FILE* smr1;
     smr1 = fopen(esdfile.c_str(), "wb");
     if (!(smr1)) {
@@ -2815,10 +2692,10 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     }
     // header
     // 16 * int: filetype, addn, esiNum, epiNum, ... padding
-    // uint64_t: valNum
-    // uint64_t[(epiNum << 1) + 1]
-    uint32_t filetype = SPARSE_FILE_TYPE_3;
-    vector<int> ten_ints(RESERVEDUNITS);
+    // std::uint64_t: valNum
+    // std::uint64_t[(epiNum << 1) + 1]
+    std::uint32_t filetype = SPARSE_FILE_TYPE_3;
+    std::vector<int> ten_ints(RESERVEDUNITS);
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
@@ -2827,26 +2704,26 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-    vector<uint64_t> cols((epiNum << 1) + 1);
+    std::vector<std::uint64_t> cols((epiNum << 1) + 1);
     ;
-    uint64_t valNum = 0;
+    std::uint64_t valNum = 0;
     cols[0] = 0;
 
-    map<string, int>::iterator iter;
+    std::map<std::string, int>::iterator iter;
     for (int j = 0; j < epiNum; j++) {
-      uint64_t real_num = _ttl_beta[j].size();
+      std::uint64_t real_num = _ttl_beta[j].size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
       cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
       valNum += real_num * 2;
     }
-    fwrite(&valNum, sizeof(uint64_t), 1, smr1);
-    fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+    fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
+    fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
     double disp = 0;
     for (int j = 0; j < epiNum; j++) {
       progress(j, disp, (int)epiNum);
 
-      fwrite(&_ttl_rsid[j][0], sizeof(uint32_t), _ttl_rsid[j].size(), smr1);
-      fwrite(&_ttl_rsid[j][0], sizeof(uint32_t), _ttl_rsid[j].size(), smr1);
+      fwrite(&_ttl_rsid[j][0], sizeof(std::uint32_t), _ttl_rsid[j].size(), smr1);
+      fwrite(&_ttl_rsid[j][0], sizeof(std::uint32_t), _ttl_rsid[j].size(), smr1);
     }
     disp = 0;
     for (int j = 0; j < epiNum; j++) {
@@ -2855,8 +2732,8 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
       fwrite(&_ttl_se[j][0], sizeof(float), _ttl_se[j].size(), smr1);
     }
     fclose(smr1);
-    cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-         << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+    std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+              << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
   }
 }
 
@@ -2869,21 +2746,21 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   }
   printf("Reading eQTL summary data from %s ...\n", qfileName);
 
-  vector<probeinfolst> prbiflst;
+  std::vector<probeinfolst> prbiflst;
 
-  vector<snpinfolst> snpiflst;
-  vector<vector<string>> _ttl_rs;
-  vector<vector<float>> _ttl_beta;
-  vector<vector<float>> _ttl_se;
-  vector<vector<string>> _ttl_a1;
-  vector<vector<string>> _ttl_a2;
-  vector<vector<int>> _ttl_chr;
-  vector<vector<int>> _ttl_bp;
+  std::vector<snpinfolst> snpiflst;
+  std::vector<std::vector<std::string>> _ttl_rs;
+  std::vector<std::vector<float>> _ttl_beta;
+  std::vector<std::vector<float>> _ttl_se;
+  std::vector<std::vector<std::string>> _ttl_a1;
+  std::vector<std::vector<std::string>> _ttl_a2;
+  std::vector<std::vector<int>> _ttl_chr;
+  std::vector<std::vector<int>> _ttl_bp;
 
   bool warningdone = false;
   bool warningdone1 = false;
   char buf[MAX_LINE_SIZE];  // defined in CommFunc.h
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
 
   fgets(buf, MAX_LINE_SIZE, qfile);  // get header line of file stream.
   if (buf[0] == '\0') {
@@ -2893,7 +2770,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
   // check whether qfile header line is proper.
   split_string(buf, vs_buf, ", \t\n");
-  cout << vs_buf[0] << endl;
+  std::cout << vs_buf[0] << std::endl;
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "SNP") {
     printf("ERROR: the headers of query file should start with \"SNP\".\n");
@@ -2910,10 +2787,10 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   long lineNum(0);
   long esiNum(0);
   long epiNum(0);
-  map<string, int> esi_map;     // esi map, using to store snp uniquely, and index it first show up.
-  map<string, int> epi_map;     // epi map, using to store prob uniquely, and index it first show up.
-  map<string, int> rs_prb_map;  // snp_prob conctenated string map, using to check snp_prob uniqueness.
-  map<string, int>::iterator iter;
+  std::map<std::string, int> esi_map;     // esi map, using to store snp uniquely, and index it first show up.
+  std::map<std::string, int> epi_map;     // epi map, using to store prob uniquely, and index it first show up.
+  std::map<std::string, int> rs_prb_map;  // snp_prob conctenated string map, using to check snp_prob uniqueness.
+  std::map<std::string, int>::iterator iter;
 
   long rsprbmapsize(0);
   while (fgets(buf, MAX_LINE_SIZE, qfile)) {
@@ -2970,12 +2847,9 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
     int tmpchr = 0;
     to_upper(vs_buf[1]);
-    if (!vs_buf[1].compare("X"))
-      tmpchr = 23;
-    else if (!vs_buf[1].compare("Y"))
-      tmpchr = 24;
-    else
-      tmpchr = atoi(vs_buf[1].c_str());
+    if (!vs_buf[1].compare("X")) tmpchr = 23;
+    else if (!vs_buf[1].compare("Y")) tmpchr = 24;
+    else tmpchr = atoi(vs_buf[1].c_str());
     to_upper(vs_buf[3]);
     to_upper(vs_buf[4]);
     to_upper(vs_buf[5]);
@@ -3001,8 +2875,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     }
 
     // check duplication of snp prob conctenate.
-    string rsprb = vs_buf[0] + ":" + vs_buf[6];
-    rs_prb_map.insert(pair<string, int>(rsprb.c_str(), lineNum));
+    std::string rsprb = vs_buf[0] + ":" + vs_buf[6];
+    rs_prb_map.insert(std::pair<std::string, int>(rsprb.c_str(), lineNum));
     if (rsprbmapsize < rs_prb_map.size()) {
       rsprbmapsize = rs_prb_map.size();
     } else {
@@ -3016,8 +2890,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     //  consistent with previous.
     if (iter != esi_map.end()) {
       int idx = iter->second;
-      string esi_a1 = string(snpiflst[idx].a1);
-      string esi_a2 = string(snpiflst[idx].a2);
+      std::string esi_a1 = std::string(snpiflst[idx].a1);
+      std::string esi_a2 = std::string(snpiflst[idx].a2);
       int esi_bp = snpiflst[idx].bp;
       int esi_chr = snpiflst[idx].snpchr;
       if (tmpchr != esi_chr) {
@@ -3043,7 +2917,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
                         is changed.\n",
             vs_buf[0].c_str());
         vs_buf[11] = atos(-1.0 * atof(vs_buf[11].c_str()));
-        string a0 = vs_buf[3];
+        std::string a0 = vs_buf[3];
         vs_buf[3] = vs_buf[4];
         vs_buf[4] = a0;
       } else {
@@ -3056,7 +2930,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       // if it is a new snp, store it's name and index into esi_map,
       // creat a new snpinfolst structure, and push it into snpiflist.
     } else {
-      esi_map.insert(pair<string, int>(vs_buf[0].c_str(), esiNum));
+      esi_map.insert(std::pair<std::string, int>(vs_buf[0].c_str(), esiNum));
       snpinfolst snptmp;
       snptmp.snpchr = tmpchr;
       strcpy2(&snptmp.snprs, vs_buf[0]);
@@ -3070,12 +2944,9 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     }
 
     int prbchr = 0;
-    if (vs_buf[7] == "X" || vs_buf[7] == "x")
-      prbchr = 23;
-    else if (vs_buf[7] == "Y" || vs_buf[7] == "y")
-      prbchr = 24;
-    else
-      prbchr = atoi(vs_buf[7].c_str());
+    if (vs_buf[7] == "X" || vs_buf[7] == "x") prbchr = 23;
+    else if (vs_buf[7] == "Y" || vs_buf[7] == "y") prbchr = 24;
+    else prbchr = atoi(vs_buf[7].c_str());
 
     // check if prob id have been showed up before, if
     // it is not first time show up, check the consistence
@@ -3124,7 +2995,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       // it into list _ttl.
     } else {
       probeinfolst tmpprbinfo;
-      epi_map.insert(pair<string, int>(vs_buf[6], epiNum));
+      epi_map.insert(std::pair<std::string, int>(vs_buf[6], epiNum));
       strcpy2(&tmpprbinfo.probeId, vs_buf[6]);
       tmpprbinfo.probechr = prbchr;
       tmpprbinfo.bp = atoi(vs_buf[8].c_str());
@@ -3135,15 +3006,15 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       tmpprbinfo.esdpath = NULL;
       prbiflst.push_back(tmpprbinfo);
 
-      vector<string> rstmp;
+      std::vector<std::string> rstmp;
       rstmp.push_back(vs_buf[0].c_str());
       _ttl_rs.push_back(rstmp);
 
-      vector<float> betatmp;
+      std::vector<float> betatmp;
       betatmp.push_back(atof(vs_buf[11].c_str()));
       _ttl_beta.push_back(betatmp);
 
-      vector<float> setmp;
+      std::vector<float> setmp;
       if (vs_buf[12] != "NA") {
         setmp.push_back(atof(vs_buf[12].c_str()));
       } else {
@@ -3154,16 +3025,16 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
       _ttl_se.push_back(setmp);
       if (!save_dense_flag) {
-        vector<string> a1tmp;
+        std::vector<std::string> a1tmp;
         a1tmp.push_back(vs_buf[3].c_str());
         _ttl_a1.push_back(a1tmp);
-        vector<string> a2tmp;
+        std::vector<std::string> a2tmp;
         a2tmp.push_back(vs_buf[4].c_str());
         _ttl_a2.push_back(a2tmp);
-        vector<int> chrtmp;
+        std::vector<int> chrtmp;
         chrtmp.push_back(tmpchr);
         _ttl_chr.push_back(chrtmp);
-        vector<int> bptmp;
+        std::vector<int> bptmp;
         bptmp.push_back(atoi(vs_buf[2].c_str()));
         _ttl_bp.push_back(bptmp);
       }
@@ -3182,8 +3053,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   printf("\nGenerating the .epi file...\n");
   probeinfolst* epiptr = &prbiflst[0];
   qsort(epiptr, epiNum, sizeof(probeinfolst), comp);  // sort prob information with chrome bp location.
-  string epifile = string(outFileName) + string(".epi");
-  ofstream epi(epifile.c_str());
+  std::string epifile = std::string(outFileName) + std::string(".epi");
+  std::ofstream epi(epifile.c_str());
   if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < epiNum; j++) {
     epi << (prbiflst[j].probechr == 0 ? "NA" : atos(prbiflst[j].probechr)) << '\t' << prbiflst[j].probeId << '\t' << 0
@@ -3201,15 +3072,15 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   // clean epi_map and esi_map for next use.
   epi_map.clear();
   esi_map.clear();
-  string esifile = string(outFileName) + string(".esi");
-  ofstream esi(esifile.c_str());
+  std::string esifile = std::string(outFileName) + std::string(".esi");
+  std::ofstream esi(esifile.c_str());
   if (!esi) throw("Error: can not open the ESI file to save!");
   for (int j = 0; j < esiNum; j++) {
     esi << (snpiflst[j].snpchr == 0 ? "NA" : atos(snpiflst[j].snpchr)) << '\t' << snpiflst[j].snprs << '\t'
         << snpiflst[j].gd << '\t' << (snpiflst[j].bp == 0 ? "NA" : atos(snpiflst[j].bp)) << '\t' << snpiflst[j].a1
         << '\t' << snpiflst[j].a2 << '\t' << (snpiflst[j].freq + 9 > 1e-6 ? atos(snpiflst[j].freq) : "NA") << '\n';
     // new esi_map order, which is as same as esi file, beside start which zero.
-    esi_map.insert(pair<string, int>(snpiflst[j].snprs, j));
+    esi_map.insert(std::pair<std::string, int>(snpiflst[j].snprs, j));
   }
   esi.close();
   printf("%ld SNPs have been saved in the file %s.\n", esiNum, esifile.c_str());
@@ -3222,7 +3093,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   if (save_dense_flag) {
     if (sparsity > 0.4) {
       // The data will be saved in dense format
-      string esdfile = string(outFileName) + string(".besd");
+      std::string esdfile = std::string(outFileName) + std::string(".besd");
       FILE* smr1;
       smr1 = fopen(esdfile.c_str(), "wb");
       if (!(smr1)) {
@@ -3230,8 +3101,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
         exit(EXIT_FAILURE);
       }
 
-      uint32_t filetype = DENSE_FILE_TYPE_3;  // DENSE_FILE_TYPE_3 is 5 as definded in CommFunc.h
-      vector<int> ten_ints(RESERVEDUNITS);    // RESERVEDUNITS is 16 as defined in CommFunc.h
+      std::uint32_t filetype = DENSE_FILE_TYPE_3;  // DENSE_FILE_TYPE_3 is 5 as definded in CommFunc.h
+      std::vector<int> ten_ints(RESERVEDUNITS);    // RESERVEDUNITS is 16 as defined in CommFunc.h
 
       // write first 16 int into file.
       ten_ints[0] = filetype;
@@ -3242,13 +3113,13 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
       fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-      uint64_t bsize = (uint64_t)esiNum << 1;
+      std::uint64_t bsize = (std::uint64_t)esiNum << 1;
       float* buffer = (float*)malloc(sizeof(float) * bsize);
       if (NULL == buffer) {
         fprintf(stderr, "Malloc failed\n");
         exit(-1);
       }
-      map<string, int>::iterator iter;
+      std::map<std::string, int>::iterator iter;
       double disp = 0;
       for (int j = 0; j < epiNum; j++) {
         progress(j, disp, (int)epiNum);  // show program progress, don't mind.
@@ -3260,13 +3131,12 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
         // vector length is equal to snp amout of this prob.
         unsigned int snp_num_this_prob = _ttl_rs[pkey].size();
-        vector<int> rsid(snp_num_this_prob);
+        std::vector<int> rsid(snp_num_this_prob);
 
         // find snp from esi_map(with new order), and store the snp index into raid.
         for (int l = 0; l < snp_num_this_prob; l++) {
           iter = esi_map.find(_ttl_rs[pkey][l]);
-          if (iter != esi_map.end())
-            rsid[l] = iter->second;
+          if (iter != esi_map.end()) rsid[l] = iter->second;
           else {
             printf("ERROR: SNP is not in SNP map. Please report this bug.\n");
             exit(EXIT_FAILURE);
@@ -3288,14 +3158,14 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       free(buffer);
       free_probelist(prbiflst);
       free_snplist(snpiflst);
-      cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-           << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+      std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+                << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 
       // if sparsity less equal than 0.4
     } else {
       // The data will be saved in sparse format
 
-      string esdfile = string(outFileName) + string(".besd");
+      std::string esdfile = std::string(outFileName) + std::string(".besd");
       FILE* smr1;
       smr1 = fopen(esdfile.c_str(), "wb");
       if (!smr1) {
@@ -3304,8 +3174,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       }
 
       // print first 16 int.
-      uint32_t filetype = SPARSE_FILE_TYPE_3;  // SPARSE_FILE_TYPE_3 is 3 as defined in CommFunc.h
-      vector<int> ten_ints(RESERVEDUNITS);     // the micro value is 16 as definded in CommFunc.h
+      std::uint32_t filetype = SPARSE_FILE_TYPE_3;  // SPARSE_FILE_TYPE_3 is 3 as defined in CommFunc.h
+      std::vector<int> ten_ints(RESERVEDUNITS);     // the micro value is 16 as definded in CommFunc.h
       ten_ints[0] = filetype;
       if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
       ten_ints[1] = addn;
@@ -3316,20 +3186,20 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
       // cols is used to record Beta SE value and SNP index offset for
       // every Prob along Value array.
-      vector<uint64_t> cols((epiNum << 1) + 1);
-      uint64_t valNum = 0;
+      std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+      std::uint64_t valNum = 0;
       cols[0] = 0;
 
-      map<string, int>::iterator iter;
+      std::map<std::string, int>::iterator iter;
       for (int j = 0; j < epiNum; j++) {
         int pkey = prbiflst[j].gd;
-        uint64_t real_num = _ttl_beta[pkey].size();
+        std::uint64_t real_num = _ttl_beta[pkey].size();
         cols[(j << 1) + 1] = real_num + cols[j << 1];
         cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
         valNum += real_num * 2;
       }
-      fwrite(&valNum, sizeof(uint64_t), 1, smr1);             // write ValNum number of (Beta + SE)
-      fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);  // write offset, start with zero.
+      fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);             // write ValNum number of (Beta + SE)
+      fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);  // write offset, start with zero.
 
       // Write snp index information, the index array will repeat twice(totall 2 time)
       // for consistent with Beta and SE value
@@ -3339,18 +3209,17 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
         int pkey = prbiflst[j].gd;
         unsigned int snp_num_this_prob = _ttl_rs[pkey].size();
-        vector<uint32_t> rowids(snp_num_this_prob);
+        std::vector<std::uint32_t> rowids(snp_num_this_prob);
         for (int l = 0; l < snp_num_this_prob; l++) {
           iter = esi_map.find(_ttl_rs[pkey][l]);
-          if (iter != esi_map.end())
-            rowids[l] = iter->second;
+          if (iter != esi_map.end()) rowids[l] = iter->second;
           else {
             printf("ERROR: SNP is not in SNP map. Please report this bug.\n");
             exit(EXIT_FAILURE);
           }
         }
-        fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);  // every prob write snp index twice.
-        fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+        fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);  // every prob write snp index twice.
+        fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
       }
 
       // Write Beta and SE value.
@@ -3365,11 +3234,11 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       fclose(smr1);
       free_probelist(prbiflst);
       free_snplist(snpiflst);
-      cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
-           << " SNPs have been saved in a binary file [" + esdfile + "]." << endl;
+      std::cout << "Effect sizes (beta) and SE for " << epiNum << " probes and " << esiNum
+                << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
     }
   } else {
-    string esdfile = string(outFileName) + string(".besd");
+    std::string esdfile = std::string(outFileName) + std::string(".besd");
     FILE* smr1;
     smr1 = fopen(esdfile.c_str(), "wb");
     if (!(smr1)) {
@@ -3378,8 +3247,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     }
 
     // Wirte first 16 int.
-    uint32_t filetype = SPARSE_FILE_TYPE_3;  // the micro value is 3 as defined in CommFunc.h
-    vector<int> ten_ints(RESERVEDUNITS);     // the micro value is 16 as defined in CommFunc.h
+    std::uint32_t filetype = SPARSE_FILE_TYPE_3;  // the micro value is 3 as defined in CommFunc.h
+    std::vector<int> ten_ints(RESERVEDUNITS);     // the micro value is 16 as defined in CommFunc.h
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
@@ -3388,16 +3257,16 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-    vector<uint64_t> cols((epiNum << 1) + 1);
-    vector<uint32_t> rowids;
-    vector<float> val;
+    std::vector<std::uint64_t> cols((epiNum << 1) + 1);
+    std::vector<std::uint32_t> rowids;
+    std::vector<float> val;
     cols[0] = 0;
 
-    map<string, int>::iterator iter;
+    std::map<std::string, int>::iterator iter;
 
     // log file
     FILE* logfile = NULL;
-    string logfname = string(outFileName) + ".summary";
+    std::string logfname = std::string(outFileName) + ".summary";
     logfile = fopen(logfname.c_str(), "w");
     if (!(logfile)) {
       printf("Error: Failed to open log file.\n");
@@ -3405,9 +3274,9 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     }
 
     // write log file head.
-    string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
-                    "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
-                    dtos(restThres) + "\n";
+    std::string logstr = "cis-window:\t" + itos(cis_itvl) + "Kb\ntrans-window:\t" + itos(trans_itvl) +
+                         "Kb\np-value threshold of trans:\t" + dtos(transThres) + "\np-value threshold of others:\t" +
+                         dtos(restThres) + "\n";
     logstr +=
         "\ncis region is indicated by [Chr, Start bp, End bp, nsnp];\n \
                 trans region is indicated by <Chr, Start bp, End bp, nsnp>;\nthe number of other SNPs selected is indicated by (NumSNPs beyond cis and trans).\n";
@@ -3419,15 +3288,15 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
     cis_itvl = cis_itvl * 1000;      // convert to bp
     trans_itvl = trans_itvl * 1000;  // convert to bp
-    vector<snpinfolst> snpinfoperprb;
+    std::vector<snpinfolst> snpinfoperprb;
     double disp = 0;
     for (int j = 0; j < epiNum; j++) {
       // print totall progress, don't matter to data process.
       progress(j, disp, (int)epiNum);
 
       int pkey = prbiflst[j].gd;
-      vector<uint32_t> tmprid;
-      vector<float> tmpse;
+      std::vector<std::uint32_t> tmprid;
+      std::vector<float> tmpse;
       snpinfoperprb.clear();
 
       // store all snp of a prob into snpinfoperprb list
@@ -3450,17 +3319,17 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       qsort(sortptr, snpinfoperprb.size(), sizeof(snpinfolst), comp_esi);
 
       probeinfolst prbifo = prbiflst[j];
-      vector<int> slct_idx;
+      std::vector<int> slct_idx;
 
       /*select snp of every prob, and the index is save in slct_idx.
        *by the way the log file is prined in this function too.slct_idx with no order if there are trans-rgeions
        */
       slct_sparse_per_prb(slct_idx, &prbifo, snpinfoperprb, cis_itvl, trans_itvl, transThres, restThres, logfile,
                           false);
-      stable_sort(slct_idx.begin(), slct_idx.end());
+      std::stable_sort(slct_idx.begin(), slct_idx.end());
 
-      vector<string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
-      vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
+      std::vector<std::string> _rs(slct_idx.size()), _a1(slct_idx.size()), _a2(slct_idx.size());
+      std::vector<float> _beta(slct_idx.size()), _se(slct_idx.size());
 
       // collect snp information of a prob, which was filter by slct_sparse_per_prb function
       // the index of pass filter is stored in slct_idx list.
@@ -3473,11 +3342,10 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       }
 
       // retrieve snp index of esi file
-      vector<int> rsid(_rs.size());
+      std::vector<int> rsid(_rs.size());
       for (int l = 0; l < _rs.size(); l++) {
         iter = esi_map.find(_rs[l]);
-        if (iter != esi_map.end())
-          rsid[l] = iter->second;
+        if (iter != esi_map.end()) rsid[l] = iter->second;
         else {
           printf("ERROR: SNP is not in SNP map. Please report this bug.");
           exit(EXIT_FAILURE);
@@ -3510,7 +3378,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       }
 
       // Store Beta SE and SNP index offset to cols
-      uint64_t real_num = tmpse.size();
+      std::uint64_t real_num = tmpse.size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
       cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
 
@@ -3518,14 +3386,14 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     }
 
     // write value num into file
-    uint64_t valNum = val.size();
-    fwrite(&valNum, sizeof(uint64_t), 1, smr1);
+    std::uint64_t valNum = val.size();
+    fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
 
     // write Beta SE offset and SNP offset into file.
-    fwrite(&cols[0], sizeof(uint64_t), cols.size(), smr1);
+    fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
 
     // write snp index of esi file into file. start with zero
-    fwrite(&rowids[0], sizeof(uint32_t), rowids.size(), smr1);
+    fwrite(&rowids[0], sizeof(std::uint32_t), rowids.size(), smr1);
 
     // write value into file.
     fwrite(&val[0], sizeof(float), val.size(), smr1);
@@ -3534,15 +3402,16 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     free_probelist(prbiflst);
 
     printf("Summary data of the specified SNPs and probes has been saved in %s.\n", logfname.c_str());
-    cout << "\nEffect sizes (beta) and SE for " << epiNum
-         << " Probes have been saved in a binary file [" + esdfile + "]." << endl;
+    std::cout << "\nEffect sizes (beta) and SE for " << epiNum
+              << " Probes have been saved in a binary file [" + esdfile + "]." << std::endl;
     fclose(logfile);
   }
 }
 
-void read_maf_file(vector<string>& rs, vector<string>& a1, vector<string>& a2, vector<vector<float>>& maf,
-                   vector<string>& cohorts, map<string, int>& rs_map, string mafFileName) {
-  cout << "Reading summary information from [" + mafFileName + "]." << endl;
+void read_maf_file(std::vector<std::string>& rs, std::vector<std::string>& a1, std::vector<std::string>& a2,
+                   std::vector<std::vector<float>>& maf, std::vector<std::string>& cohorts,
+                   std::map<std::string, int>& rs_map, std::string mafFileName) {
+  std::cout << "Reading summary information from [" + mafFileName + "]." << std::endl;
   char tbuf[MAX_LINE_SIZE];
   gzFile gzfile = gzopen(mafFileName.c_str(), "rb");
   if (!(gzfile)) {
@@ -3555,7 +3424,7 @@ void read_maf_file(vector<string>& rs, vector<string>& a1, vector<string>& a2, v
     printf("ERROR: the first row of the file %s is empty.\n", mafFileName.c_str());
     exit(EXIT_FAILURE);
   }
-  vector<string> vs_buf;
+  std::vector<std::string> vs_buf;
   int col_num_header = split_string(tbuf, vs_buf, ", \t\n");
   to_upper(vs_buf[0]);
   if (vs_buf[0] != "SNP") {
@@ -3586,7 +3455,7 @@ void read_maf_file(vector<string>& rs, vector<string>& a1, vector<string>& a2, v
         printf("ERROR: AlleleB  is \'NA\' in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
       }
-      rs_map.insert(pair<string, int>(vs_buf[0], lineNum));
+      rs_map.insert(std::pair<std::string, int>(vs_buf[0], lineNum));
       if (rs_map.size() != lineNum + 1) {
         printf("ERROR: duplicate SNP found in row %d.\n", lineNum + 2);
         exit(EXIT_FAILURE);
@@ -3594,7 +3463,7 @@ void read_maf_file(vector<string>& rs, vector<string>& a1, vector<string>& a2, v
       rs.push_back(vs_buf[0]);
       a1.push_back(vs_buf[1]);
       a2.push_back(vs_buf[2]);
-      vector<float> tmpmaf;
+      std::vector<float> tmpmaf;
       for (int i = 3; i < col_num; i++) {
         if (vs_buf[i] == "NA" || vs_buf[i] == "na") {
           tmpmaf.push_back(-9);
@@ -3607,7 +3476,7 @@ void read_maf_file(vector<string>& rs, vector<string>& a1, vector<string>& a2, v
     }
   }
   gzclose(gzfile);
-  cout << lineNum << " MAF info to be included from [" + mafFileName + "]." << endl;
+  std::cout << lineNum << " MAF info to be included from [" + mafFileName + "]." << std::endl;
 }
 
 void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
@@ -3620,9 +3489,9 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
   esdata->_esi_freq.resize(etrait->_esi_include.size());
   esdata->_esi_include.resize(etrait->_esi_include.size());
   esdata->_snp_name_map.clear();
-  map<int, int> id_map;
+  std::map<int, int> id_map;
   for (int j = 0; j < etrait->_esi_include.size(); j++) {
-    string rs = etrait->_esi_rs[etrait->_esi_include[j]];
+    std::string rs = etrait->_esi_rs[etrait->_esi_include[j]];
     esdata->_esi_rs[j] = rs;
     esdata->_esi_allele1[j] = etrait->_esi_allele1[etrait->_esi_include[j]];
     esdata->_esi_allele2[j] = etrait->_esi_allele2[etrait->_esi_include[j]];
@@ -3631,8 +3500,8 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
     esdata->_esi_chr[j] = etrait->_esi_chr[etrait->_esi_include[j]];
     esdata->_esi_freq[j] = etrait->_esi_freq[etrait->_esi_include[j]];
     esdata->_esi_include[j] = j;
-    esdata->_snp_name_map.insert(pair<string, int>(rs, j));
-    id_map.insert(pair<int, int>(etrait->_esi_include[j], j));
+    esdata->_snp_name_map.insert(std::pair<std::string, int>(rs, j));
+    id_map.insert(std::pair<int, int>(etrait->_esi_include[j], j));
   }
   esdata->_snpNum = etrait->_esi_include.size();
 
@@ -3647,7 +3516,7 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
   esdata->_probe_name_map = etrait->_probe_name_map;
   esdata->_probNum = etrait->_probNum;
 
-  map<int, int>::iterator iter;
+  std::map<int, int>::iterator iter;
   if (etrait->_rowid.empty()) {
     esdata->_bxz.resize(etrait->_include.size());
     esdata->_sexz.resize(etrait->_include.size());
@@ -3668,9 +3537,9 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
     esdata->_cols.resize((etrait->_include.size() << 1) + 1);
     esdata->_cols[0] = 0;
     for (int ii = 0; ii < etrait->_include.size(); ii++) {
-      uint64_t beta_start = etrait->_cols[ii << 1];
-      uint64_t se_start = etrait->_cols[1 + (ii << 1)];
-      uint64_t numsnps = se_start - beta_start;
+      std::uint64_t beta_start = etrait->_cols[ii << 1];
+      std::uint64_t se_start = etrait->_cols[1 + (ii << 1)];
+      std::uint64_t numsnps = se_start - beta_start;
       int real_num = 0;
       for (int j = 0; j < numsnps << 1; j++) {
         int ge_rowid = etrait->_rowid[beta_start + j];
@@ -3689,25 +3558,22 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
   }
 }
 
-void write_smr_esi(string outFileName, eqtlInfo* eqtlinfo) {
-  string epiName = outFileName + ".esi";
+void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo) {
+  std::string epiName = outFileName + ".esi";
   FILE* efile = fopen(epiName.c_str(), "w");
   if (efile == NULL) exit(EXIT_FAILURE);
   printf("Saving SNP information ...\n");
   for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
-    string chrstr;
-    if (eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]] == 23)
-      chrstr = "X";
-    else if (eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]] == 24)
-      chrstr = "Y";
-    else
-      chrstr = atosm(eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]]);
+    std::string chrstr;
+    if (eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]] == 23) chrstr = "X";
+    else if (eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]] == 24) chrstr = "Y";
+    else chrstr = atosm(eqtlinfo->_esi_chr[eqtlinfo->_esi_include[i]]);
 
-    string str = chrstr + '\t' + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + '\t' + atos(0) + '\t' +
-                 atosm(eqtlinfo->_esi_bp[eqtlinfo->_esi_include[i]]) + '\t' +
-                 eqtlinfo->_esi_allele1[eqtlinfo->_esi_include[i]] + '\t' +
-                 eqtlinfo->_esi_allele2[eqtlinfo->_esi_include[i]] + '\t' +
-                 atosm(eqtlinfo->_esi_freq[eqtlinfo->_esi_include[i]]) + '\n';
+    std::string str = chrstr + '\t' + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + '\t' + atos(0) + '\t' +
+                      atosm(eqtlinfo->_esi_bp[eqtlinfo->_esi_include[i]]) + '\t' +
+                      eqtlinfo->_esi_allele1[eqtlinfo->_esi_include[i]] + '\t' +
+                      eqtlinfo->_esi_allele2[eqtlinfo->_esi_include[i]] + '\t' +
+                      atosm(eqtlinfo->_esi_freq[eqtlinfo->_esi_include[i]]) + '\n';
     if (fputs_checked(str.c_str(), efile)) {
       printf("ERROR: in writing file %s .\n", epiName.c_str());
       exit(EXIT_FAILURE);
@@ -3717,20 +3583,17 @@ void write_smr_esi(string outFileName, eqtlInfo* eqtlinfo) {
   printf("%ld SNPs have been saved in the file %s .\n", eqtlinfo->_esi_include.size(), epiName.c_str());
 }
 
-void write_smr_epi(string outFileName, eqtlInfo* eqtlinfo) {
-  string epiName = outFileName + ".epi";
+void write_smr_epi(std::string outFileName, eqtlInfo* eqtlinfo) {
+  std::string epiName = outFileName + ".epi";
   FILE* efile = fopen(epiName.c_str(), "w");
   if (efile == NULL) exit(EXIT_FAILURE);
   for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-    string chrstr;
-    if (eqtlinfo->_epi_chr[eqtlinfo->_include[i]] == 23)
-      chrstr = "X";
-    else if (eqtlinfo->_epi_chr[eqtlinfo->_include[i]] == 24)
-      chrstr = "Y";
-    else
-      chrstr = atosm(eqtlinfo->_epi_chr[eqtlinfo->_include[i]]);
+    std::string chrstr;
+    if (eqtlinfo->_epi_chr[eqtlinfo->_include[i]] == 23) chrstr = "X";
+    else if (eqtlinfo->_epi_chr[eqtlinfo->_include[i]] == 24) chrstr = "Y";
+    else chrstr = atosm(eqtlinfo->_epi_chr[eqtlinfo->_include[i]]);
 
-    string str =
+    std::string str =
         chrstr + '\t' + eqtlinfo->_epi_prbID[eqtlinfo->_include[i]] + '\t' + atos(0) + '\t' +
         atosm(eqtlinfo->_epi_bp[eqtlinfo->_include[i]]) + '\t' + eqtlinfo->_epi_gene[eqtlinfo->_include[i]] + '\t' +
         (eqtlinfo->_epi_orien[eqtlinfo->_include[i]] == '*' ? "NA"

@@ -15,26 +15,26 @@
 namespace SMRDATA {
 typedef struct {
   long lineNum;
-  vector<string> _Expo_id;
-  vector<int> _Expo_chr;
-  vector<string> _Expo_gene;
-  vector<int> _Expo_bp;
-  vector<string> _Outco_id;
-  vector<int> _Outco_chr;
-  vector<string> _Outco_gene;
-  vector<int> _Outco_bp;
-  vector<string> _snp_rs;
-  vector<int> _snp_chr;
-  vector<int> _snp_bp;
-  vector<string> _snp_a1;
-  vector<string> _snp_a2;
-  vector<float> _snp_frq;
-  vector<double> _b;
-  vector<double> _se;
-  vector<double> _p_smr;
-  vector<double> _p_heidi;
-  vector<int> _nsnp;
-  vector<uint32_t> _include;
+  std::vector<std::string> _Expo_id;
+  std::vector<int> _Expo_chr;
+  std::vector<std::string> _Expo_gene;
+  std::vector<int> _Expo_bp;
+  std::vector<std::string> _Outco_id;
+  std::vector<int> _Outco_chr;
+  std::vector<std::string> _Outco_gene;
+  std::vector<int> _Outco_bp;
+  std::vector<std::string> _snp_rs;
+  std::vector<int> _snp_chr;
+  std::vector<int> _snp_bp;
+  std::vector<std::string> _snp_a1;
+  std::vector<std::string> _snp_a2;
+  std::vector<float> _snp_frq;
+  std::vector<double> _b;
+  std::vector<double> _se;
+  std::vector<double> _p_smr;
+  std::vector<double> _p_heidi;
+  std::vector<int> _nsnp;
+  std::vector<std::uint32_t> _include;
 } eSMRrlt;
 
 void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstName, char* problstName,

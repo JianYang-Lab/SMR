@@ -26,8 +26,6 @@ extern bool forcefrqck;
 extern FILE* techeQTLfile;
 extern char* outFileName;
 
-using namespace std;
-
 namespace SMRDATA {
 
 struct gwasData {
@@ -40,7 +38,7 @@ struct gwasData {
   std::vector<double> byz;
   std::vector<double> seyz;
   std::vector<double> pvalue;
-  std::vector<uint32_t> splSize;
+  std::vector<std::uint32_t> splSize;
   std::vector<int> _include;
   std::unordered_map<std::string, int> _snp_name_map;
 
@@ -62,48 +60,61 @@ struct gwasData {
   bool containsSNP(const std::string& snp_name) const { return _snp_name_map.find(snp_name) != _snp_name_map.end(); }
 };
 
-typedef struct {
-  vector<int> _esi_chr;
-  vector<string> _esi_rs;
-  vector<int> _esi_gd;
-  vector<int> _esi_bp;
-  vector<string> _esi_allele1;
-  vector<string> _esi_allele2;
-  vector<int> _esi_include;  // snp indices (lineNum in *.esi file), initialized in the readesi
-  // map<string,int> _snp_name_map;
-  unordered_map<string, int> _snp_name_map;
+struct eqtlInfo {
+  std::vector<int> _esi_chr;
+  std::vector<std::string> _esi_rs;
+  std::vector<int> _esi_gd;
+  std::vector<int> _esi_bp;
+  std::vector<std::string> _esi_allele1;
+  std::vector<std::string> _esi_allele2;
+  std::vector<int> _esi_include;  // snp indices (lineNum in *.esi file), initialized in the readesi
+  // std::map<std::string,int> _snp_name_map;
+  std::unordered_map<std::string, int> _snp_name_map;
 
-  vector<float> _esi_freq;
+  std::vector<float> _esi_freq;
 
-  vector<int> _epi_chr;
-  vector<string> _epi_prbID;
-  vector<int> _epi_gd;
-  vector<int> _epi_bp;
-  vector<string> _epi_gene;
-  vector<char> _epi_orien;
-  vector<int> _include;  // initialized in the readepi
-  map<string, int> _probe_name_map;
-  vector<double> _epi_var;
+  std::vector<int> _epi_chr;
+  std::vector<std::string> _epi_prbID;
+  std::vector<int> _epi_gd;
+  std::vector<int> _epi_bp;
+  std::vector<std::string> _epi_gene;
+  std::vector<char> _epi_orien;
+  std::vector<int> _include;  // initialized in the readepi
+  std::map<std::string, int> _probe_name_map;
+  std::vector<double> _epi_var;
   /* if no probe sequence region input, its size should be 0.
      for the probe not for probe sequence file, the value should be
-     set as -9, no technical eQTL would be removed from this probe.
+     std::set as -9, no technical eQTL would be removed from this probe.
    */
-  vector<int> _epi_start;
-  vector<int> _epi_end;
+  std::vector<int> _epi_start;
+  std::vector<int> _epi_end;
 
   // for sparse
-  vector<uint64_t> _cols;
-  vector<uint32_t> _rowid;  // index of snp in _esi_include
-  vector<float> _val;
+  std::vector<std::uint64_t> _cols;
+  std::vector<std::uint32_t> _rowid;  // index of snp in _esi_include
+  std::vector<float> _val;
   // for dense
-  vector<vector<float> > _bxz;  // first dimension is probe, second is snp
-  vector<vector<float> > _sexz;
+  std::vector<std::vector<float>> _bxz;  // first dimension is probe, second is snp
+  std::vector<std::vector<float>> _sexz;
 
-  uint64_t _probNum;
-  uint64_t _snpNum;
-  uint64_t _valNum;
+  std::uint64_t _probNum;
+  std::uint64_t _snpNum;
+  std::uint64_t _valNum;
 
-} eqtlInfo;
+  void reset() {
+    _esi_chr.clear();
+    _esi_rs.clear();
+    _esi_gd.clear();
+    _esi_bp.clear();
+    _esi_allele1.clear();
+    _esi_allele2.clear();
+    _esi_include.clear();
+    _snp_name_map.clear();
+    _esi_freq.clear();
+  }
+
+  bool containsSNP(const std::string& snp_name) const { return _snp_name_map.find(snp_name) != _snp_name_map.end(); }
+};
 
 typedef struct {
   char* probeId;
@@ -132,15 +143,15 @@ typedef struct {
 } snpinfolst;
 
 typedef struct {
-  vector<string> besdpath;
+  std::vector<std::string> besdpath;
   char* probeId;
   char* genename;
   int probechr;
   int gd;
   int bp;
   char orien;
-  uint64_t vnum;
-  uint32_t* rowid;
+  std::uint64_t vnum;
+  std::uint32_t* rowid;
   float* beta_se;
   snpinfolst* sinfo;
 
@@ -164,23 +175,23 @@ typedef struct {
 typedef struct {
   int cur_chr;
   int cur_prbidx;
-  vector<double> bxz, sexz, freq, byz, seyz;
-  vector<double> pyz, zxz;
-  vector<uint32_t> curId;
-  vector<int> bpsnp, snpchrom;
-  vector<string> rs, allele1, allele2;
+  std::vector<double> bxz, sexz, freq, byz, seyz;
+  std::vector<double> pyz, zxz;
+  std::vector<std::uint32_t> curId;
+  std::vector<int> bpsnp, snpchrom;
+  std::vector<std::string> rs, allele1, allele2;
 } SMRWK;
 
 typedef struct {
-  string ProbeID;
+  std::string ProbeID;
   int ProbeChr;
-  string Gene;
+  std::string Gene;
   int Probe_bp;
-  string SNP;
+  std::string SNP;
   int SNP_Chr;
   int SNP_bp;
-  string A1;
-  string A2;
+  std::string A1;
+  std::string A2;
   float Freq;
   float b_GWAS;
   float se_GWAS;
@@ -224,20 +235,20 @@ typedef struct {
   float estn;
 } smr_snpinfo;
 
-void read_bimfile(bInfo* bdata, string bimfile);
-void read_famfile(bInfo* bdata, string famfile);
-void read_bedfile(bInfo* bdata, string bedfile);
+void read_bimfile(bInfo* bdata, std::string bimfile);
+void read_famfile(bInfo* bdata, std::string famfile);
+void read_bedfile(bInfo* bdata, std::string bedfile);
 void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments = false);
-void read_esifile(eqtlInfo* eqtlinfo, string esifile, bool prtscr = true);
-void read_esifile_by_chr(eqtlInfo* eqtlinfo, string esifile, int snpchr, bool prtscr = true);
+void read_esifile(eqtlInfo* eqtlinfo, std::string esifile, bool prtscr = true);
+void read_esifile_by_chr(eqtlInfo* eqtlinfo, std::string esifile, int snpchr, bool prtscr = true);
 
-void read_epifile(eqtlInfo* eqtlinfo, string epifile, bool prtscr = true);
-void read_besdfile(eqtlInfo* eqtlinfo, string besdfile, bool prtscr = true);
+void read_epifile(eqtlInfo* eqtlinfo, std::string epifile, bool prtscr = true);
+void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr = true);
 void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr = true);
 
 bool has_prefix(const std::string& str, const std::string& prefix);
 bool has_suffix(const std::string& str, const std::string& suffix);
-void get_square_idxes(vector<int>& sn_ids, VectorXd& zsxz, double threshold);
+void get_square_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double threshold);
 void est_cov_bxy(MatrixXd& covbxy, VectorXd& _zsxz, VectorXf& _bxy, VectorXd& _seyz, VectorXd& _bxz,
                  MatrixXd& _LD_heidi);
 double bxy_hetero3(VectorXd& _byz, VectorXd& _bxz, VectorXd& _seyz, VectorXd& _sexz, VectorXd& _zsxz,
@@ -257,7 +268,7 @@ bool make_XMat(bInfo* bdata, MatrixXd& X);
 void makex_eigenVector(bInfo* bdata, int j, VectorXd& x, bool resize, bool minus_2p);
 // inline functions
 template <typename ElemType>
-void makex(bInfo* bdata, int j, vector<ElemType>& x, bool minus_2p = false) {
+void makex(bInfo* bdata, int j, std::vector<ElemType>& x, bool minus_2p = false) {
   int i = 0;
   x.resize(bdata->_keep.size());
   for (i = 0; i < bdata->_keep.size(); i++) {
@@ -268,25 +279,24 @@ void makex(bInfo* bdata, int j, vector<ElemType>& x, bool minus_2p = false) {
       else
         x[i] = 2.0 - (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] +
                       bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-    } else
-      x[i] = bdata->_mu[bdata->_include[j]];
+    } else x[i] = bdata->_mu[bdata->_include[j]];
     if (minus_2p) x[i] -= bdata->_mu[bdata->_include[j]];
   }
 }
 
 void makeptrx(bInfo* bdata, int bsnpid, int cursnpid, float* x, bool minus_2p = false);
-void keep_indi(bInfo* bdata, string indi_list_file);
-void extract_snp(bInfo* bdata, string snplistfile);
+void keep_indi(bInfo* bdata, std::string indi_list_file);
+void extract_snp(bInfo* bdata, std::string snplistfile);
 void extract_snp(bInfo* bdata, int chr);
 
-void extract_prob(eqtlInfo* eqtlinfo, string problstName);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, string snplstName);
-void exclude_eqtl_snp(eqtlInfo* eqtlinfo, string snplstName);
-void exclude_prob(eqtlInfo* eqtlinfo, string problstName);
+void extract_prob(eqtlInfo* eqtlinfo, std::string problstName);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName);
+void exclude_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName);
+void exclude_prob(eqtlInfo* eqtlinfo, std::string problstName);
 
 void free_gwas_data(gwasData* gdata);
 
-int file_read_check(ifstream* in_file, const char* filename);
+int file_read_check(std::ifstream* in_file, const char* filename);
 void init_smr_wk(SMRWK* smrwk);
 long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, const char* refSNP, int lowerbp,
                  int upperbp, bool heidioffFlag);
@@ -301,15 +311,15 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
 double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero,
                       long& nsnp, double ld_min, int opt_hetero, bool sampleoverlap, double theta);
 
-void update_snidx(SMRWK* smrwk, vector<int>& sn_ids, int max_snp_slct, string forwhat);
-void extract_smrwk(SMRWK* smrwk, vector<int>& sn_ids, SMRWK* smrwk2);
-void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, vector<int>& rm_ID1);
-void update_smrwk_x(SMRWK* smrwk, vector<int>& sn_ids, MatrixXd& X);
-void smr_heidi_func(vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdata, gwasData* gdata, eqtlInfo* esdata,
+void update_snidx(SMRWK* smrwk, std::vector<int>& sn_ids, int max_snp_slct, std::string forwhat);
+void extract_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids, SMRWK* smrwk2);
+void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1);
+void update_smrwk_x(SMRWK* smrwk, std::vector<int>& sn_ids, MatrixXd& X);
+void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdata, gwasData* gdata, eqtlInfo* esdata,
                     int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP, double p_hetero,
                     double ld_top, int m_hetero, double p_smr, double threshpsmrest, bool new_het_mtd, bool opt,
                     double ld_min, int opt_hetero, bool sampleoverlap, double pmecs, int minCor,
-                    map<string, string>& prb_snp, bool targetLstFlg);
+                    std::map<std::string, std::string>& prb_snp, bool targetLstFlg);
 void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,
          char* indilstName, char* snplstName, char* problstName, bool bFlag, double p_hetero, double ld_top,
          int m_hetero, int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde, double p_smr,
@@ -357,7 +367,7 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
              double ld_top_multi, char* targetsnpproblstName, char* snpproblstName, double afthresh,
              double percenthresh);
 
-void ssmr_heidi_func(vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdata, gwasData* gdata, eqtlInfo* esdata,
+void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdata, gwasData* gdata, eqtlInfo* esdata,
                      int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP, double p_hetero,
                      double ld_top, int m_hetero, double p_smr, double threshpsmrest, double ld_min, int opt_hetero,
                      int expanWind, bool sampleoverlap, double pmecs, int minCor, double ld_top_multi);
@@ -368,48 +378,48 @@ int comp2(const void* a, const void* b);
 int comp_estn(const void* a, const void* b);
 int comp_i4tran(const void* a, const void* b);
 
-void read_smaslist(vector<string>& smasNames, string eqtlsmaslstName);
-void remove_indi(bInfo* bdata, string indi_list_file);
-void extract_snp(bInfo* bdata, string snplistfile);
-void exclude_snp(bInfo* bdata, string snplistfile);
+void read_smaslist(std::vector<std::string>& smasNames, std::string eqtlsmaslstName);
+void remove_indi(bInfo* bdata, std::string indi_list_file);
+void extract_snp(bInfo* bdata, std::string snplistfile);
+void exclude_snp(bInfo* bdata, std::string snplistfile);
 void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata);
 void update_geIndx(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata);
 void progress_print(float progress);
-void make_XMat(bInfo* bdata, vector<uint32_t>& snpids, MatrixXd& X, bool minus_2p = false);
-void get_square_ldpruning_idxes(vector<int>& sn_ids, VectorXd& zsxz, double threshold, VectorXd& ld_v, long maxid,
+void make_XMat(bInfo* bdata, std::vector<std::uint32_t>& snpids, MatrixXd& X, bool minus_2p = false);
+void get_square_ldpruning_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double threshold, VectorXd& ld_v, long maxid,
                                 double ld_top);
 void cor_calc(MatrixXd& LD, MatrixXd& X);
-void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const vector<uint32_t>& curId, int indicator);
+void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const std::vector<std::uint32_t>& curId, int indicator);
 
-void extract_prob_by_gene(eqtlInfo* eqtlinfo, string genelistName);
+void extract_prob_by_gene(eqtlInfo* eqtlinfo, std::string genelistName);
 void update_freq(char* eqtlFileName, char* frqfile);
-void write_besd(string outFileName, eqtlInfo* eqtlinfo);
+void write_besd(std::string outFileName, eqtlInfo* eqtlinfo);
 void extract_region_bp(bInfo* bdata, int chr, int fromkb, int tokb);
-void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, string snprs);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, string fromsnprs, string tosnprs);
+void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, std::string snprs);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string fromsnprs, std::string tosnprs);
 void extract_eqtl_snp(eqtlInfo* eqtlinfo, int chr, int fromsnpkb, int tosnpkb);
-void extract_prob(eqtlInfo* eqtlinfo, string prbname, int prbWind);
-void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, string prbname, bool prtscr = true);
-void extract_eqtl_prob(eqtlInfo* eqtlinfo, string fromprbname, string toprbname);
+void extract_prob(eqtlInfo* eqtlinfo, std::string prbname, int prbWind);
+void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, std::string prbname, bool prtscr = true);
+void extract_eqtl_prob(eqtlInfo* eqtlinfo, std::string fromprbname, std::string toprbname);
 void extract_eqtl_prob(eqtlInfo* eqtlinfo, int chr, int fromprbkb, int toprbkb);
-void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, string genename);
+void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, std::string genename);
 void extract_epi_by_chr(eqtlInfo* eqtlinfo, int prbchr);
 void extract_eqtl_by_chr(eqtlInfo* eqtlinfo, int snpchr);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, string snporprb, int Wind, string msg);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snporprb, int Wind, std::string msg);
 void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr, int prbchr, const char* prbname,
              char* fromprbname, char* toprbname, int prbWind, int fromprbkb, int toprbkb, bool prbwindFlag,
              char* genename);
 void esi_man(eqtlInfo* eqtlinfo, char* snplstName, int chr, int snpchr, char* snprs, char* fromsnprs, char* tosnprs,
              int snpWind, int fromsnpkb, int tosnpkb, bool snpwindFlag, bool cis_flag, int cis_itvl,
              const char* prbname);
-void exclude_eqtl_single_probe(eqtlInfo* eqtlinfo, string prbname);
-void slct_sparse_per_prb(vector<int>& slct_idx, probeinfolst* prbifo, vector<snpinfolst>& snpinfo, long cis_itvl,
-                         long trans_itvl, double transThres, double restThres, FILE* logfile, bool extract_cis_only,
-                         bool techHit = false);
-void read_gene_anno(char* geneAnnoName, vector<int>& chr, vector<string>& genename, vector<int>& start,
-                    vector<int>& end);
-void read_gene_anno_strand(char* geneAnnoName, vector<int>& chr, vector<string>& genename, vector<int>& start,
-                           vector<int>& end, vector<string>& strand);
+void exclude_eqtl_single_probe(eqtlInfo* eqtlinfo, std::string prbname);
+void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::vector<snpinfolst>& snpinfo,
+                         long cis_itvl, long trans_itvl, double transThres, double restThres, FILE* logfile,
+                         bool extract_cis_only, bool techHit = false);
+void read_gene_anno(char* geneAnnoName, std::vector<int>& chr, std::vector<std::string>& genename,
+                    std::vector<int>& start, std::vector<int>& end);
+void read_gene_anno_strand(char* geneAnnoName, std::vector<int>& chr, std::vector<std::string>& genename,
+                           std::vector<int>& start, std::vector<int>& end, std::vector<std::string>& strand);
 void rm_unmatched_snp(gwasData* gdata, eqtlInfo* esdata);
 void rm_unmatched_snp(eqtlInfo* etrait, eqtlInfo* esdata);
 void filter_snp_null(eqtlInfo* eqtlinfo);
@@ -418,15 +428,15 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
                           int refid, double ld_min, int opt_hetero, bool sampleoverlap, double theta);
 double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero,
                           long& nsnp, int refid, double ld_min, int opt_hetero, bool sampleoverlap, double theta);
-void free_snplist(vector<snpinfolst>& a);
-void free_probelist(vector<probeinfolst>& a);
-void free_snplist(vector<info4trans>& a);
-void free_probelist(vector<probeinfolst2>& a);
+void free_snplist(std::vector<snpinfolst>& a);
+void free_probelist(std::vector<probeinfolst>& a);
+void free_snplist(std::vector<info4trans>& a);
+void free_probelist(std::vector<probeinfolst2>& a);
 void read_epistartend(eqtlInfo* eqtlinfo, char* prbseqregion);
-int shown(string besdfile);
+int shown(std::string besdfile);
 double freq_check(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, double& freqthresh, double& percenthresh);
-void slct_trans_per_prb(vector<int>& slct_idx, vector<int>& regionChr, vector<long>& snpNumPerRegion,
-                        vector<long>& leftbound, vector<long>& rightbound, probeinfolst* prbifo,
-                        vector<info4trans>& snpinfo, long cis_itvl, long trans_itvl, double transThres);
-void extract_targets(eqtlInfo* eqtlinfo, string snpprblistfile, map<string, string>& prb_snp);
+void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr, std::vector<long>& snpNumPerRegion,
+                        std::vector<long>& leftbound, std::vector<long>& rightbound, probeinfolst* prbifo,
+                        std::vector<info4trans>& snpinfo, long cis_itvl, long trans_itvl, double transThres);
+void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile, std::map<std::string, std::string>& prb_snp);
 }  // namespace SMRDATA

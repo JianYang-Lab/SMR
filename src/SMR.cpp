@@ -17,7 +17,6 @@
 #include "bfile.hpp"
 #include "config.h"
 
-using namespace std;
 using namespace CommFunc;
 using namespace SMRDATA;
 
@@ -41,16 +40,17 @@ std::string getOSName() {
 }
 
 int main(int argc, char** argv) {
-  cout << "*******************************************************************" << endl;
-  cout << "* SMR (Summary-data-based Mendelian Randomization)" << endl;
-  cout << "* Version " << SMR_VERSION << " " << getOSName().c_str() << endl;
+  std::cout << "*******************************************************************" << std::endl;
+  std::cout << "* SMR (Summary-data-based Mendelian Randomization)" << std::endl;
+  std::cout << "* Version " << SMR_VERSION << " " << getOSName().c_str() << std::endl;
 #if defined __linux && __GNUC__
-  cout << "* Build at " << __DATE__ << " " << __TIME__ << ", by GCC " << __GNUC__ << "." << __GNUC_MINOR__ << endl;
+  std::cout << "* Build at " << __DATE__ << " " << __TIME__ << ", by GCC " << __GNUC__ << "." << __GNUC_MINOR__
+            << std::endl;
 #endif
-  cout << "* (C) 2015-present, Yang Lab, Westlake University" << endl;
-  cout << "* Please report bugs to Jian Yang jian.yang@westlake.edu.cn" << endl;
-  cout << "* MIT License" << endl;
-  cout << "*******************************************************************" << endl;
+  std::cout << "* (C) 2015-present, Yang Lab, Westlake University" << std::endl;
+  std::cout << "* Please report bugs to Jian Yang jian.yang@westlake.edu.cn" << std::endl;
+  std::cout << "* MIT License" << std::endl;
+  std::cout << "*******************************************************************" << std::endl;
 
   long int time_used = 0, start = time(NULL);
   time_t curr = time(0);
@@ -66,14 +66,14 @@ int main(int argc, char** argv) {
 
   FLAGS_VALID_CK(argc, argv);
 
-  cout << "\nOptions:" << endl;
+  std::cout << "\nOptions:" << std::endl;
 
   try {
     option(argc, argv);
-  } catch (const string& err_msg) {
-    cerr << "\n" << err_msg << endl;
+  } catch (const std::string& err_msg) {
+    std::cerr << "\n" << err_msg << std::endl;
   } catch (const char* err_msg) {
-    cerr << "\n" << err_msg << endl;
+    std::cerr << "\n" << err_msg << std::endl;
   }
 
   curr = time(0);
@@ -82,12 +82,12 @@ int main(int argc, char** argv) {
          (time_used % 3600) / 60, time_used % 60);
   // t = time(0);q
   // now = localtime(&t);
-  // cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
+  // std::cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
   //     << now -> tm_sec << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] \
-  //     << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << endl;
+  //     << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << std::endl;
   // time_used = time(NULL) - start;
-  // cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60 <<
-  // endl;
+  // std::cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60
+  // << std::endl;
   return 0;
 }
 
@@ -275,7 +275,7 @@ void option(int option_num, char* option_str[]) {
       printf("--bld %s\n", bldFileName);
     } else if (strcmp(option_str[i], "--make-bld") == 0) {
       make_bld_flag = true;
-      cout << "--make-bld " << endl;
+      std::cout << "--make-bld " << std::endl;
     }
     // gwas data file as cojo format
     else if (0 == strcmp(option_str[i], "--gwas-summary")) {
@@ -329,28 +329,28 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--keep") == 0) {
       indilstName = option_str[++i];
       FLAG_VALID_CK("--keep", indilstName);
-      cout << "--keep " << indilstName << endl;
+      std::cout << "--keep " << indilstName << std::endl;
       CommFunc::FileExist(indilstName);
     } else if (strcmp(option_str[i], "--remove") == 0) {
       indilst2remove = option_str[++i];
       FLAG_VALID_CK("--remove", indilst2remove);
-      cout << "--remove " << indilst2remove << endl;
+      std::cout << "--remove " << indilst2remove << std::endl;
       CommFunc::FileExist(indilst2remove);
     } else if (strcmp(option_str[i], "--extract-snp") == 0) {
       snplstName = option_str[++i];
       FLAG_VALID_CK("--extract-snp", snplstName);
-      cout << "--extract-snp " << snplstName << endl;
+      std::cout << "--extract-snp " << snplstName << std::endl;
       CommFunc::FileExist(snplstName);
     } else if (strcmp(option_str[i], "--extract-snp-p") == 0) {
       pinsnp = atof(option_str[++i]);
-      cout << "--extract-snp-p " << pinsnp << endl;
+      std::cout << "--extract-snp-p " << pinsnp << std::endl;
       if (pinsnp < 0 || pinsnp > 1) {
         fprintf(stderr, "Error: --extract-snp-p should be within the range from 0 to 1.\n");
         exit(EXIT_FAILURE);
       }
     } else if (strcmp(option_str[i], "--exclude-snp-p") == 0) {
       pexsnp = atof(option_str[++i]);
-      cout << "--exclude-snp-p " << pexsnp << endl;
+      std::cout << "--exclude-snp-p " << pexsnp << std::endl;
       if (pexsnp < 0 || pexsnp > 1) {
         fprintf(stderr, "Error: --exclude-snp-p should be within the range from 0 to 1.\n");
         exit(EXIT_FAILURE);
@@ -360,57 +360,56 @@ void option(int option_num, char* option_str[]) {
     else if (strcmp(option_str[i], "--extract-probe") == 0) {
       problstName = option_str[++i];
       FLAG_VALID_CK("--extract-probe", problstName);
-      cout << "--extract-probe " << problstName << endl;
+      std::cout << "--extract-probe " << problstName << std::endl;
       CommFunc::FileExist(problstName);
     } else if (strcmp(option_str[i], "--extract-exposure-probe") == 0) {
       eproblstName = option_str[++i];
       FLAG_VALID_CK("--extract-exposure-probe", eproblstName);
-      cout << "--extract-exposure-probe " << eproblstName << endl;
+      std::cout << "--extract-exposure-probe " << eproblstName << std::endl;
       CommFunc::FileExist(eproblstName);
     } else if (strcmp(option_str[i], "--extract-outcome-probe") == 0) {
       oproblstName = option_str[++i];
       FLAG_VALID_CK("--extract-outcome-probe", oproblstName);
-      cout << "--extract-outcome-probe " << oproblstName << endl;
+      std::cout << "--extract-outcome-probe " << oproblstName << std::endl;
       CommFunc::FileExist(oproblstName);
     } else if (strcmp(option_str[i], "--exclude-snp") == 0) {
       snplst2exclde = option_str[++i];
       FLAG_VALID_CK("--exclude-snp", snplst2exclde);
-      cout << "--exclude-snp " << snplst2exclde << endl;
+      std::cout << "--exclude-snp " << snplst2exclde << std::endl;
       CommFunc::FileExist(snplst2exclde);
     } else if (strcmp(option_str[i], "--exclude-probe") == 0) {
       problst2exclde = option_str[++i];
       FLAG_VALID_CK("--exclude-probe", problst2exclde);
-      cout << "--exclude-probe " << problst2exclde << endl;
+      std::cout << "--exclude-probe " << problst2exclde << std::endl;
       CommFunc::FileExist(problst2exclde);
     } else if (strcmp(option_str[i], "--exclude-exposure-probe") == 0) {
       eproblst2exclde = option_str[++i];
       FLAG_VALID_CK("--exclude-exposure-probe", eproblst2exclde);
-      cout << "--exclude-exposure-probe " << eproblst2exclde << endl;
+      std::cout << "--exclude-exposure-probe " << eproblst2exclde << std::endl;
       CommFunc::FileExist(eproblst2exclde);
     } else if (strcmp(option_str[i], "--exclude-outcome-probe") == 0) {
       oproblst2exclde = option_str[++i];
       FLAG_VALID_CK("--exclude-outcome-probe", oproblst2exclde);
-      cout << "--exclude-outcome-probe " << oproblst2exclde << endl;
+      std::cout << "--exclude-outcome-probe " << oproblst2exclde << std::endl;
       CommFunc::FileExist(oproblst2exclde);
     }
 
     else if (strcmp(option_str[i], "--maf") == 0) {
       maf = atof(option_str[++i]);
-      cout << "--maf " << maf << endl;
+      std::cout << "--maf " << maf << std::endl;
       if (maf < 0 || maf > 0.5) {
         fprintf(stderr, "Error: --maf should be within the range from 0 to 0.5.\n");
         exit(EXIT_FAILURE);
       }
     } else if (strcmp(option_str[i], "--make-besd") == 0) {
       make_besd_flag = true;
-      cout << "--make-besd " << endl;
+      std::cout << "--make-besd " << std::endl;
     } else if (0 == strcmp(option_str[i], "--out")) {
       outFileName = option_str[++i];
       if (outFileName != NULL && has_prefix(outFileName, "--")) {
         outFileName = NULL;
         i--;
-      } else
-        printf("--out %s\n", outFileName);
+      } else printf("--out %s\n", outFileName);
     } else if (0 == strcmp(option_str[i], "--peqtl-smr")) {
       p_smr = atof(option_str[++i]);
       printf("--peqtl-smr %10.2e\n", p_smr);
@@ -434,10 +433,8 @@ void option(int option_num, char* option_str[]) {
       printf("--heidi-max-m %d\n", opt_hetero);
     } else if (0 == strcmp(option_str[i], "--heidi-mtd")) {
       int mtd = atoi(option_str[++i]);
-      if (mtd == 0)
-        new_het_mth = false;
-      else if (mtd == 1)
-        new_het_mth = true;
+      if (mtd == 0) new_het_mth = false;
+      else if (mtd == 1) new_het_mth = true;
       else {
         printf("ERROR: only tow HEIDI methold avaliable.\n");
         exit(EXIT_FAILURE);
@@ -510,14 +507,10 @@ void option(int option_num, char* option_str[]) {
       printf("--efile %s\n", eFileName);
     } else if (0 == strcmp(option_str[i], "--query")) {
       lookup_flag = true;
-      if (i + 1 == option_num || has_prefix(option_str[i + 1], "--"))
-        plookup = 5.0e-8;
-      else
-        plookup = atof(option_str[++i]);
-      if (bldFileName)
-        printf("--query\n");
-      else
-        printf("--query %10.2e\n", plookup);
+      if (i + 1 == option_num || has_prefix(option_str[i + 1], "--")) plookup = 5.0e-8;
+      else plookup = atof(option_str[++i]);
+      if (bldFileName) printf("--query\n");
+      else printf("--query %10.2e\n", plookup);
       if (plookup < 0 || plookup > 1) {
         fprintf(stderr, "Error: --query should be within the range from 0 to 1.\n");
         exit(EXIT_FAILURE);
@@ -525,17 +518,17 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--genes") == 0) {
       genelistName = option_str[++i];
       FLAG_VALID_CK("--genes", genelistName);
-      cout << "--genes " << genelistName << endl;
+      std::cout << "--genes " << genelistName << std::endl;
       CommFunc::FileExist(genelistName);
     } else if (strcmp(option_str[i], "--gene-list") == 0) {
       geneAnnoName = option_str[++i];
       FLAG_VALID_CK("--gene-list", geneAnnoName);
-      cout << "--gene-list " << geneAnnoName << endl;
+      std::cout << "--gene-list " << geneAnnoName << std::endl;
       CommFunc::FileExist(geneAnnoName);
     } else if (strcmp(option_str[i], "--set-list") == 0) {
       setlstName = option_str[++i];
       FLAG_VALID_CK("--set-list", setlstName);
-      cout << "--set-list " << setlstName << endl;
+      std::cout << "--set-list " << setlstName << std::endl;
       CommFunc::FileExist(setlstName);
     } else if (0 == strcmp(option_str[i], "--target-snp")) {
       refSNP = option_str[++i];
@@ -573,8 +566,7 @@ void option(int option_num, char* option_str[]) {
       if (syllabusName != NULL && has_prefix(syllabusName, "--")) {
         syllabusName = NULL;
         i--;
-      } else
-        printf("--eqtl-flist %s\n", syllabusName);
+      } else printf("--eqtl-flist %s\n", syllabusName);
     } else if (0 == strcmp(option_str[i], "--smr-format")) {
       gctaflag = true;
       printf("--smr-format \n");
@@ -612,26 +604,26 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--extract-trait") == 0) {
       traitlstName = option_str[++i];
       FLAG_VALID_CK("--extract-trait", traitlstName);
-      cout << "--extract-trait " << traitlstName << endl;
+      std::cout << "--extract-trait " << traitlstName << std::endl;
       CommFunc::FileExist(traitlstName);
     } else if (strcmp(option_str[i], "--esd-std") == 0) {
       esdstd = true;
-      cout << "--esd-std " << endl;
+      std::cout << "--esd-std " << std::endl;
     } else if (strcmp(option_str[i], "--update-freq") == 0) {
       freqName = option_str[++i];
       FLAG_VALID_CK("--update-freq", freqName);
-      cout << "--update-freq " << freqName << endl;
+      std::cout << "--update-freq " << freqName << std::endl;
       CommFunc::FileExist(freqName);
     } else if (strcmp(option_str[i], "--probe-var") == 0) {
       vpFileName = option_str[++i];
       FLAG_VALID_CK("--probe-var", vpFileName);
-      cout << "--probe-var " << vpFileName << endl;
+      std::cout << "--probe-var " << vpFileName << std::endl;
       CommFunc::FileExist(vpFileName);
     } else if (strcmp(option_str[i], "--meta") == 0) {
       metaflg = true;
       combineFlg = false;
       smr_flag = false;
-      cout << "--meta " << endl;
+      std::cout << "--meta " << std::endl;
     } else if (0 == strcmp(option_str[i], "--mecs")) {
       metaflg = true;
       meta_mtd = 1;
@@ -684,45 +676,36 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--est-n") == 0) {
       est_effe_spl_size_flg = true;
       combineFlg = false;
-      cout << "--est-n " << endl;
+      std::cout << "--est-n " << std::endl;
     } else if (strcmp(option_str[i], "--smr-file") == 0) {
       smrRltFileName = option_str[++i];
       FLAG_VALID_CK("--smr-file", smrRltFileName);
-      cout << "--smr-file " << smrRltFileName << endl;
+      std::cout << "--smr-file " << smrRltFileName << std::endl;
       CommFunc::FileExist(smrRltFileName);
     } else if (strcmp(option_str[i], "--recode") == 0) {
       recodeflg = true;
-      cout << "--recode " << endl;
+      std::cout << "--recode " << std::endl;
     } else if (strcmp(option_str[i], "--chr") == 0) {
       char* tmpstr = option_str[++i];
-      if (strncmp(tmpstr, "X", 1) == 0)
-        chr = 23;
-      else if (strncmp(tmpstr, "Y", 1) == 0)
-        chr = 24;
-      else
-        chr = atoi(tmpstr);
+      if (strncmp(tmpstr, "X", 1) == 0) chr = 23;
+      else if (strncmp(tmpstr, "Y", 1) == 0) chr = 24;
+      else chr = atoi(tmpstr);
       FLAG_VALID_CK("--chr", tmpstr);
-      cout << "--chr " << tmpstr << endl;
+      std::cout << "--chr " << tmpstr << std::endl;
     } else if (strcmp(option_str[i], "--probe-chr") == 0) {
       char* tmpstr = option_str[++i];
-      if (strncmp(tmpstr, "X", 1) == 0)
-        prbchr = 23;
-      else if (strncmp(tmpstr, "Y", 1) == 0)
-        prbchr = 24;
-      else
-        prbchr = atoi(tmpstr);
+      if (strncmp(tmpstr, "X", 1) == 0) prbchr = 23;
+      else if (strncmp(tmpstr, "Y", 1) == 0) prbchr = 24;
+      else prbchr = atoi(tmpstr);
       FLAG_VALID_CK("--probe-chr", tmpstr);
-      cout << "--probe-chr " << tmpstr << endl;
+      std::cout << "--probe-chr " << tmpstr << std::endl;
     } else if (strcmp(option_str[i], "--snp-chr") == 0) {
       char* tmpstr = option_str[++i];
-      if (strncmp(tmpstr, "X", 1) == 0)
-        snpchr = 23;
-      else if (strncmp(tmpstr, "Y", 1) == 0)
-        snpchr = 24;
-      else
-        snpchr = atoi(tmpstr);
+      if (strncmp(tmpstr, "X", 1) == 0) snpchr = 23;
+      else if (strncmp(tmpstr, "Y", 1) == 0) snpchr = 24;
+      else snpchr = atoi(tmpstr);
       FLAG_VALID_CK("--snp-chr", tmpstr);
-      cout << "--snp-chr " << tmpstr << endl;
+      std::cout << "--snp-chr " << tmpstr << std::endl;
     } else if (strcmp(option_str[i], "--snp-rm") == 0) {
       snp2rm = option_str[++i];
       FLAG_VALID_CK("--snp-rm", snp2rm);
@@ -754,10 +737,8 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--snp-wind") == 0) {
       snpwindFlag = true;
       char* tmpstr = option_str[++i];
-      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--"))
-        i--;
-      else
-        snpWind = atoi(tmpstr);
+      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--")) i--;
+      else snpWind = atoi(tmpstr);
       printf("--snp-wind %d Kb\n", snpWind);
       if (snpWind < 0) {
         fprintf(stderr, "Error: --snp-wind should be over 0.\n");
@@ -766,10 +747,8 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--probe-wind") == 0) {
       prbwindFlag = true;
       char* tmpstr = option_str[++i];
-      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--"))
-        i--;
-      else
-        prbWind = atoi(tmpstr);
+      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--")) i--;
+      else prbWind = atoi(tmpstr);
       printf("--probe-wind %d Kb\n", prbWind);
       if (prbWind < 0) {
         fprintf(stderr, "Error: --probe-wind should be over 0.\n");
@@ -810,19 +789,19 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--extract-single-exposure-probe") == 0) {
       eprobe = option_str[++i];
       FLAG_VALID_CK("--extract-single-exposure-probe", eprobe);
-      cout << "--extract-single-exposure-probe " << eprobe << endl;
+      std::cout << "--extract-single-exposure-probe " << eprobe << std::endl;
     } else if (strcmp(option_str[i], "--extract-single-outcome-probe") == 0) {
       oprobe = option_str[++i];
       FLAG_VALID_CK("--extract-single-outcome-probe", oprobe);
-      cout << "--extract-single-outcome-probe " << oprobe << endl;
+      std::cout << "--extract-single-outcome-probe " << oprobe << std::endl;
     } else if (strcmp(option_str[i], "--exclude-single-exposure-probe") == 0) {
       eprobe2rm = option_str[++i];
       FLAG_VALID_CK("--exclude-single-exposure-probe", eprobe2rm);
-      cout << "--exclude-single-exposure-probe " << eprobe2rm << endl;
+      std::cout << "--exclude-single-exposure-probe " << eprobe2rm << std::endl;
     } else if (strcmp(option_str[i], "--exclude-single-outcome-probe") == 0) {
       oprobe2rm = option_str[++i];
       FLAG_VALID_CK("--exclude-single-outcome-probe", oprobe2rm);
-      cout << "--exclude-single-outcome-probe " << oprobe2rm << endl;
+      std::cout << "--exclude-single-outcome-probe " << oprobe2rm << std::endl;
     } else if (0 == strcmp(option_str[i], "--qfile")) {
       queryfileflg = true;
       queryFileName = option_str[++i];
@@ -835,14 +814,14 @@ void option(int option_num, char* option_str[]) {
         fprintf(stderr, "Error: --beqtl-qc should be 0,1 or 2.\n");  // 1 for SD, 2 for MAD
         exit(EXIT_FAILURE);
       }
-      cout << "--beqtl-qc " << qcmtd << endl;
+      std::cout << "--beqtl-qc " << qcmtd << std::endl;
     } else if (strcmp(option_str[i], "--z-thresh") == 0) {
       z_thresh = atoi(option_str[++i]);
       if (z_thresh < 0) {
         fprintf(stderr, "Error: --z-thresh should be positive.\n");
         exit(EXIT_FAILURE);
       }
-      cout << "--z-thresh " << z_thresh << endl;
+      std::cout << "--z-thresh " << z_thresh << std::endl;
     } else if (0 == strcmp(option_str[i], "--psmr")) {
       threshpsmrest = atof(option_str[++i]);
       printf("--psmr %10.2e\n", threshpsmrest);
@@ -901,12 +880,12 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--update-esi") == 0) {
       refesiName = option_str[++i];
       FLAG_VALID_CK("--update-esi", refesiName);
-      cout << "--update-esi " << refesiName << endl;
+      std::cout << "--update-esi " << refesiName << std::endl;
       FileExist(refesiName);
     } else if (strcmp(option_str[i], "--update-epi") == 0) {
       refepiName = option_str[++i];
       FLAG_VALID_CK("--update-epi", refepiName);
-      cout << "--update-epi " << refepiName << endl;
+      std::cout << "--update-epi " << refepiName << std::endl;
       FileExist(refepiName);
     } else if (strcmp(option_str[i], "--cis-to-all") == 0) {
       cis2all = true;
@@ -993,7 +972,7 @@ void option(int option_num, char* option_str[]) {
 #if defined _WIN64 || defined _WIN32
   omp_set_num_threads(thread_num);
 #else
-  stringstream ss;
+  std::stringstream ss;
   ss << thread_num;
   setenv("OMP_NUM_THREADS", ss.str().c_str(), 1);
   omp_set_num_threads(thread_num);
@@ -1001,7 +980,7 @@ void option(int option_num, char* option_str[]) {
 #endif
 #endif
 
-  cout << endl;
+  std::cout << std::endl;
   char tmpch[4] = "smr";
   if (outFileName == NULL) outFileName = tmpch;
 
@@ -1137,8 +1116,7 @@ void option(int option_num, char* option_str[]) {
     // output top-SNP in the trans-regions. trans-region is defined as the region aside of the cis_itvl
     count_trans(outFileName, eqtlFileName, transThres, cis_itvl, trans_itvl);
 
-  else if (freqName)
-    update_freq(eqtlFileName, freqName);
+  else if (freqName) update_freq(eqtlFileName, freqName);
 
   else if (refepiName || refesiName) {
     if (refepiName) update_epifile(eqtlFileName, refepiName);

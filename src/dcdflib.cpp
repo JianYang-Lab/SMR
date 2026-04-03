@@ -5065,8 +5065,7 @@ S10:
   if (xx > half) {
     yy = prod / dsum;
     xx = done - yy;
-  } else
-    yy = done - xx;
+  } else yy = done - xx;
   T1 = *dfd * half;
   T2 = *dfn * half;
   bratio(&T1, &T2, &xx, &yy, ccum, cum, &ierr);
@@ -5183,8 +5182,7 @@ S20:
   if (yy > half) {
     xx = prod / dsum;
     yy = done - xx;
-  } else
-    xx = done - yy;
+  } else xx = done - yy;
   T2 = *dfn * half + (double)icent;
   T3 = *dfd * half;
   bratio(&T2, &T3, &xx, &yy, &betdn, &dummy, &ierr);
@@ -5216,8 +5214,7 @@ S40:
        Now sum forwards until convergence
   */
   xmult = centwt;
-  if (aup - 1.0 + b == 0)
-    upterm = exp(-alngam(&aup) - alngam(&b) + (aup - 1.0) * log(xx) + b * log(yy));
+  if (aup - 1.0 + b == 0) upterm = exp(-alngam(&aup) - alngam(&b) + (aup - 1.0) * log(xx) + b * log(yy));
   else {
     T6 = aup - 1.0 + b;
     upterm = exp(alngam(&T6) - alngam(&aup) - alngam(&b) + (aup - 1.0) * log(xx) + b * log(yy));
@@ -7338,12 +7335,9 @@ double gam1(double* a)
   d = *a - 0.5e0;
   if (d > 0.0e0) t = d - 0.5e0;
   T1 = t;
-  if (T1 < 0)
-    goto S40;
-  else if (T1 == 0)
-    goto S10;
-  else
-    goto S20;
+  if (T1 < 0) goto S40;
+  else if (T1 == 0) goto S10;
+  else goto S20;
 S10:
   gam1 = 0.0e0;
   return gam1;
@@ -7882,12 +7876,9 @@ double Xgamm(double* a)
        LET T BE THE PRODUCT OF A-J WHEN A .GE. 2
   */
   T1 = m;
-  if (T1 < 0)
-    goto S40;
-  else if (T1 == 0)
-    goto S30;
-  else
-    goto S10;
+  if (T1 < 0) goto S40;
+  else if (T1 == 0) goto S30;
+  else goto S10;
 S10:
   for (j = 1; j <= m; j++) {
     x -= 1.0e0;
@@ -8368,12 +8359,9 @@ S270:
   z = sqrt(z + z);
   if (l < 1.0e0) z = -z;
   T4 = iop - 2;
-  if (T4 < 0)
-    goto S280;
-  else if (T4 == 0)
-    goto S290;
-  else
-    goto S300;
+  if (T4 < 0) goto S280;
+  else if (T4 == 0) goto S290;
+  else goto S300;
 S280:
   if (fabs(s) <= 1.e-3) goto S340;
   c0 = ((((((((((((d0[12] * z + d0[11]) * z + d0[10]) * z + d0[9]) * z + d0[8]) * z + d0[7]) * z + d0[6]) * z + d0[5]) *
@@ -8441,12 +8429,9 @@ S330:
   z = sqrt(z + z);
   if (l < 1.0e0) z = -z;
   T5 = iop - 2;
-  if (T5 < 0)
-    goto S340;
-  else if (T5 == 0)
-    goto S350;
-  else
-    goto S360;
+  if (T5 < 0) goto S340;
+  else if (T5 == 0) goto S350;
+  else goto S360;
 S340:
   c0 = ((((((d0[6] * z + d0[5]) * z + d0[4]) * z + d0[3]) * z + d0[2]) * z + d0[1]) * z + d0[0]) * z - third;
   c1 = (((((d1[5] * z + d1[4]) * z + d1[3]) * z + d1[2]) * z + d1[1]) * z + d1[0]) * z + d10;
@@ -9009,10 +8994,8 @@ double fifdmax1(double a, double b)
 /* a     -      first number */
 /* b     -      second number */
 {
-  if (a < b)
-    return b;
-  else
-    return a;
+  if (a < b) return b;
+  else return a;
 }
 /************************************************************************
 FIFDMIN1:
@@ -9022,10 +9005,8 @@ double fifdmin1(double a, double b)
 /* a     -     first number */
 /* b     -     second number */
 {
-  if (a < b)
-    return a;
-  else
-    return b;
+  if (a < b) return a;
+  else return b;
 }
 /************************************************************************
 FIFDSIGN:
@@ -9046,10 +9027,8 @@ Truncates a double precision number to a long integer
 long fifidint(double a)
 /* a - number to be truncated */
 {
-  if (a < 1.0)
-    return (long)0;
-  else
-    return (long)a;
+  if (a < 1.0) return (long)0;
+  else return (long)a;
 }
 /************************************************************************
 FIFMOD:

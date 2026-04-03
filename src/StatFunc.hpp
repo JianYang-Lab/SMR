@@ -22,7 +22,6 @@
 #include "dcdflib.hpp"
 
 using namespace Eigen;
-using namespace std;
 
 namespace StatFunc {
 ////////// P-value Calculatiion Functions Start ////////////////
@@ -58,10 +57,10 @@ double UniformDev(double a, double b, int& idum);
 double gasdev(int& idum);
 
 // generate a sequence following normal distribution
-void gasdev_seq(int& idum, vector<double>& vec, int size, double means, double var);
+void gasdev_seq(int& idum, std::vector<double>& vec, int size, double means, double var);
 
 // generate a sequence following normal distribution with zero average
-void gasdev_seq(int& idum, vector<double>& vec, int size, double var);
+void gasdev_seq(int& idum, std::vector<double>& vec, int size, double var);
 
 // generate a gamma random variable when alpha is larger than 1.0
 double cheng_gamdev(int& idum, const double alpha);
@@ -82,12 +81,13 @@ double t_val(double df, double prob);
 double F_val(double df_1, double df_2, double prob);
 
 // Control the experimental-wise type I error by FDR method
-double ControlFDR(const vector<double>& P_Value, double alpha, bool Restrict);
-double ControlFDR_Zou(const vector<double>& GenePValue, double FDR);
-double ControlFDR_Storey(vector<double>& P_Value, vector<double>& Q_Value, double CrtQ, double& FDR);
-double CalcuPi0(vector<double>& P_Value, vector<double>& Lambda);
-void spline(vector<double>& x, vector<double>& y, const double yp1, const double ypn, vector<double>& y2);
-void splint(vector<double>& xa, vector<double>& ya, vector<double>& y2a, const double x, double& y);
+double ControlFDR(const std::vector<double>& P_Value, double alpha, bool Restrict);
+double ControlFDR_Zou(const std::vector<double>& GenePValue, double FDR);
+double ControlFDR_Storey(std::vector<double>& P_Value, std::vector<double>& Q_Value, double CrtQ, double& FDR);
+double CalcuPi0(std::vector<double>& P_Value, std::vector<double>& Lambda);
+void spline(std::vector<double>& x, std::vector<double>& y, const double yp1, const double ypn,
+            std::vector<double>& y2);
+void splint(std::vector<double>& xa, std::vector<double>& ya, std::vector<double>& y2a, const double x, double& y);
 
 // normal distribution
 double erf(double x);

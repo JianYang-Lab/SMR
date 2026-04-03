@@ -42,7 +42,7 @@ struct bInfo {
   std::vector<int> _chr;
   std::vector<std::string> _snp_name;
   std::map<std::string, int> _snp_name_map;  // snp name to snp index
-  // unordered_map<string,int> _snp_name_map;
+  // std::unordered_map<std::string,int> _snp_name_map;
 
   std::vector<double> _genet_dst;
   std::vector<int> _bp;
@@ -72,7 +72,7 @@ struct bInfo {
   std::vector<std::vector<bool>> _snp_2;
 
   // imputed data
-  bool _dosage_flag;
+  bool _dosage_flag = false;
   std::vector<std::vector<float>> _geno_dose;
   std::vector<double> _impRsq;
 
@@ -91,15 +91,15 @@ typedef struct {
   std::vector<std::string> _esi_allele2;
   std::vector<int> _esi_include;
   std::map<std::string, int> _snp_name_map;
-  // unordered_map<string,int> _snp_name_map;
+  // std::unordered_map<std::string,int> _snp_name_map;
 
   std::vector<float> _esi_freq;
 
-  std::vector<uint64_t> _cols;
+  std::vector<std::uint64_t> _cols;
   std::vector<float> _val;
 
-  uint64_t _snpNum;
-  uint64_t _valNum;
+  std::uint64_t _snpNum;
+  std::uint64_t _valNum;
 
 } ldInfo;
 
@@ -116,7 +116,7 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName);
 void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, char* snprs, char* fromsnprs,
                 char* tosnprs, int snpWind, bool snpwindFlag, int fromsnpkb, int tosnpkb, char* snprs2exclde);
 void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid, std::vector<float>& ld);
-void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<uint32_t>& curId, int sid, std::vector<float>& ld);
+void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& curId, int sid, std::vector<float>& ld);
 void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, std::string rs, std::vector<float>& ld);
 void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered = false);
 }  // namespace SMRDATA

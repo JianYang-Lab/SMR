@@ -10,32 +10,55 @@
 
 #include "CommFunc.hpp"
 
-void CommFunc::update_id_map_kp(const vector<string>& id_list, map<string, int>& id_map, vector<int>& keep) {
-  int i = 0;
-  map<string, int> id_map_buf(id_map);
-  for (i = 0; i < id_list.size(); i++) id_map_buf.erase(id_list[i]);
-  map<string, int>::iterator iter;
-  for (iter = id_map_buf.begin(); iter != id_map_buf.end(); iter++) id_map.erase(iter->first);
+#include <algorithm>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
+
+void CommFunc::update_id_map_kp(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+                                std::vector<int>& keep) {
+  std::unordered_set<std::string> keep_ids;
+  keep_ids.reserve(id_list.size());
+  for (const auto& id : id_list) keep_ids.emplace(id);
+
+  for (auto iter = id_map.begin(); iter != id_map.end();) {
+    if (keep_ids.find(iter->first) == keep_ids.end()) {
+      iter = id_map.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 
   keep.clear();
-  for (iter = id_map.begin(); iter != id_map.end(); iter++) keep.push_back(iter->second);
-  stable_sort(keep.begin(), keep.end());
+  keep.reserve(id_map.size());
+  for (const auto& entry : id_map) keep.push_back(entry.second);
+  std::stable_sort(keep.begin(), keep.end());
 }
 
-void CommFunc::update_id_map_rm(const vector<string>& id_list, map<string, int>& id_map, vector<int>& keep) {
-  int i = 0;
-  for (i = 0; i < id_list.size(); i++) id_map.erase(id_list[i]);
+void CommFunc::update_id_map_rm(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+                                std::vector<int>& keep) {
+  std::unordered_set<std::string> remove_ids;
+  remove_ids.reserve(id_list.size());
+  for (const auto& id : id_list) remove_ids.emplace(id);
+
+  for (auto iter = id_map.begin(); iter != id_map.end();) {
+    if (remove_ids.find(iter->first) != remove_ids.end()) {
+      iter = id_map.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 
   keep.clear();
-  map<string, int>::iterator iter;
-  for (iter = id_map.begin(); iter != id_map.end(); iter++) keep.push_back(iter->second);
-  stable_sort(keep.begin(), keep.end());
+  keep.reserve(id_map.size());
+  for (const auto& entry : id_map) keep.push_back(entry.second);
+  std::stable_sort(keep.begin(), keep.end());
 }
 
-void CommFunc::read_indi_list(string indi_list_file, vector<string>& indi_list) {
-  ifstream i_indi_list(indi_list_file.c_str());
+void CommFunc::read_indi_list(const std::string& indi_list_file, std::vector<std::string>& indi_list) {
+  std::ifstream i_indi_list(indi_list_file.c_str());
   if (!i_indi_list) throw("Error: can not open the file [" + indi_list_file + "] to read.");
-  string str_buf, id_buf;
+  std::string str_buf, id_buf;
   indi_list.clear();
   while (i_indi_list) {
     i_indi_list >> str_buf;
@@ -44,57 +67,57 @@ void CommFunc::read_indi_list(string indi_list_file, vector<string>& indi_list) 
     i_indi_list >> str_buf;
     id_buf += str_buf;
     indi_list.push_back(id_buf);
-    getline(i_indi_list, str_buf);
+    std::getline(i_indi_list, str_buf);
   }
   i_indi_list.close();
 }
 
-void CommFunc::read_msglist(string msglistfile, vector<string>& msglist, string msg) {
+void CommFunc::read_msglist(const std::string& msglistfile, std::vector<std::string>& msglist, const std::string& msg) {
   // Read msglist file
   msglist.clear();
-  string StrBuf;
-  ifstream i_msglist(msglistfile.c_str());
+  std::string StrBuf;
+  std::ifstream i_msglist(msglistfile.c_str());
   if (!i_msglist) throw("Error: can not open the file [" + msglistfile + "] to read.");
-  cout << "Reading a list of " << msg << " from [" + msglistfile + "]." << endl;
+  std::cout << "Reading a list of " << msg << " from [" + msglistfile + "]." << std::endl;
   while (i_msglist >> StrBuf) {
     msglist.push_back(StrBuf);
-    getline(i_msglist, StrBuf);
+    std::getline(i_msglist, StrBuf);
   }
   i_msglist.close();
 }
 
-string CommFunc::dtos(double value) {
-  stringstream ss;
-  ss << scientific << value;
-  // ss << fixed << setprecision(400) << __value;
+std::string CommFunc::dtos(double value) {
+  std::stringstream ss;
+  ss << std::scientific << value;
+  // ss << std::fixed << std::setprecision(400) << __value;
   return (ss.str());
 }
 
-string CommFunc::dtosf(double value) {
-  stringstream ss;
-  ss << fixed << value;
+std::string CommFunc::dtosf(double value) {
+  std::stringstream ss;
+  ss << std::fixed << value;
   return (ss.str());
 }
 
-string CommFunc::itos(int value) {
-  stringstream ss;
+std::string CommFunc::itos(int value) {
+  std::stringstream ss;
   ss << value;
   return (ss.str());
 }
 
-string CommFunc::ltos(long value) {
-  stringstream ss;
+std::string CommFunc::ltos(long value) {
+  std::stringstream ss;
   ss << value;
   return (ss.str());
 }
 
 double CommFunc::Abs(const double& x) {
-  complex<double> cld(x);
+  std::complex<double> cld(x);
   double ldAbs = abs(cld);
   return (ldAbs);
 }
 
-double CommFunc::sum(const vector<double>& x) {
+double CommFunc::sum(const std::vector<double>& x) {
   int size = x.size();
   int i = 0;
   double d_buf = 0.0;
@@ -102,7 +125,7 @@ double CommFunc::sum(const vector<double>& x) {
   return (double)d_buf;
 }
 
-double CommFunc::mean(const vector<double>& x) {
+double CommFunc::mean(const std::vector<double>& x) {
   int size = x.size();
   int i = 0;
   double d_buf = 0.0;
@@ -111,18 +134,16 @@ double CommFunc::mean(const vector<double>& x) {
   return (double)d_buf;
 }
 
-double CommFunc::median(const vector<double>& x) {
-  vector<double> b(x);
+double CommFunc::median(const std::vector<double>& x) {
+  std::vector<double> b(x);
   int size = b.size();
   if (size == 1) return b[0];
-  stable_sort(b.begin(), b.end());
-  if (size % 2 == 1)
-    return b[(size - 1) / 2];
-  else
-    return (b[size / 2] + b[size / 2 - 1]) / 2;
+  std::stable_sort(b.begin(), b.end());
+  if (size % 2 == 1) return b[(size - 1) / 2];
+  else return (b[size / 2] + b[size / 2 - 1]) / 2;
 }
 
-double CommFunc::var(const vector<double>& x) {
+double CommFunc::var(const std::vector<double>& x) {
   int size = x.size();
   if (size <= 1) return (0.0);
   int i = 0;
@@ -134,7 +155,7 @@ double CommFunc::var(const vector<double>& x) {
   return (double)s2;
 }
 
-double CommFunc::cov(const vector<double>& x, const vector<double>& y) {
+double CommFunc::cov(const std::vector<double>& x, const std::vector<double>& y) {
   int size = x.size();
   int i = 0;
   double mu1 = 0.0, mu2 = 0.0, c = 0.0;
@@ -169,20 +190,20 @@ const double CommFunc::Min(const double& a, const double& b) { return b < a ? (b
 const double CommFunc::Sign(const double& a, const double& b) { return b >= 0 ? (a >= 0 ? a : -a) : (a >= 0 ? -a : a); }
 
 int CommFunc::rand_seed() {
-  stringstream str_strm;
+  std::stringstream str_strm;
   str_strm << time(NULL);
-  string seed_str = str_strm.str();
-  reverse(seed_str.begin(), seed_str.end());
+  std::string seed_str = str_strm.str();
+  std::reverse(seed_str.begin(), seed_str.end());
   seed_str.erase(seed_str.begin() + 7, seed_str.end());
   return (abs(atoi(seed_str.c_str())));
 }
 
-void CommFunc::FileExist(string filename) {
-  ifstream ifile(filename.c_str());
+void CommFunc::FileExist(const std::string& filename) {
+  std::ifstream ifile(filename.c_str());
   if (!ifile) throw("Error: can not open the file [" + filename + "] to read.");
 }
 
-int CommFunc::max_abs_id(vector<double>& zsxz) {
+int CommFunc::max_abs_id(std::vector<double>& zsxz) {
   int id = 0;
   double tmpVal, cmpVal = abs(zsxz[0]);
   for (int i = 1; i < zsxz.size(); i++) {
@@ -208,7 +229,7 @@ int CommFunc::max_abs_id(VectorXd& zsxz) {
   return (id);
 }
 
-void CommFunc::getRank(vector<double>& a, vector<int>& b) {
+void CommFunc::getRank(std::vector<double>& a, std::vector<int>& b) {
   b.resize(a.size());
   for (int i = (int)a.size() - 1; i >= 0; i--) {
     int count = 0;
@@ -218,7 +239,7 @@ void CommFunc::getRank(vector<double>& a, vector<int>& b) {
   }
 }
 
-void CommFunc::getRank(vector<int>& a, vector<int>& b) {
+void CommFunc::getRank(std::vector<int>& a, std::vector<int>& b) {
   b.resize(a.size());
   for (int i = (int)a.size() - 1; i >= 0; i--) {
     int count = 0;
@@ -228,48 +249,47 @@ void CommFunc::getRank(vector<int>& a, vector<int>& b) {
   }
 }
 
-void CommFunc::getRank_norep(vector<int>& a, vector<int>& b) {
+void CommFunc::getRank_norep(std::vector<int>& a, std::vector<int>& b) {
   b.resize(a.size());
-  map<int, int> rep_chck;
+  std::map<int, int> rep_chck;
   long mapsize = 0;
   for (int i = (int)a.size() - 1; i >= 0; i--) {
     int count = 0;
     for (int j = 0; j < a.size(); j++)
       if (a[j] < a[i]) count++;
-    rep_chck.insert(pair<int, int>(count, i));
+    rep_chck.insert(std::pair<int, int>(count, i));
     while (rep_chck.size() == mapsize) {
       count++;
-      rep_chck.insert(pair<int, int>(count, i));
+      rep_chck.insert(std::pair<int, int>(count, i));
     }
     mapsize = rep_chck.size();
     b[i] = count;
   }
 }
 
-void CommFunc::getUnique(vector<uint32_t>& a) {
-  sort(a.begin(), a.end());
-  vector<uint32_t>::iterator it = unique(a.begin(), a.end());
+void CommFunc::getUnique(std::vector<std::uint32_t>& a) {
+  std::sort(a.begin(), a.end());
+  std::vector<std::uint32_t>::iterator it = std::unique(a.begin(), a.end());
   a.erase(it, a.end());
 }
 
-void CommFunc::match(const vector<uint32_t>& VecA, const vector<uint32_t>& VecB, vector<int>& VecC) {
-  int i = 0;
-  map<uint32_t, int> id_map;
-  map<uint32_t, int>::iterator iter;
+void CommFunc::match(const std::vector<std::uint32_t>& VecA, const std::vector<std::uint32_t>& VecB,
+                     std::vector<int>& VecC) {
+  std::unordered_map<std::uint32_t, int> id_map;
+  id_map.reserve(VecB.size());
   VecC.clear();
-  for (i = 0; i < VecB.size(); i++) id_map.insert(pair<uint32_t, int>(VecB[i], i));
-  for (i = 0; i < VecA.size(); i++) {
-    iter = id_map.find(VecA[i]);
-    if (iter == id_map.end())
-      VecC.push_back(-9);
-    else
-      VecC.push_back(iter->second);
+  VecC.reserve(VecA.size());
+  for (size_t i = 0; i < VecB.size(); i++) id_map.emplace(VecB[i], static_cast<int>(i));
+  for (const auto& value : VecA) {
+    auto iter = id_map.find(value);
+    if (iter == id_map.end()) VecC.push_back(-9);
+    else VecC.push_back(iter->second);
   }
 }
 
-void CommFunc::strcpy2(char** to, string from) {
+void CommFunc::strcpy2(char** to, const std::string& from) {
   char* tmp = new char[from.size() + 1];
-  copy(from.begin(), from.end(), tmp);
+  std::copy(from.begin(), from.end(), tmp);
   tmp[from.size()] = '\0';
   *to = tmp;
 }
@@ -280,14 +300,14 @@ float CommFunc::readfloat(FILE* f) {
   return v;
 }
 
-uint64_t CommFunc::readuint64(FILE* f) {
-  uint64_t v;
+std::uint64_t CommFunc::readuint64(FILE* f) {
+  std::uint64_t v;
   fread((void*)(&v), sizeof(v), 1, f);
   return v;
 }
 
-uint32_t CommFunc::readuint32(FILE* f) {
-  uint32_t v;
+std::uint32_t CommFunc::readuint32(FILE* f) {
+  std::uint32_t v;
   fread((void*)(&v), sizeof(v), 1, f);
   return v;
 }
@@ -320,7 +340,7 @@ double CommFunc::cor(VectorXd& Y, VectorXd& X, bool centered, bool standardised)
   return ld;
 }
 
-double CommFunc::cor(vector<double>& y, vector<double>& x) {
+double CommFunc::cor(std::vector<double>& y, std::vector<double>& x) {
   long N = x.size();
   if (N != y.size() || N < 1) {
     printf("Error: The lengths of x and y do not match.\n");
@@ -363,26 +383,28 @@ double CommFunc::cor(vector<double>& y, vector<double>& x) {
   return (r);
 }
 
-void CommFunc::update_map_kp(const vector<string>& id_list, map<string, int>& id_map, vector<int>& keep) {
+void CommFunc::update_map_kp(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+                             std::vector<int>& keep) {
   int i = 0;
-  map<string, int> id_map_buf(id_map);
+  std::map<std::string, int> id_map_buf(id_map);
   for (i = 0; i < id_list.size(); i++) id_map_buf.erase(id_list[i]);
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   for (iter = id_map_buf.begin(); iter != id_map_buf.end(); iter++) id_map.erase(iter->first);
 
   keep.clear();
   for (iter = id_map.begin(); iter != id_map.end(); iter++) keep.push_back(iter->second);
-  stable_sort(keep.begin(), keep.end());
+  std::stable_sort(keep.begin(), keep.end());
 }
 
-void CommFunc::update_map_rm(const vector<string>& id_list, map<string, int>& id_map, vector<int>& keep) {
+void CommFunc::update_map_rm(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+                             std::vector<int>& keep) {
   int i = 0;
   for (i = 0; i < id_list.size(); i++) id_map.erase(id_list[i]);
 
   keep.clear();
-  map<string, int>::iterator iter;
+  std::map<std::string, int>::iterator iter;
   for (iter = id_map.begin(); iter != id_map.end(); iter++) keep.push_back(iter->second);
-  stable_sort(keep.begin(), keep.end());
+  std::stable_sort(keep.begin(), keep.end());
 }
 
 void CommFunc::progress(int& cur, double& disp, int ttl) {
@@ -390,13 +412,9 @@ void CommFunc::progress(int& cur, double& disp, int ttl) {
   if (desti >= disp) {
     printf("%3.0f%%\r", 100.0 * desti);
     fflush(stdout);
-    if (disp == 0)
-      disp += 0.05;
-    else if (disp == 0.05)
-      disp += 0.2;
-    else if (disp == 0.25)
-      disp += 0.5;
-    else
-      disp += 0.25;
+    if (disp == 0) disp += 0.05;
+    else if (disp == 0.05) disp += 0.2;
+    else if (disp == 0.25) disp += 0.5;
+    else disp += 0.25;
   }
 }

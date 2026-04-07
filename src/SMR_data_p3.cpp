@@ -432,7 +432,7 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
   }
   long prbperloop = bsize / sizeperprb;
   bool prtscr = false;
-  std::map<std::string, int>::iterator iter;
+  std::unordered_map<std::string, int>::iterator iter;
   eqtlInfo eqtlinfo;
   read_esifile(&eqtlinfo, std::string(probeinfo[0].besdpath[0]) + ".esi", prtscr);
   if (esiNum != eqtlinfo._snpNum) {
@@ -448,7 +448,7 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
     if (j == loops - 1) numprbcurloop = epiNum - j * numprbcurloop;
     std::uint64_t vnum = numprbcurloop * esiNum * 2;
     for (int k = 0; k < vnum; k++) buffer[k] = -9;  // init
-    std::map<std::string, int> fcurloop;
+    std::unordered_map<std::string, int> fcurloop;
     long fnum = 0;
     std::vector<F2Prb> f2prb;
     for (int k = 0; k < numprbcurloop; k++) {
@@ -467,7 +467,7 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       if (iter != fcurloop.end()) {
         f2prb[iter->second].pid.push_back(k);
       } else {
-        fcurloop.insert(std::pair<std::string, int>(probeinfo[curPrid].besdpath[0], fnum));
+        fcurloop.emplace(probeinfo[curPrid].besdpath[0], fnum);
         F2Prb fptmp;
         fptmp.besdpath = probeinfo[curPrid].besdpath[0];
         fptmp.pid.push_back(k);

@@ -1280,7 +1280,7 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
           if (size < rs_map.size()) {
             snptmp.snpchr = tmpchr;
             strcpy2(&snptmp.snprs, tmpStr);
-            std::map<std::string, int>::iterator iter;
+            std::unordered_map<std::string, int>::iterator iter;
             iter = binfo._snp_name_map.find(tmpStr);
             if (iter != binfo._snp_name_map.end()) {
               strcpy2(&snptmp.a1, binfo._allele1[iter->second]);
@@ -1458,7 +1458,7 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
             strcpy2(&snptmp.snprs, tmpStr);
             strcpy2(&snptmp.a1, a1);
             strcpy2(&snptmp.a2, a2);
-            std::map<std::string, int>::iterator iter;
+            std::unordered_map<std::string, int>::iterator iter;
             iter = binfo._snp_name_map.find(tmpStr);
             if (iter != binfo._snp_name_map.end()) {
               snptmp.bp = binfo._bp[iter->second];

@@ -79,8 +79,9 @@ struct eqtlInfo {
   std::vector<int> _epi_bp;
   std::vector<std::string> _epi_gene;
   std::vector<char> _epi_orien;
-  std::vector<int> _include;  // initialized in the readepi
-  std::map<std::string, int> _probe_name_map;
+  // initialized in the readepi, probe_idx
+  std::vector<int> _include;
+  std::unordered_map<std::string, int> _probe_name_map;
   std::vector<double> _epi_var;
   /* if no probe sequence region input, its size should be 0.
      for the probe not for probe sequence file, the value should be
@@ -101,7 +102,7 @@ struct eqtlInfo {
   std::uint64_t _snpNum;
   std::uint64_t _valNum;
 
-  void reset() {
+  void reset_esi() {
     _esi_chr.clear();
     _esi_rs.clear();
     _esi_gd.clear();
@@ -111,6 +112,29 @@ struct eqtlInfo {
     _esi_include.clear();
     _snp_name_map.clear();
     _esi_freq.clear();
+  }
+
+  void reset_epi() {
+    _epi_chr.clear();
+    _epi_prbID.clear();
+    _epi_gd.clear();
+    _epi_bp.clear();
+    _epi_gene.clear();
+    _epi_orien.clear();
+    _include.clear();
+    _probe_name_map.clear();
+  }
+
+  void reset_besd_sparse() {
+    _cols.clear();
+    _rowid.clear();
+    _val.clear();
+    _valNum = 0;
+  }
+
+  void reset_besd_dense() {
+    _bxz.clear();
+    _sexz.clear();
   }
 
   bool containsSNP(const std::string& snp_name) const { return _snp_name_map.find(snp_name) != _snp_name_map.end(); }
@@ -318,7 +342,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
                     int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP, double p_hetero,
                     double ld_top, int m_hetero, double p_smr, double threshpsmrest, bool new_het_mtd, bool opt,
                     double ld_min, int opt_hetero, bool sampleoverlap, double pmecs, int minCor,
-                    std::map<std::string, std::string>& prb_snp, bool targetLstFlg);
+                    std::unordered_map<std::string, std::string>& prb_snp, bool targetLstFlg);
 void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileName, char* eqtlFileName, double maf,
          char* indilstName, char* snplstName, char* problstName, bool bFlag, double p_hetero, double ld_top,
          int m_hetero, int opt_hetero, char* indilst2remove, char* snplst2exclde, char* problst2exclde, double p_smr,
@@ -437,5 +461,6 @@ double freq_check(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, double& freqt
 void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr, std::vector<long>& snpNumPerRegion,
                         std::vector<long>& leftbound, std::vector<long>& rightbound, probeinfolst* prbifo,
                         std::vector<info4trans>& snpinfo, long cis_itvl, long trans_itvl, double transThres);
-void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile, std::map<std::string, std::string>& prb_snp);
+void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile,
+                     std::unordered_map<std::string, std::string>& prb_snp);
 }  // namespace SMRDATA

@@ -45,9 +45,12 @@
 
 // clang-format on
 
-#include <string.h>
-#include <ctime>
+#include <cstdio>
 #include <limits>
+#include <map>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -123,9 +126,9 @@ std::string dtos(double value);
 std::string dtosf(double value);
 std::string itos(int value);
 std::string ltos(long value);
-void update_id_map_kp(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+void update_id_map_kp(const std::vector<std::string>& id_list, std::unordered_map<std::string, int>& id_map,
                       std::vector<int>& keep);
-void update_id_map_rm(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+void update_id_map_rm(const std::vector<std::string>& id_list, std::unordered_map<std::string, int>& id_map,
                       std::vector<int>& keep);
 void read_indi_list(const std::string& indi_list_file, std::vector<std::string>& indi_list);
 void read_msglist(const std::string& msglistfile, std::vector<std::string>& msglist, const std::string& msg);

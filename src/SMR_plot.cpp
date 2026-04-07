@@ -40,7 +40,8 @@ void smre2e(char* bFileName, char* eqtlFileName, char* eqtlFileName2, double maf
   cis_itvl = cis_itvl * 1000;
 
   if (bFileName == nullptr) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (eqtlFileName == nullptr)
+    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
 
   read_esifile(&etrait, std::string(eqtlFileName) + ".esi");
   if (snplstName != nullptr) extract_eqtl_snp(&etrait, snplstName);
@@ -895,7 +896,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
     exit(EXIT_FAILURE);
   }
   bool targetLstFlg = false;
-  std::map<std::string, std::string> prb_snp;
+  std::unordered_map<std::string, std::string> prb_snp;
   std::vector<int> gene_anno_chr;
   std::vector<std::string> gene_anno_genename;
   std::vector<int> gene_anno_start;
@@ -906,10 +907,9 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
     printf("ERROR: please input the gene list file containing strand information.\n");
     exit(EXIT_FAILURE);
   }
-  std::map<std::string, int> gene_anno_map;
-  std::map<std::string, int>::iterator iter;
-  for (int i = 0; i < gene_anno_genename.size(); i++)
-    gene_anno_map.insert(std::pair<std::string, int>(gene_anno_genename[i], i));
+  std::unordered_map<std::string, int> gene_anno_map;
+  std::unordered_map<std::string, int>::iterator iter;
+  for (int i = 0; i < gene_anno_genename.size(); i++) gene_anno_map.emplace(gene_anno_genename[i], i);
 
   eqtlInfo edata;
   eqtlInfo mdata;
@@ -1641,10 +1641,9 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
   std::vector<int> gene_anno_end;
   std::vector<std::string> strand;
   read_gene_anno_strand(geneAnnoName, gene_anno_chr, gene_anno_genename, gene_anno_start, gene_anno_end, strand);
-  std::map<std::string, int> gene_anno_map;
-  std::map<std::string, int>::iterator iter;
-  for (int i = 0; i < gene_anno_genename.size(); i++)
-    gene_anno_map.insert(std::pair<std::string, int>(gene_anno_genename[i], i));
+  std::unordered_map<std::string, int> gene_anno_map;
+  std::unordered_map<std::string, int>::iterator iter;
+  for (int i = 0; i < gene_anno_genename.size(); i++) gene_anno_map.emplace(gene_anno_genename[i], i);
 
   eqtlInfo edata;
   bInfo bdata;

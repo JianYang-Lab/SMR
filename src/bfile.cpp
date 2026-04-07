@@ -12,6 +12,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <fmt/base.h>
+
 #include "CommFunc.hpp"
 #include "StrFunc.hpp"
 
@@ -21,35 +23,34 @@ using namespace StrFunc;
 namespace SMRDATA {
 void read_famfile(bInfo* bdata, std::string famfile) {
   bdata->_autosome_num = 22;
-  std::ifstream Fam(famfile.c_str());
-  if (!Fam) throw("Error: can not open the file [" + famfile + "] to read.");
+  std::ifstream ifs_fam(famfile.c_str());
+  if (!ifs_fam) throw("Error: can not open the file [" + famfile + "] to read.");
   std::cout << "Reading PLINK FAM file from [" + famfile + "]." << std::endl;
 
-  int i = 0;
-  std::string str_buf;
+  std::string buf;
   bdata->_fid.clear();
   bdata->_pid.clear();
   bdata->_fa_id.clear();
   bdata->_mo_id.clear();
   bdata->_sex.clear();
   bdata->_pheno.clear();
-  while (Fam) {
-    Fam >> str_buf;
-    if (Fam.eof()) break;
-    bdata->_fid.push_back(str_buf);
-    Fam >> str_buf;
-    bdata->_pid.push_back(str_buf);
-    Fam >> str_buf;
-    bdata->_fa_id.push_back(str_buf);
-    Fam >> str_buf;
-    bdata->_mo_id.push_back(str_buf);
-    Fam >> str_buf;
-    bdata->_sex.push_back(atoi(str_buf.c_str()));
-    Fam >> str_buf;
-    bdata->_pheno.push_back(atoi(str_buf.c_str()));
+  while (ifs_fam) {
+    ifs_fam >> buf;
+    if (ifs_fam.eof()) break;
+    bdata->_fid.push_back(buf);
+    ifs_fam >> buf;
+    bdata->_pid.push_back(buf);
+    ifs_fam >> buf;
+    bdata->_fa_id.push_back(buf);
+    ifs_fam >> buf;
+    bdata->_mo_id.push_back(buf);
+    ifs_fam >> buf;
+    bdata->_sex.push_back(atoi(buf.c_str()));
+    ifs_fam >> buf;
+    bdata->_pheno.push_back(atoi(buf.c_str()));
   }
-  Fam.clear();
-  Fam.close();
+  ifs_fam.clear();
+  ifs_fam.close();
   bdata->_indi_num = bdata->_fid.size();
   std::cout << bdata->_indi_num << " individuals to be included from [" + famfile + "]." << std::endl;
 
@@ -60,7 +61,7 @@ void read_famfile(bInfo* bdata, std::string famfile) {
   int size = 0;
   for (int i = 0; i < bdata->_indi_num; i++) {
     bdata->_keep[i] = i;
-    bdata->_id_map.insert(std::pair<std::string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
+    bdata->_id_map.emplace(bdata->_fid[i] + ":" + bdata->_pid[i], i);
     if (size == bdata->_id_map.size())
       throw("Error: Duplicate individual ID found: \"" + bdata->_fid[i] + "\t" + bdata->_pid[i] + "\".");
     size = bdata->_id_map.size();
@@ -112,7 +113,7 @@ void update_bim(bInfo* bdata, std::vector<int>& rsnp) {
 
   for (i = 0; i < bdata->_snp_num; i++) {
     bdata->_include[i] = i;
-    bdata->_snp_name_map.insert(std::pair<std::string, int>(bdata->_snp_name[i], i));
+    bdata->_snp_name_map.emplace(bdata->_snp_name[i], i);
   }
 }
 
@@ -150,7 +151,7 @@ void update_fam(bInfo* bdata, std::vector<int>& rindi) {
   bdata->_id_map.clear();
   for (i = 0; i < bdata->_indi_num; i++) {
     bdata->_keep[i] = i;
-    bdata->_id_map.insert(std::pair<std::string, int>(bdata->_fid[i] + ":" + bdata->_pid[i], i));
+    bdata->_id_map.emplace(bdata->_fid[i] + ":" + bdata->_pid[i], i);
   }
 }
 
@@ -160,8 +161,8 @@ void read_bimfile(bInfo* bdata, std::string bimfile) {
   std::string cbuf = "0";
   double dbuf = 0.0;
   std::string str_buf;
-  std::ifstream Bim(bimfile.c_str());
-  if (!Bim) throw("Error: can not open the file [" + bimfile + "] to read.");
+  std::ifstream ifs_bim(bimfile.c_str());
+  if (!ifs_bim) throw("Error: can not open the file [" + bimfile + "] to read.");
   std::cout << "Reading PLINK BIM file from [" + bimfile + "]." << std::endl;
   bdata->_chr.clear();
   bdata->_snp_name.clear();
@@ -169,24 +170,24 @@ void read_bimfile(bInfo* bdata, std::string bimfile) {
   bdata->_bp.clear();
   bdata->_allele1.clear();
   bdata->_allele2.clear();
-  while (Bim) {
-    Bim >> ibuf;
-    if (Bim.eof()) break;
+  while (ifs_bim) {
+    ifs_bim >> ibuf;
+    if (ifs_bim.eof()) break;
     bdata->_chr.push_back(ibuf);
-    Bim >> str_buf;
+    ifs_bim >> str_buf;
     bdata->_snp_name.push_back(str_buf);
-    Bim >> dbuf;
+    ifs_bim >> dbuf;
     bdata->_genet_dst.push_back(dbuf);
-    Bim >> ibuf;
+    ifs_bim >> ibuf;
     bdata->_bp.push_back(ibuf);
-    Bim >> cbuf;
+    ifs_bim >> cbuf;
     StrFunc::to_upper(cbuf);
-    bdata->_allele1.push_back(cbuf.c_str());
-    Bim >> cbuf;
+    bdata->_allele1.push_back(cbuf);
+    ifs_bim >> cbuf;
     StrFunc::to_upper(cbuf);
-    bdata->_allele2.push_back(cbuf.c_str());
+    bdata->_allele2.push_back(cbuf);
   }
-  Bim.close();
+  ifs_bim.close();
   bdata->_snp_num = bdata->_chr.size();
   // by default, allele1 is ref allele
   bdata->_ref_A = bdata->_allele1;
@@ -200,14 +201,13 @@ void read_bimfile(bInfo* bdata, std::string bimfile) {
 
   for (int i = 0; i < bdata->_snp_num; i++) {
     bdata->_include[i] = i;
-    if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end()) {
-      std::cout << "Warning: Duplicated SNP ID \"" + bdata->_snp_name[i] + "\" ";
+    if (bdata->containsSNP(bdata->_snp_name[i])) {
       std::stringstream ss;
       ss << bdata->_snp_name[i] << "_" << i + 1;
+      fmt::println("Warning: Duplicated SNP ID '{}' has been changed to '{}'.", bdata->_snp_name[i], ss.str());
       bdata->_snp_name[i] = ss.str();
-      std::cout << "has been changed to \"" + bdata->_snp_name[i] + "\".\n";
     }
-    bdata->_snp_name_map.insert(std::pair<std::string, int>(bdata->_snp_name[i], i));
+    bdata->_snp_name_map.emplace(bdata->_snp_name[i], i);
   }
 }
 
@@ -228,7 +228,7 @@ void read_bedfile(bInfo* bdata, std::string bedfile) {
   rsnp.clear();
   rsnp.resize(bdata->_snp_num);
   for (int i = 0; i < bdata->_snp_num; i++) {
-    if (bdata->_snp_name_map.find(bdata->_snp_name[i]) != bdata->_snp_name_map.end()) rsnp[i] = 1;
+    if (bdata->containsSNP(bdata->_snp_name[i])) rsnp[i] = 1;
     else rsnp[i] = 0;
   }
 
@@ -536,8 +536,8 @@ void filter_snp_maf(bInfo* bdata, double maf) {
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
   std::cout << "Pruning SNPs with MAF > " << maf << " ..." << std::endl;
-  std::map<std::string, int> id_map_buf(bdata->_snp_name_map);
-  std::map<std::string, int>::iterator iter, end = id_map_buf.end();
+  std::unordered_map<std::string, int> id_map_buf(bdata->_snp_name_map);
+  std::unordered_map<std::string, int>::iterator iter, end = id_map_buf.end();
   int prev_size = bdata->_include.size();
   double fbuf = 0.0;
   bdata->_include.clear();
@@ -580,7 +580,6 @@ void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
       tmpXY[i] = X.col(targetid).dot(X.col(i));
     }
     float tmpY = X.col(targetid).sum();
-    ;
     float tmpY2 = X.col(targetid).dot(X.col(targetid));
     ld_v = (tmpXY * n - tmpX * tmpY).array() /
            sqrt((tmpX2.array() * n - tmpX.array() * tmpX.array()) * (tmpY2 * n - tmpY * tmpY));
@@ -588,8 +587,7 @@ void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
 }
 
 void extract_snp_kb(bInfo* bdata, std::string rsnames, int windInKb) {
-  std::map<std::string, int>::iterator iter;
-  iter = bdata->_snp_name_map.find(rsnames);
+  auto iter = bdata->_snp_name_map.find(rsnames);
   if (iter == bdata->_snp_name_map.end()) {
     printf("ERROR: Can't find SNP %s.\n", rsnames.c_str());
     exit(EXIT_FAILURE);
@@ -864,7 +862,7 @@ void extract_ld_esi_by_chr(ldInfo* ldinfo, int snpchr) {
     int tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == snpchr) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.emplace(ldinfo->_esi_rs[tmpint], tmpint);
     }
   }
   ldinfo->_esi_include.swap(newIcld);
@@ -908,7 +906,7 @@ void extract_ld_esi_snps(ldInfo* ldinfo, std::string snp, int Wind) {
     tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == chr && ldinfo->_esi_bp[tmpint] >= lowbound && ldinfo->_esi_bp[tmpint] <= upbound) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.emplace(ldinfo->_esi_rs[tmpint], tmpint);
     }
   }
   ldinfo->_esi_include.swap(newIcld);
@@ -927,7 +925,7 @@ void extract_ld_esi_single_snp(ldInfo* ldinfo, std::string snprs) {
   ldinfo->_esi_include.clear();
   ldinfo->_esi_include.push_back((int)idx);
   ldinfo->_snp_name_map.clear();
-  ldinfo->_snp_name_map.insert(std::pair<std::string, int>(snprs, idx));
+  ldinfo->_snp_name_map.emplace(snprs, idx);
   printf("SNP %s is extracted.\n", snprs.c_str());
 }
 
@@ -986,7 +984,7 @@ void extract_ld_esi_snps(ldInfo* ldinfo, int chr, int fromsnpkb, int tosnpkb) {
     int tmpint = ldinfo->_esi_include[i];
     if (ldinfo->_esi_chr[tmpint] == chr && ldinfo->_esi_bp[tmpint] >= fromsnpbp && ldinfo->_esi_bp[tmpint] <= tosnpbp) {
       newIcld.push_back(tmpint);
-      ldinfo->_snp_name_map.insert(std::pair<std::string, int>(ldinfo->_esi_rs[tmpint], tmpint));
+      ldinfo->_snp_name_map.emplace(ldinfo->_esi_rs[tmpint], tmpint);
     }
   }
   ldinfo->_esi_include.swap(newIcld);

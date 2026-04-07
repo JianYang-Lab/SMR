@@ -13,6 +13,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #if defined _WIN64 || defined _WIN32
@@ -28,9 +29,6 @@
 #endif
 
 #include <Eigen/Eigen>
-#include <map>
-#include <string>
-#include <vector>
 
 using namespace Eigen;
 
@@ -41,7 +39,7 @@ struct bInfo {
   int _autosome_num;
   std::vector<int> _chr;
   std::vector<std::string> _snp_name;
-  std::map<std::string, int> _snp_name_map;  // snp name to snp index
+  std::unordered_map<std::string, int> _snp_name_map;  // snp name to snp index
   // std::unordered_map<std::string,int> _snp_name_map;
 
   std::vector<double> _genet_dst;
@@ -58,7 +56,7 @@ struct bInfo {
   // fam file
   std::vector<std::string> _fid;
   std::vector<std::string> _pid;
-  std::map<std::string, int> _id_map;  // "<fam_id>:<iid>" to individual index
+  std::unordered_map<std::string, int> _id_map;  // "<fam_id>:<iid>" to individual index
   std::vector<std::string> _fa_id;
   std::vector<std::string> _mo_id;
   std::vector<int> _sex;
@@ -80,6 +78,8 @@ struct bInfo {
   MatrixXf _geno;
 
   std::vector<double> _mu;
+
+  bool containsSNP(const std::string& snp) const { return _snp_name_map.find(snp) != _snp_name_map.end(); }
 };
 
 struct ldInfo {

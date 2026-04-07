@@ -443,10 +443,11 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
 void standardization(char* outFileName, char* eqtlFileName,bool bFlag,char* freqName, char* vpFileName)
 {
     eqtlInfo esdata;
-    if(eqtlFileName==nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-    if(freqName==nullptr && vpFileName==nullptr) throw("Error: please input feq data or variance data for standardisation by
-the flag --freq or --probe-var."); read_esifile(&esdata, std::string(eqtlFileName)+".esi"); read_epifile(&esdata,
-std::string(eqtlFileName)+".epi"); read_besdfile(&esdata, std::string(eqtlFileName)+".besd"); if(esdata._rowid.empty()
+    if(eqtlFileName==nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag
+--eqtl-summary."); if(freqName==nullptr && vpFileName==nullptr) throw("Error: please input feq data or variance data for
+standardisation by the flag --freq or --probe-var."); read_esifile(&esdata, std::string(eqtlFileName)+".esi");
+read_epifile(&esdata, std::string(eqtlFileName)+".epi"); read_besdfile(&esdata, std::string(eqtlFileName)+".besd");
+if(esdata._rowid.empty()
 && esdata._bxz.empty())
     {
         printf("No data included from %s in the analysis.\n",eqtlFileName);
@@ -569,8 +570,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
     fputs(logstr.c_str(), stdout);
   }
 
-  std::map<std::string, std::string> prb_snp;
-  std::map<std::string, std::string>::iterator iter;
+  std::unordered_map<std::string, std::string> prb_snp;
   eqtlInfo eqtlinfo;
 
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
@@ -603,7 +603,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
     for (std::uint32_t i = 0; i < eqtlinfo._probNum; i++) {
       std::string rstarget = "";
       if (snpproblstName) {
-        iter = prb_snp.find(eqtlinfo._epi_prbID[i]);
+        auto iter = prb_snp.find(eqtlinfo._epi_prbID[i]);
         if (iter == prb_snp.end()) {
           printf("ERROR: Bugs found.\n ");
           exit(EXIT_FAILURE);
@@ -651,7 +651,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
       std::uint64_t num = pos1 - pos;
       std::string rstarget = "";
       if (snpproblstName) {
-        iter = prb_snp.find(eqtlinfo._epi_prbID[proid]);
+        auto iter = prb_snp.find(eqtlinfo._epi_prbID[proid]);
         if (iter == prb_snp.end()) {
           printf("ERROR: Bugs found.\n ");
           exit(EXIT_FAILURE);
@@ -1564,9 +1564,9 @@ void sbat_read_snpset(bInfo* bdata, char* snpset_file, std::vector<std::string>&
   std::cout << "\nReading SNP sets from [" + std::string(snpset_file) + "]." << std::endl;
   std::string str_buf;
   std::vector<std::string> vs_buf, snpset_buf, snp_name;
-  std::map<std::string, int>::iterator iter;
+  std::unordered_map<std::string, int>::iterator iter;
   int i = 0;
-  std::map<int, int> chr_map;
+  std::unordered_map<int, int> chr_map;
   bool warning = false;
   while (in_snpset >> str_buf) {
     if (str_buf != "END" && str_buf != "end") vs_buf.push_back(str_buf);
@@ -1583,7 +1583,7 @@ void sbat_read_snpset(bInfo* bdata, char* snpset_file, std::vector<std::string>&
           bp1 = bp1 < snpbp ? bp1 : snpbp;
           bp2 = bp2 > snpbp ? bp2 : snpbp;
           chr = snpbp = bdata->_chr[iter->second];
-          chr_map.insert(std::pair<int, int>(chr, i));
+          chr_map.emplace(chr, i);
           if (chr_map.size() > 1) {
             printf("ERROR: SNPs from different chromosomes found in SNP set: %s.\n", vs_buf[0].c_str());
             exit(EXIT_FAILURE);
@@ -2410,8 +2410,10 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
   // if(bFileName == nullptr ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (gwasFileName == nullptr)
+    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr)
+    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -2710,7 +2712,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     exit(EXIT_FAILURE);
   }
   long write_count = 0;
-  std::map<std::string, int>::iterator iter;
+  std::unordered_map<std::string, int>::iterator iter;
   SMRWK smrwk;
 
   long int calSMRStart = time(nullptr);
@@ -3282,7 +3284,7 @@ void getMetaEsi(std::vector<eqtlInfo>& eqtls, std::vector<std::string>& besds) {
   printf("%ld common SNPs are included from %ld datasets.\n", commrs.size(), eqtls.size());
 
   printf("\nPerforming common probe selection....\n");
-  std::map<std::string, int>::iterator iter2;
+  std::unordered_map<std::string, int>::iterator iter2;
 
   for (int i = 0; i < eqtls[0]._probNum; i++) {
     std::string prb = eqtls[0]._epi_prbID[i];
@@ -4640,7 +4642,7 @@ void update_epifile(char* eqtlFileName, char* s_epiFileName) {
     exit(EXIT_FAILURE);
   }
   char Tbuf[MAX_LINE_SIZE];
-  std::map<std::string, int>::iterator iter;
+  std::unordered_map<std::string, int>::iterator iter;
   std::vector<std::string> strlist;
   std::uint32_t line_idx = 0;
   int hit = 0;
@@ -4792,7 +4794,8 @@ void smr_multipleSNP_v2(char* outFileName, char* bFileName, char* bldFileName, c
   auto start_mem = get_memory_usage();
 
   // flags check
-  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (gwasFileName == nullptr)
+    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
   if (qtllistFileName == nullptr) throw("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
   if (qtl_index == 0) throw("Error: please input eQTL list index for SMR analysis by the flag --eqtl-list-index.");
   if (ld_min > ld_top) {
@@ -4891,7 +4894,8 @@ void smr_multipleSNP_for_each_chr(
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
   // if(bFileName == nullptr ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (eqtlFileName == nullptr)
+    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -5181,7 +5185,7 @@ void smr_multipleSNP_for_each_chr(
     exit(EXIT_FAILURE);
   }
   long write_count = 0;
-  std::map<std::string, int>::iterator iter;
+  std::unordered_map<std::string, int>::iterator iter;
   SMRWK smrwk;
 
   long int calSMRStart = time(nullptr);

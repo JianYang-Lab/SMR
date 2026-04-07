@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-void CommFunc::update_id_map_kp(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+void CommFunc::update_id_map_kp(const std::vector<std::string>& id_list, std::unordered_map<std::string, int>& id_map,
                                 std::vector<int>& keep) {
   std::unordered_set<std::string> keep_ids;
   keep_ids.reserve(id_list.size());
@@ -35,7 +35,7 @@ void CommFunc::update_id_map_kp(const std::vector<std::string>& id_list, std::ma
   std::stable_sort(keep.begin(), keep.end());
 }
 
-void CommFunc::update_id_map_rm(const std::vector<std::string>& id_list, std::map<std::string, int>& id_map,
+void CommFunc::update_id_map_rm(const std::vector<std::string>& id_list, std::unordered_map<std::string, int>& id_map,
                                 std::vector<int>& keep) {
   std::unordered_set<std::string> remove_ids;
   remove_ids.reserve(id_list.size());

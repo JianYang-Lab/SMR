@@ -250,9 +250,7 @@ void StrFunc::match_only(const std::vector<std::string>& VecA, const std::vector
 
 void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                              const std::vector<int>& tmp, std::vector<int>& VecC) {
-  std::unordered_set<std::string> to_remove;
-  to_remove.reserve(VecA.size());
-  for (const auto& value : VecA) to_remove.emplace(value);
+  std::unordered_set<std::string> to_remove(VecA.begin(), VecA.end());
 
   VecC.clear();
   VecC.reserve(VecB.size());
@@ -262,9 +260,7 @@ void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::ve
 
 void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                              const std::vector<int>& tmp, std::vector<std::uint32_t>& VecC) {
-  std::unordered_set<std::string> to_remove;
-  to_remove.reserve(VecA.size());
-  for (const auto& value : VecA) to_remove.emplace(value);
+  std::unordered_set<std::string> to_remove(VecA.begin(), VecA.end());
 
   VecC.clear();
   VecC.reserve(VecB.size());
@@ -305,29 +301,23 @@ bool StrFunc::has_suffix(const std::string& str, const std::string& suffix) {
 
 void StrFunc::set_intersect(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                             std::vector<std::string>& VecC) {
-  std::unordered_set<std::string> id_set;
-  id_set.reserve(VecB.size());
+  std::unordered_set<std::string> id_set(VecB.begin(), VecB.end());
   VecC.clear();
   VecC.reserve(std::min(VecA.size(), VecB.size()));
-  for (const auto& value : VecB) id_set.emplace(value);
   for (const auto& value : VecA)
     if (id_set.find(value) != id_set.end()) VecC.push_back(value);
 }
 
 void StrFunc::set_intersect(const std::vector<int>& VecA, const std::vector<int>& VecB, std::vector<int>& VecC) {
-  std::unordered_set<int> id_set;
-  id_set.reserve(VecB.size());
+  std::unordered_set<int> id_set(VecB.begin(), VecB.end());
   VecC.clear();
   VecC.reserve(std::min(VecA.size(), VecB.size()));
-  for (const auto& value : VecB) id_set.emplace(value);
   for (const auto& value : VecA)
     if (id_set.find(value) != id_set.end()) VecC.push_back(value);
 }
 
 void StrFunc::set_complement(const std::vector<int>& toRm, const std::vector<int>& source, std::vector<int>& VecC) {
-  std::unordered_set<int> to_remove;
-  to_remove.reserve(toRm.size());
-  for (const auto& value : toRm) to_remove.emplace(value);
+  std::unordered_set<int> to_remove(toRm.begin(), toRm.end());
 
   VecC.clear();
   VecC.reserve(source.size());

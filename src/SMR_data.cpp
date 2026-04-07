@@ -8,8 +8,7 @@
 
 #include "SMR_data.hpp"
 
-#include <fmt/format.h>
-#include <fmt/printf.h>
+#include <fmt/base.h>
 
 #include <fstream>
 #include <iostream>
@@ -1859,13 +1858,13 @@ void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile, std::map<st
 }
 
 void extract_eqtl_by_chr(eqtlInfo* eqtlinfo, int snpchr) {
-  std::vector<int> newIcld;
+  std::vector<int> new_esi;
   for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
-    int tmpint = eqtlinfo->_esi_include[i];
-    if (eqtlinfo->_esi_chr[tmpint] == snpchr) newIcld.push_back(tmpint);
+    int line = eqtlinfo->_esi_include[i];
+    if (eqtlinfo->_esi_chr[line] == snpchr) new_esi.push_back(line);
   }
   eqtlinfo->_esi_include.clear();
-  eqtlinfo->_esi_include = newIcld;
+  eqtlinfo->_esi_include = new_esi;
   std::cout << eqtlinfo->_esi_include.size() << " SNPs are extracted from chromosome [" + atos(snpchr) + "]."
             << std::endl;
 }
@@ -3780,7 +3779,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
       if (fabs(esdata->_sexz[i][j] + 9) > 1e-6) {
         int snpbp = esdata->_esi_bp[j];
         int snpchr = esdata->_esi_chr[j];
-        if (snpchr == esdata->_epi_chr[i] && fabs(esdata->_epi_bp[i] - snpbp) <= cis_itvl &&
+        if (snpchr == esdata->_epi_chr[i] && abs(esdata->_epi_bp[i] - snpbp) <= cis_itvl &&
             gdata->seyz[j] + 9 > 1e-6) {
           if (esdata->_epi_start.size() > 0 && esdata->_epi_end.size() > 0)  // technical eQTLs should be removed
           {
@@ -3796,7 +3795,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
               smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
               smrwk->allele1.push_back(esdata->_esi_allele1[j]);
               smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-              if (refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+              if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
               smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
               if (!heidioffFlag)
                 smrwk->freq.push_back(bdata->_mu[bdata->_include[j]] /

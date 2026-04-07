@@ -1,0 +1,66 @@
+# .clangd configuration for Linux C++ projects
+# Place this in your project root or ~/.config/clangd/
+
+CompileFlags:
+  # Use the same C++ standard as your build system (adjust as needed)
+  Add:
+    - -std=c++17          # or c++20, c++14, etc.
+    - -stdlib=libstdc++   # GNU standard library (Linux default)
+    - -D_GNU_SOURCE       # Common Linux feature test macro
+
+  # Remove flags that clangd doesn't understand or need
+  Remove:
+    - -march=*            # Architecture-specific optimizations
+    - -mtune=*            # Tuning flags
+    - -pipe               # Pipe optimization (compiler-only)
+    - -fno-plt            # Procedure linkage table optimizations
+    - -fstack-protector*  # Stack protection (clangd doesn't execute)
+    - -fcf-protection     # Control-flow protection
+    - -Wa,*               # Assembler flags
+    - -Wp,*               # Preprocessor flags
+
+Diagnostics:
+  # Clang-tidy integration (optional but recommended)
+  ClangTidy:
+    Add:
+    #   - bugprone-*        # Bug prevention checks
+    #   - cppcoreguidelines-*  # C++ best practices
+      - modernize-*       # Modernization suggestions
+    #   - performance-*     # Performance optimizations
+      - portability-*     # Portability checks
+    #   - readability-*     # Readability improvements
+    Remove:
+      - modernize-use-trailing-return-type  # Personal preference
+      - cppcoreguidelines-avoid-magic-numbers  # Can be noisy
+    # CheckOptions:
+    #   readability-identifier-naming.VariableCase: camelBack
+    #   readability-identifier-naming.FunctionCase: CamelCase
+
+  # Suppress specific false positives if needed
+  Suppress:
+    - invalid_operands    # Your specific error if it persists
+
+Index:
+  # Performance tuning for large codebases
+  Background: Build
+  StandardLibrary: No    # Don't index standard library (faster)
+
+HeaderInsertion:
+  # Include style preferences
+  IncludeBlocks: Preserve
+  IncludeGuards: Preserve
+
+InlayHints:
+  # Modern IDE features (if your Emacs supports it)
+  Enabled: No
+  ParameterNames: Yes
+  DeducedTypes: Yes
+
+---
+
+# If you use specific compiler features or cross-compilation, uncomment:
+# If:
+#   PathMatch: .*\.cpp
+#   PathExclude: (tests|third_party)/.*
+# CompileFlags:
+#   Add: [-D__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16]  # GCC-specific intrinsics

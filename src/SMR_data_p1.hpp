@@ -13,7 +13,7 @@
 #include "mmap_read.hpp"
 
 namespace SMRDATA {
-typedef struct {
+struct eSMRrlt {
   long lineNum;
   std::vector<std::string> _Expo_id;
   std::vector<int> _Expo_chr;
@@ -35,7 +35,7 @@ typedef struct {
   std::vector<double> _p_heidi;
   std::vector<int> _nsnp;
   std::vector<std::uint32_t> _include;
-} eSMRrlt;
+};
 
 void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstName, char* problstName,
                         char* snplst2exclde, char* problst2exclde, float thres);

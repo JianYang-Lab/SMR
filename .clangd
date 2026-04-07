@@ -2,6 +2,8 @@
 # Place this in your project root or ~/.config/clangd/
 
 CompileFlags:
+  # Tells clangd to use GCC's include paths and built-in defines
+  Compiler: g++
   # Use the same C++ standard as your build system (adjust as needed)
   Add:
     - -std=c++17          # or c++20, c++14, etc.
@@ -10,6 +12,7 @@ CompileFlags:
 
   # Remove flags that clangd doesn't understand or need
   Remove:
+    - -mno-direct-extern-access
     - -march=*            # Architecture-specific optimizations
     - -mtune=*            # Tuning flags
     - -pipe               # Pipe optimization (compiler-only)
@@ -44,11 +47,6 @@ Index:
   # Performance tuning for large codebases
   Background: Build
   StandardLibrary: No    # Don't index standard library (faster)
-
-HeaderInsertion:
-  # Include style preferences
-  IncludeBlocks: Preserve
-  IncludeGuards: Preserve
 
 InlayHints:
   # Modern IDE features (if your Emacs supports it)

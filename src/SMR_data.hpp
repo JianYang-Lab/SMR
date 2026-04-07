@@ -116,7 +116,7 @@ struct eqtlInfo {
   bool containsSNP(const std::string& snp_name) const { return _snp_name_map.find(snp_name) != _snp_name_map.end(); }
 };
 
-typedef struct {
+struct probeinfolst {
   char* probeId;
   char* genename;
   char* esdpath;
@@ -127,9 +127,9 @@ typedef struct {
   char orien;
   int start;
   int end;
-} probeinfolst;
+};
 
-typedef struct {
+struct snpinfolst {
   char* snprs;
   char* a1;
   char* a2;
@@ -140,9 +140,9 @@ typedef struct {
   float se;
   float freq;
   float estn;
-} snpinfolst;
+};
 
-typedef struct {
+struct probeinfolst2 {
   std::vector<std::string> besdpath;
   char* probeId;
   char* genename;
@@ -154,10 +154,9 @@ typedef struct {
   std::uint32_t* rowid;
   float* beta_se;
   snpinfolst* sinfo;
+};
 
-} probeinfolst2;
-
-typedef struct {
+struct info4trans {
   char* snprs;
   char* a1;
   char* a2;
@@ -170,9 +169,9 @@ typedef struct {
   float byz;
   float seyz;
   float pyz;
-} info4trans;
+};
 
-typedef struct {
+struct SMRWK {
   int cur_chr;
   int cur_prbidx;
   std::vector<double> bxz, sexz, freq, byz, seyz;
@@ -180,9 +179,9 @@ typedef struct {
   std::vector<std::uint32_t> curId;
   std::vector<int> bpsnp, snpchrom;
   std::vector<std::string> rs, allele1, allele2;
-} SMRWK;
+};
 
-typedef struct {
+struct SMRRLT {
   std::string ProbeID;
   int ProbeChr;
   std::string Gene;
@@ -206,9 +205,9 @@ typedef struct {
   int nsnp;
   char Orien;
   double p_SSMR;
-} SMRRLT;
+};
 
-typedef struct {
+struct smr_probeinfo {
   int* ptr;
   char* probeId;
   char* genename;
@@ -218,9 +217,9 @@ typedef struct {
   int gd;
   int bp;
   char orien;
-} smr_probeinfo;
+};
 
-typedef struct {
+struct smr_snpinfo {
   int* rstr;
   bool* revs;
   char* snprs;
@@ -233,7 +232,7 @@ typedef struct {
   float se;
   float freq;
   float estn;
-} smr_snpinfo;
+};
 
 void read_bimfile(bInfo* bdata, std::string bimfile);
 void read_famfile(bInfo* bdata, std::string famfile);

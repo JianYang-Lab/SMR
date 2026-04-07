@@ -191,7 +191,7 @@ const double CommFunc::Sign(const double& a, const double& b) { return b >= 0 ? 
 
 int CommFunc::rand_seed() {
   std::stringstream str_strm;
-  str_strm << time(NULL);
+  str_strm << time(nullptr);
   std::string seed_str = str_strm.str();
   std::reverse(seed_str.begin(), seed_str.end());
   seed_str.erase(seed_str.begin() + 7, seed_str.end());

@@ -99,8 +99,9 @@ CPMAddPackage("gh:gabime/spdlog@1.15.3")
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
 
 file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
-add_executable(${PROJECT_NAME} ${SRCS})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+file(GLOB DCDFLIB_SRCS "${CMAKE_SOURCE_DIR}/third_party/dcdflib/*.c")
+add_executable(${PROJECT_NAME} ${SRCS} ${DCDFLIB_SRCS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_party/dcdflib)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
 # -march=native require rebuild it on AMD/Intel

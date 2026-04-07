@@ -622,13 +622,13 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   std::vector<std::uint64_t> cols;
   std::vector<float> lds;
   read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != NULL) keep_indi(&bdata, indilstName);
-  if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
   read_bimfile(&bdata, std::string(bFileName) + ".bim");
   if (chr) extract_snp(&bdata, chr);
-  if (rs != NULL) extract_snp_kb(&bdata, rs, ldWind);
-  if (snplstName != NULL) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+  if (rs != nullptr) extract_snp_kb(&bdata, rs, ldWind);
+  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
   // int mym=getMaxNum(&bdata,ldWind, cols);
 
@@ -1015,9 +1015,9 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
                 char* tosnprs, int snpWind, bool snpwindFlag, int fromsnpkb, int tosnpkb, char* snprs2exclde) {
   std::string logstr;
   int flags4snp = 0;
-  if (snplstName != NULL) flags4snp++;
-  if (snprs != NULL) flags4snp++;
-  if (fromsnprs != NULL) flags4snp++;
+  if (snplstName != nullptr) flags4snp++;
+  if (snprs != nullptr) flags4snp++;
+  if (fromsnprs != nullptr) flags4snp++;
   if (fromsnpkb >= 0) flags4snp++;
   if (flags4snp > 1) {
     printf(
@@ -1028,17 +1028,17 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
     extract_ld_esi_by_chr(ldinfo, chr);
   }
 
-  if (snplstName != NULL) extract_ld_esi_snps(ldinfo, snplstName);
+  if (snplstName != nullptr) extract_ld_esi_snps(ldinfo, snplstName);
   else if (snpwindFlag) {
-    if (snprs == NULL) {
+    if (snprs == nullptr) {
       printf("ERROR: please specify the SNP name by --snp when using --snp-wind.\n");
       exit(EXIT_FAILURE);
     }
     extract_ld_esi_snps(ldinfo, snprs, snpWind);
-  } else if (snprs != NULL) {
+  } else if (snprs != nullptr) {
     extract_ld_esi_single_snp(ldinfo, snprs);
-  } else if (fromsnprs != NULL) {
-    if (tosnprs == NULL) {
+  } else if (fromsnprs != nullptr) {
+    if (tosnprs == nullptr) {
       printf("ERROR: please specify the SNP name by --to-snp.\n");
       exit(EXIT_FAILURE);
     }
@@ -1055,15 +1055,15 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
     }
     extract_ld_esi_snps(ldinfo, chr, fromsnpkb, tosnpkb);
   }
-  if (snplst2exclde != NULL) exclude_ld_esi_snp(ldinfo, snplst2exclde);
-  if (snprs2exclde != NULL) exclude_ld_esi_snps(ldinfo, snprs2exclde);
+  if (snplst2exclde != nullptr) exclude_ld_esi_snp(ldinfo, snplst2exclde);
+  if (snprs2exclde != nullptr) exclude_ld_esi_snps(ldinfo, snprs2exclde);
 }
 
 void get_BlddHeaders(char* blddFileName, std::vector<int>& headers)  //
 {
   headers.resize(RESERVEDUNITS);
   FILE* bld = fopen(blddFileName, "rb");
-  if (bld == NULL) {
+  if (bld == nullptr) {
     printf("Error: can't open file %s.\n", blddFileName);
     exit(EXIT_FAILURE);
   }
@@ -1134,7 +1134,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
             char* snprs2exclde, char* fromsnprs, char* tosnprs, int snpWind, bool snpWindflg, int fromsnpkb,
             int tosnpkb, int ld_wind) {
   ldInfo ldinfo;
-  if (bldFileName == NULL) {
+  if (bldFileName == nullptr) {
     printf("Error: please input the ld information by the option --bld.\n");
     exit(EXIT_FAILURE);
   }
@@ -1148,7 +1148,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   std::vector<int> headers;
   headers.resize(RESERVEDUNITS);
   FILE* bld = fopen(inputname, "rb");
-  if (bld == NULL) {
+  if (bld == nullptr) {
     printf("Error: can't open file %s.\n", inputname);
     exit(EXIT_FAILURE);
   }
@@ -1200,7 +1200,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   std::uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
   long wcount = 0;
   float* buffer = (float*)malloc(sizeof(float) * maxnum);
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     printf("ERROR: memory allocation failed to read %s.\n", inputname);
     exit(EXIT_FAILURE);
   }
@@ -1455,12 +1455,12 @@ void calcu_mean_rsq(char* outFileName, char* bFileName, char* indilstName, char*
   std::vector<std::uint64_t> cols;
   std::vector<float> lds;
   read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != NULL) keep_indi(&bdata, indilstName);
-  if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
   read_bimfile(&bdata, std::string(bFileName) + ".bim");
   if (chr) extract_snp(&bdata, chr);
-  if (snplstName != NULL) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
   read_bedfile(&bdata, std::string(bFileName) + ".bed");
   if (bdata._mu.empty()) calcu_mu(&bdata);
   if (maf > 0) filter_snp_maf(&bdata, maf);

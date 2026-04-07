@@ -10,6 +10,13 @@
 
 #include "StatFunc.hpp"
 
+#include "CommFunc.hpp"
+
+extern "C" {
+#include "cdflib.h"
+#include "dcdflib.h"
+}
+
 ////////// P-value Calculatiion Functions Start ////////////////
 
 double StatFunc::t_prob(double df, double t_value, bool two_tail) {
@@ -260,7 +267,7 @@ double StatFunc::chidev(int& idum, const double df) {
 double StatFunc::cheng_gamdev(int& idum, const double alpha) {
   double u1 = 0.0, u2 = 0.0, nu = 0.0, d_buf = 0.0;
   double beta = (alpha - 1.0);
-  while (1) {
+  for (;;) {
     u1 = StatFunc::UniformDev(0.0, 1.0, idum);
     u2 = StatFunc::UniformDev(0.0, 1.0, idum);
     ;

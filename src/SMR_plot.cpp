@@ -39,14 +39,14 @@ void smre2e(char* bFileName, char* eqtlFileName, char* eqtlFileName2, double maf
   double threshold = chi_val(1, p_hetero);
   cis_itvl = cis_itvl * 1000;
 
-  if (bFileName == NULL) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (bFileName == nullptr) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
 
   read_esifile(&etrait, std::string(eqtlFileName) + ".esi");
-  if (snplstName != NULL) extract_eqtl_snp(&etrait, snplstName);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&etrait, snplst2exclde);
+  if (snplstName != nullptr) extract_eqtl_snp(&etrait, snplstName);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&etrait, snplst2exclde);
   read_epifile(&etrait, std::string(eqtlFileName) + ".epi");
-  if (oprobe != NULL) extract_eqtl_single_probe(&etrait, oprobe);
+  if (oprobe != nullptr) extract_eqtl_single_probe(&etrait, oprobe);
 
   read_besdfile(&etrait, std::string(eqtlFileName) + ".besd");
   if (etrait._rowid.empty() && etrait._bxz.empty()) {
@@ -55,15 +55,15 @@ void smre2e(char* bFileName, char* eqtlFileName, char* eqtlFileName2, double maf
   }
 
   read_esifile(&esdata, std::string(eqtlFileName2) + ".esi");
-  if (snplstName != NULL) extract_eqtl_snp(&esdata, snplstName);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplstName != nullptr) extract_eqtl_snp(&esdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
 
   read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != NULL) keep_indi(&bdata, indilstName);
-  if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
   read_bimfile(&bdata, std::string(bFileName) + ".bim");
-  if (snplstName != NULL) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
   allele_check(&bdata, &etrait, &esdata);
   // if no snp left after check
   read_bedfile(&bdata, std::string(bFileName) + ".bed");
@@ -704,7 +704,7 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
     smrwk.cur_chr = probechr;
     long maxid = fill_smr_wk(bdata, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
-    if (refSNP != NULL && maxid == -9) {
+    if (refSNP != nullptr && maxid == -9) {
       // printf("WARNING: can't find target SNP %s for probe %s.\n",refSNP, probename.c_str());
       continue;
     }
@@ -717,10 +717,10 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
     Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
 
     zsxz = ei_bxz.array() / ei_sexz.array();
-    if (refSNP == NULL) maxid = max_abs_id(zsxz);
+    if (refSNP == nullptr) maxid = max_abs_id(zsxz);
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
-    if (refSNP == NULL && pxz_val > p_smr) {
+    if (refSNP == nullptr && pxz_val > p_smr) {
       // printf("WARNING: no SNP passed the p-value threshold %e for the SMR analysis for probe %s.\n", p_smr,
       // probename.c_str());
       continue;
@@ -879,13 +879,13 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
                  double ld_min, bool sampleoverlap, double pmecs, int minCor, char* targetsnpproblstName,
                  double afthresh, double percenthresh, double heidiskipthresh) {
   setNbThreads(thread_num);
-  if (prbname == NULL) throw("Error: please input probe to plot by the flag --probe.");
+  if (prbname == nullptr) throw("Error: please input probe to plot by the flag --probe.");
   if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (bFileName == NULL) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (meqtlFileName == NULL) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == NULL) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (meqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -948,19 +948,19 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
 
   read_esifile(&edata, std::string(eqtlFileName) + ".esi");
   extract_eqtl_snp(&edata, curchr, from_esnpkb, end_esnpkb);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&edata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&edata, snplst2exclde);
 
   read_esifile(&mdata, std::string(meqtlFileName) + ".esi");
   extract_eqtl_snp(&mdata, curchr, from_esnpkb, end_esnpkb);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&mdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&mdata, snplst2exclde);
 
   read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != NULL) keep_indi(&bdata, indilstName);
-  if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
   read_bimfile(&bdata, std::string(bFileName) + ".bim");
   extract_region_bp(&bdata, curchr, from_esnpkb, end_esnpkb);
-  if (snplstName != NULL) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
   read_gwas_data(&gdata, gwasFileName);
   std::vector<int> idx1;
@@ -1022,7 +1022,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
   }
 
   std::vector<SMRRLT> smrrlts;
-  smr_heidi_func(smrrlts, NULL, &bdata_clone, &gdata_clone, &edata_clone, cis_itvl, false, heidiskipthresh, refSNP,
+  smr_heidi_func(smrrlts, nullptr, &bdata_clone, &gdata_clone, &edata_clone, cis_itvl, false, heidiskipthresh, refSNP,
                  p_hetero, ld_top, m_hetero, p_smr, threshpsmrest, new_het_mtd, opt, ld_min, opt_hetero, sampleoverlap,
                  pmecs, minCor, prb_snp, targetLstFlg);
   std::vector<int> egstart;
@@ -1069,7 +1069,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
   }
 
   std::vector<SMRRLT> msmrrlts;
-  smr_heidi_func(msmrrlts, NULL, &bdata_clone, &gdata_clone, &mdata_clone, cis_itvl, false, heidiskipthresh, refSNP,
+  smr_heidi_func(msmrrlts, nullptr, &bdata_clone, &gdata_clone, &mdata_clone, cis_itvl, false, heidiskipthresh, refSNP,
                  p_hetero, ld_top, m_hetero, p_smr, threshpsmrest, new_het_mtd, opt, ld_min, opt_hetero, sampleoverlap,
                  pmecs, minCor, prb_snp, targetLstFlg);
   std::vector<int> mgstart;
@@ -1474,7 +1474,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
 #endif
   }
   std::string plot_path = std::string(plotdir) + "/" + plotnm + "." + prbname + ".txt";
-  FILE* plotfile = NULL;
+  FILE* plotfile = nullptr;
   plotfile = fopen(plot_path.c_str(), "w");
   if (!(plotfile)) {
     printf("Open error %s\n", plot_path.c_str());
@@ -1625,12 +1625,12 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
                    double threshpsmrest, bool new_het_mtd, double threshphet, double ld_min, bool sampleoverlap,
                    double pmecs, int minCor, double afthresh, double percenthresh) {
   setNbThreads(thread_num);
-  if (prbname == NULL) throw("Error: please input probe to plot by the flag --probe.");
+  if (prbname == nullptr) throw("Error: please input probe to plot by the flag --probe.");
   if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (!heidioffFlag && bFileName == NULL) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == NULL) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -1677,15 +1677,15 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
 
   read_esifile(&edata, std::string(eqtlFileName) + ".esi");
   extract_eqtl_snp(&edata, curchr, from_esnpkb, end_esnpkb);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&edata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&edata, snplst2exclde);
 
   read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != NULL) keep_indi(&bdata, indilstName);
-  if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
   read_bimfile(&bdata, std::string(bFileName) + ".bim");
   extract_region_bp(&bdata, curchr, from_esnpkb, end_esnpkb);
-  if (snplstName != NULL) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
   read_gwas_data(&gdata, gwasFileName);
   std::vector<int> idx1;
@@ -1963,7 +1963,7 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
 #endif
   }
   std::string plot_path = std::string(plotdir) + "/" + plotnm + "." + prbname + ".txt";
-  FILE* plotfile = NULL;
+  FILE* plotfile = nullptr;
   plotfile = fopen(plot_path.c_str(), "w");
   if (!(plotfile)) {
     printf("Open error %s\n", plot_path.c_str());
@@ -2058,7 +2058,7 @@ void count_cis(char* outFileName, char* eqtlFileName, double p_smr, int cis_itvl
 
   eqtlInfo eqtlinfo;
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
-  if (eqtlFileName != NULL) {
+  if (eqtlFileName != nullptr) {
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
     read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
 
@@ -2192,7 +2192,7 @@ void count_trans(char* outFileName, char* eqtlFileName, double transThres, long 
 
   eqtlInfo eqtlinfo;
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
-  if (eqtlFileName != NULL) {
+  if (eqtlFileName != nullptr) {
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
     read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
 

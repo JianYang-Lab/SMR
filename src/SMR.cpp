@@ -24,7 +24,7 @@ int thread_num;
 bool mute = false;
 int xh = 0;
 bool forcefrqck = true;
-char* outFileName = NULL;
+char* outFileName = nullptr;
 int MAX_NUM_LD = 500;
 
 std::string getOSName() {
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
   std::cout << "* MIT License" << std::endl;
   std::cout << "*******************************************************************" << std::endl;
 
-  long int time_used = 0, start = time(NULL);
+  long int time_used = 0, start = time(nullptr);
   time_t curr = time(0);
   char timeStr[100];  // 根据需要调整缓冲区大小
   // 自定义时间格式
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   }
 
   curr = time(0);
-  time_used = time(NULL) - start;
+  time_used = time(nullptr) - start;
   printf("\nAnalysis finished: %s \nComputational time: %ld:%ld:%ld\n", ctime(&curr), time_used / 3600,
          (time_used % 3600) / 60, time_used % 60);
   // t = time(0);q
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   // std::cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
   //     << now -> tm_sec << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] \
   //     << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << std::endl;
-  // time_used = time(NULL) - start;
+  // time_used = time(nullptr) - start;
   // std::cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60
   // << std::endl;
   return 0;
@@ -93,18 +93,18 @@ int main(int argc, char** argv) {
 
 void option(int option_num, char* option_str[]) {
   thread_num = 1;
-  char* bFileName = NULL;
-  char* gwasFileName = NULL;
-  char* eqtlFileName = NULL;
-  char* eqtllistFileName = NULL;
+  char* bFileName = nullptr;
+  char* gwasFileName = nullptr;
+  char* eqtlFileName = nullptr;
+  char* eqtllistFileName = nullptr;
   int eqtllistIndex = 0;
-  char* indilstName = NULL;
-  char* snplstName = NULL;
-  char* indilst2remove = NULL;
-  char* snplst2exclde = NULL;
-  char* problst2exclde = NULL;
-  char* eproblst2exclde = NULL;
-  char* oproblst2exclde = NULL;
+  char* indilstName = nullptr;
+  char* snplstName = nullptr;
+  char* indilst2remove = nullptr;
+  char* snplst2exclde = nullptr;
+  char* problst2exclde = nullptr;
+  char* eproblst2exclde = nullptr;
+  char* oproblst2exclde = nullptr;
   bool bFlag = false;  // for binary file
   double maf = 0.0;
   double p_hetero = 1.5654e-3;
@@ -119,12 +119,12 @@ void option(int option_num, char* option_str[]) {
 
   // for data management
   bool make_besd_flag = false;
-  char* problstName = NULL;
-  char* eproblstName = NULL;
-  char* oproblstName = NULL;
-  char* targetsnpproblstName = NULL;
-  char* snpproblstName = NULL;
-  char* eFileName = NULL;
+  char* problstName = nullptr;
+  char* eproblstName = nullptr;
+  char* oproblstName = nullptr;
+  char* targetsnpproblstName = nullptr;
+  char* snpproblstName = nullptr;
+  char* eFileName = nullptr;
   bool eremlFlag = false;
   double pexsnp = -9;
   double pinsnp = -9;
@@ -140,20 +140,20 @@ void option(int option_num, char* option_str[]) {
   // for lookup
   double plookup = 5e-8;
   bool lookup_flag = false;
-  char* genelistName = NULL;
+  char* genelistName = nullptr;
   int chr = 0;
   int prbchr = 0;
   int snpchr = 0;
-  char* snprs = NULL;
-  char* snp2rm = NULL;
-  char* prbname = NULL;
-  char* fromsnprs = NULL;
-  char* tosnprs = NULL;
-  char* fromprbname = NULL;
-  char* toprbname = NULL;
+  char* snprs = nullptr;
+  char* snp2rm = nullptr;
+  char* prbname = nullptr;
+  char* fromsnprs = nullptr;
+  char* tosnprs = nullptr;
+  char* fromprbname = nullptr;
+  char* toprbname = nullptr;
   int snpWind = 50;    // Kb
   int prbWind = 1000;  // Kb
-  char* genename = NULL;
+  char* genename = nullptr;
   int fromsnpkb = -9;
   int tosnpkb = -9;
   int fromprbkb = -9;
@@ -161,17 +161,17 @@ void option(int option_num, char* option_str[]) {
   bool snpwindFlag = false;
   bool prbwindFlag = false;
 
-  char* refSNP = NULL;
+  char* refSNP = nullptr;
   bool heidioffFlag = false;
   double heidiskipthresh = 1.0;
 
   bool combineFlg = false;
-  char* eqtlsmaslstName = NULL;
-  char* gwasFileName2 = NULL;
-  char* eqtlFileName2 = NULL;  // for the outcome trait
-  char* traitlstName = NULL;
+  char* eqtlsmaslstName = nullptr;
+  char* gwasFileName2 = nullptr;
+  char* eqtlFileName2 = nullptr;  // for the outcome trait
+  char* traitlstName = nullptr;
   bool plotflg = false;
-  char* syllabusName = NULL;
+  char* syllabusName = nullptr;
   bool gctaflag = false;
   bool plinkflag = false;
   bool gemmaflag = false;
@@ -184,29 +184,29 @@ void option(int option_num, char* option_str[]) {
   bool qtltoolspflag = false;
   bool genouni = false;
 
-  char* freqName = NULL;
+  char* freqName = nullptr;
   bool esdstd = false;
-  char* vpFileName = NULL;
+  char* vpFileName = nullptr;
 
   bool metaflg = false;
   bool est_effe_spl_size_flg = false;
   // for SMR e2me
   int outcomePrbWind = 2000;  // kb
-  char* eprobe = NULL;
-  char* oprobe = NULL;
-  char* eprobe2rm = NULL;
-  char* oprobe2rm = NULL;
+  char* eprobe = nullptr;
+  char* oprobe = nullptr;
+  char* eprobe2rm = nullptr;
+  char* oprobe2rm = nullptr;
 
   // for internal test
-  char* smrRltFileName = NULL;
+  char* smrRltFileName = nullptr;
   bool recodeflg = false;
   // for setBased SMR
-  char* geneAnnoName = NULL;
-  char* setlstName = NULL;
+  char* geneAnnoName = nullptr;
+  char* setlstName = nullptr;
   int setWind = -9;
   bool ssmrflg = false;
 
-  char* queryFileName = NULL;
+  char* queryFileName = nullptr;
   bool queryfileflg = false;
 
   bool save_dense_flag = false;
@@ -232,14 +232,14 @@ void option(int option_num, char* option_str[]) {
 
   bool extract_cis_only = false;
   bool rm_technical = false;
-  char* prbseqregion = NULL;
+  char* prbseqregion = nullptr;
   double ptech = 5.0e-8;
 
   int addn = -9;
   bool shownflag = false;
 
-  char* refepiName = NULL;
-  char* refesiName = NULL;
+  char* refepiName = nullptr;
+  char* refesiName = nullptr;
 
   // for molecular trait
   bool cis2all = false;
@@ -254,7 +254,7 @@ void option(int option_num, char* option_str[]) {
   bool ldr = false;
   bool ldr2 = false;
 
-  char* bldFileName = NULL;
+  char* bldFileName = nullptr;
   bool make_bld_flag = false;
 
   // for gwas comments
@@ -279,7 +279,7 @@ void option(int option_num, char* option_str[]) {
     }
     // gwas data file as cojo format
     else if (0 == strcmp(option_str[i], "--gwas-summary")) {
-      if (gwasFileName == NULL) {
+      if (gwasFileName == nullptr) {
         gwasFileName = option_str[++i];
         FLAG_VALID_CK("--gwas-summary", gwasFileName);
         printf("--gwas-summary %s\n", gwasFileName);
@@ -293,7 +293,7 @@ void option(int option_num, char* option_str[]) {
     }
     // eQTL files
     else if (0 == strcmp(option_str[i], "--eqtl-summary")) {
-      if (eqtlFileName == NULL) {
+      if (eqtlFileName == nullptr) {
         eqtlFileName = option_str[++i];
         FLAG_VALID_CK("--eqtl-summary", eqtlFileName);
         printf("--eqtl-summary %s\n", eqtlFileName);
@@ -304,7 +304,7 @@ void option(int option_num, char* option_str[]) {
       }
     } else if (0 == strcmp(option_str[i], "--beqtl-summary")) {
       bFlag = true;
-      if (eqtlFileName == NULL) {
+      if (eqtlFileName == nullptr) {
         eqtlFileName = option_str[++i];
         FLAG_VALID_CK("--beqtl-summary", eqtlFileName);
         printf("--beqtl-summary %s\n", eqtlFileName);
@@ -314,7 +314,7 @@ void option(int option_num, char* option_str[]) {
         printf("--beqtl-summary %s\n", eqtlFileName2);
       }
     } else if (strcmp(option_str[i], "--beqtl-list") == 0) {
-      if (eqtllistFileName == NULL) {
+      if (eqtllistFileName == nullptr) {
         eqtllistFileName = option_str[++i];
         FLAG_VALID_CK("--beqtl-list", eqtllistFileName);
         printf("--beqtl-list %s\n", eqtllistFileName);
@@ -406,8 +406,8 @@ void option(int option_num, char* option_str[]) {
       std::cout << "--make-besd " << std::endl;
     } else if (0 == strcmp(option_str[i], "--out")) {
       outFileName = option_str[++i];
-      if (outFileName != NULL && has_prefix(outFileName, "--")) {
-        outFileName = NULL;
+      if (outFileName != nullptr && has_prefix(outFileName, "--")) {
+        outFileName = nullptr;
         i--;
       } else printf("--out %s\n", outFileName);
     } else if (0 == strcmp(option_str[i], "--peqtl-smr")) {
@@ -563,8 +563,8 @@ void option(int option_num, char* option_str[]) {
     } else if (0 == strcmp(option_str[i], "--eqtl-flist")) {
       syllabusName = option_str[++i];
       gctaflag = true;
-      if (syllabusName != NULL && has_prefix(syllabusName, "--")) {
-        syllabusName = NULL;
+      if (syllabusName != nullptr && has_prefix(syllabusName, "--")) {
+        syllabusName = nullptr;
         i--;
       } else printf("--eqtl-flist %s\n", syllabusName);
     } else if (0 == strcmp(option_str[i], "--smr-format")) {
@@ -737,7 +737,7 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--snp-wind") == 0) {
       snpwindFlag = true;
       char* tmpstr = option_str[++i];
-      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--")) i--;
+      if (tmpstr == nullptr || SMRDATA::has_prefix(tmpstr, "--")) i--;
       else snpWind = atoi(tmpstr);
       printf("--snp-wind %d Kb\n", snpWind);
       if (snpWind < 0) {
@@ -747,7 +747,7 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--probe-wind") == 0) {
       prbwindFlag = true;
       char* tmpstr = option_str[++i];
-      if (tmpstr == NULL || SMRDATA::has_prefix(tmpstr, "--")) i--;
+      if (tmpstr == nullptr || SMRDATA::has_prefix(tmpstr, "--")) i--;
       else prbWind = atoi(tmpstr);
       printf("--probe-wind %d Kb\n", prbWind);
       if (prbWind < 0) {
@@ -982,7 +982,7 @@ void option(int option_num, char* option_str[]) {
 
   std::cout << std::endl;
   char tmpch[4] = "smr";
-  if (outFileName == NULL) outFileName = tmpch;
+  if (outFileName == nullptr) outFileName = tmpch;
 
   /*
       show sample size/
@@ -1039,7 +1039,7 @@ void option(int option_num, char* option_str[]) {
                      snplst2exclde, problst2exclde, qcflag, qcmtd, z_thresh, extract_cis_only, prbseqregion, ptech,
                      pinsnp, pexsnp, addn);
 
-  else if (plotflg && eqtlFileName2 != NULL)
+  else if (plotflg && eqtlFileName2 != nullptr)
     plot_triple(outFileName, bFileName, gwasFileName, eqtlFileName2, eqtlFileName, maf, indilstName, snplstName,
                 p_hetero, ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde, p_smr, refSNP, cis_itvl,
                 prbname, prbWind, prbwindFlag, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb,
@@ -1056,7 +1056,7 @@ void option(int option_num, char* option_str[]) {
                   sampleoverlap, pmecs, minsnpcor, diff_freq, diff_freq_ratio);
 
   // step 1, smr_e2e is in SMR_data.cpp
-  else if (eqtlFileName2 != NULL)
+  else if (eqtlFileName2 != nullptr)
     smr_e2e(outFileName, bFileName, eqtlFileName2, eqtlFileName, maf, indilstName, snplstName, problstName,
             oproblstName, eproblstName, bFlag, p_hetero, ld_prune, m_hetero, opt_hetero, indilst2remove, snplst2exclde,
             problst2exclde, oproblst2exclde, eproblst2exclde, p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl,

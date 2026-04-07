@@ -179,17 +179,17 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
   std::vector<std::string> rs;
 
   std::vector<std::string> smasNames;
-  if (eqtlsmaslstName != NULL) {
+  if (eqtlsmaslstName != nullptr) {
     read_smaslist(smasNames, std::string(eqtlsmaslstName));
     if (smasNames.size() == 0) throw("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
     for (int ii = 0; ii < smasNames.size(); ii++) {
       eqtlInfo eqtlinfo;
       read_esifile(&eqtlinfo, smasNames[ii] + ".esi");
-      if (snplstName != NULL) extract_eqtl_snp(&eqtlinfo, snplstName);
-      if (snplst2exclde != NULL) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
+      if (snplstName != nullptr) extract_eqtl_snp(&eqtlinfo, snplstName);
+      if (snplst2exclde != nullptr) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
       read_epifile(&eqtlinfo, smasNames[ii] + ".epi");
-      if (problstName != NULL) extract_prob(&eqtlinfo, problstName);
-      if (problst2exclde != NULL) exclude_prob(&eqtlinfo, problst2exclde);
+      if (problstName != nullptr) extract_prob(&eqtlinfo, problstName);
+      if (problst2exclde != nullptr) exclude_prob(&eqtlinfo, problst2exclde);
       read_besdfile(&eqtlinfo, smasNames[ii] + ".besd");
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
         printf("No data included from %s in the analysis.\n", smasNames[ii].c_str());
@@ -199,14 +199,14 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
       get_thres_sets(&eqtlinfo, prbIds, beta, se, rs, thres);
     }
 
-  } else if (eqtlFileName != NULL) {
+  } else if (eqtlFileName != nullptr) {
     eqtlInfo eqtlinfo;
     read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
-    if (snplstName != NULL) extract_eqtl_snp(&eqtlinfo, snplstName);
-    if (snplst2exclde != NULL) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
+    if (snplstName != nullptr) extract_eqtl_snp(&eqtlinfo, snplstName);
+    if (snplst2exclde != nullptr) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
-    if (problstName != NULL) extract_prob(&eqtlinfo, problstName);
-    if (problst2exclde != NULL) exclude_prob(&eqtlinfo, problst2exclde);
+    if (problstName != nullptr) extract_prob(&eqtlinfo, problstName);
+    if (problst2exclde != nullptr) exclude_prob(&eqtlinfo, problst2exclde);
     read_besdfile(&eqtlinfo, std::string(eqtlFileName) + ".besd");
     if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
       printf("No data included from %s in the analysis.\n", eqtlFileName);
@@ -359,14 +359,14 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
                char* problst2exclde, char* genelistName, bool bFlag) {
   eqtlInfo eqtlinfo;
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
-  if (eqtlFileName != NULL) {
+  if (eqtlFileName != nullptr) {
     read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
-    if (snplstName != NULL) extract_eqtl_snp(&eqtlinfo, snplstName);
-    if (snplst2exclde != NULL) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
+    if (snplstName != nullptr) extract_eqtl_snp(&eqtlinfo, snplstName);
+    if (snplst2exclde != nullptr) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
-    if (problstName != NULL) extract_prob(&eqtlinfo, problstName);
-    if (genelistName != NULL) extract_prob_by_gene(&eqtlinfo, genelistName);
-    if (problst2exclde != NULL) exclude_prob(&eqtlinfo, problst2exclde);
+    if (problstName != nullptr) extract_prob(&eqtlinfo, problstName);
+    if (genelistName != nullptr) extract_prob_by_gene(&eqtlinfo, genelistName);
+    if (problst2exclde != nullptr) exclude_prob(&eqtlinfo, problst2exclde);
     read_besdfile(&eqtlinfo, std::string(eqtlFileName) + ".besd");
     if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
       printf("No data included from %s in the analysis.\n", eqtlFileName);
@@ -443,8 +443,8 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
 void standardization(char* outFileName, char* eqtlFileName,bool bFlag,char* freqName, char* vpFileName)
 {
     eqtlInfo esdata;
-    if(eqtlFileName==NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-    if(freqName==NULL && vpFileName==NULL) throw("Error: please input feq data or variance data for standardisation by
+    if(eqtlFileName==nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    if(freqName==nullptr && vpFileName==nullptr) throw("Error: please input feq data or variance data for standardisation by
 the flag --freq or --probe-var."); read_esifile(&esdata, std::string(eqtlFileName)+".esi"); read_epifile(&esdata,
 std::string(eqtlFileName)+".epi"); read_besdfile(&esdata, std::string(eqtlFileName)+".besd"); if(esdata._rowid.empty()
 && esdata._bxz.empty())
@@ -453,7 +453,7 @@ std::string(eqtlFileName)+".epi"); read_besdfile(&esdata, std::string(eqtlFileNa
         exit(EXIT_FAILURE);
     }
 
-    if(vpFileName!=NULL)
+    if(vpFileName!=nullptr)
     {
 
         read_probevarfile(&esdata, std::string(vpFileName));
@@ -491,7 +491,7 @@ std::string(eqtlFileName)+".epi"); read_besdfile(&esdata, std::string(eqtlFileNa
         }
 
     }
-    else if(freqName!=NULL)
+    else if(freqName!=nullptr)
     {
 
         update_freq(&esdata, std::string(freqName));
@@ -575,7 +575,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
 
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
   // eqtlFileName if prefix of eqtl summary data. it contain epi, esi and besd file.
-  if (eqtlFileName != NULL) {
+  if (eqtlFileName != nullptr) {
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
     epi_man(&eqtlinfo, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb,
             toprbkb, prbwindFlag, genename);
@@ -937,10 +937,10 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
           bool cis_flag, char* geneAnnoName) {
   setNbThreads(thread_num);
   if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (!heidioffFlag && bFileName == NULL) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == NULL) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
 
   std::vector<int> gene_anno_chr;
   std::vector<std::string> gene_anno_genename;
@@ -954,10 +954,10 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
 
   eqtlInfo prbhead;
   read_epifile(&prbhead, std::string(eqtlFileName) + ".epi");
-  if (problstName != NULL || genelistName != NULL) {
-    if (problstName != NULL) extract_prob(&prbhead, problstName);
-    if (genelistName != NULL) extract_prob_by_gene(&prbhead, genelistName);
-  } else if (prbname != NULL) {
+  if (problstName != nullptr || genelistName != nullptr) {
+    if (problstName != nullptr) extract_prob(&prbhead, problstName);
+    if (genelistName != nullptr) extract_prob_by_gene(&prbhead, genelistName);
+  } else if (prbname != nullptr) {
     extract_eqtl_single_probe(&prbhead, prbname);
   }
 
@@ -975,21 +975,21 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
     eqtlInfo esdata;
     double threshold = chi_val(1, p_hetero);
     bool heidiFlag = false;
-    if (refSNP != NULL) heidiFlag = true;
+    if (refSNP != nullptr) heidiFlag = true;
 
     std::cout << "\nRetrieving SMR results for plot..." << std::endl;
     read_gwas_data(&gdata, gwasFileName);
     read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
     esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag,
             false, cis_itvl, plotprbname.c_str());
-    if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+    if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
     if (!heidioffFlag) {
       read_famfile(&bdata, std::string(bFileName) + ".fam");
-      if (indilstName != NULL) keep_indi(&bdata, indilstName);
-      if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+      if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+      if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
       read_bimfile(&bdata, std::string(bFileName) + ".bim");
-      if (snplstName != NULL) extract_snp(&bdata, snplstName);
-      if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+      if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+      if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
       allele_check(&bdata, &gdata, &esdata);
       read_bedfile(&bdata, std::string(bFileName) + ".bed");
       if (bdata._mu.empty()) calcu_mu(&bdata);
@@ -1460,7 +1460,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
               << std::endl;
     free_gwas_data(&gdata_);
 
-    FILE* plotfile = NULL;
+    FILE* plotfile = nullptr;
     plotfile = fopen(plot_path.c_str(), "w");
     if (!(plotfile)) {
       printf("Open error %s\n", plot_path.c_str());
@@ -1699,7 +1699,7 @@ void sbat_calcu_lambda(MatrixXd& X, VectorXd& eigenval, VectorXd& eigenvalxy, in
   /* save out ld*/
   /*
   std::cout<<C.rows()<<"*"<<C.cols()<<std::endl;
-  FILE* bsefile=NULL;
+  FILE* bsefile=nullptr;
   std::string ldfilename=atos(xh)+".ld.txt";
   bsefile = fopen(ldfilename.c_str(), "w");
   if (!(bsefile)) {
@@ -1794,7 +1794,7 @@ void sbat_calcu_lambda(ldInfo* ldinfo, FILE* ldfptr, std::vector<std::uint32_t>&
   /* save out ld*/
   /*
   std::cout<<C.rows()<<"*"<<C.cols()<<std::endl;
-  FILE* bsefile=NULL;
+  FILE* bsefile=nullptr;
   std::string ldfilename=atos(xh)+".ld.txt";
   bsefile = fopen(ldfilename.c_str(), "w");
   if (!(bsefile)) {
@@ -1938,7 +1938,7 @@ int smr_setbased_test(bInfo* bdata, std::vector<std::uint32_t>& slctId, std::vec
 
   /* save out byz,seyz,bxz,sexz*/
   /*
-  FILE* bsefile=NULL;
+  FILE* bsefile=nullptr;
   std::string bsefilename=atos(xh)+".bse.txt";
   bsefile = fopen(bsefilename.c_str(), "w");
   if (!(bsefile)) {
@@ -2033,7 +2033,7 @@ int smr_setbased_test(ldInfo* ldinfo, FILE* ldfptr, eqtlInfo* esdata, std::vecto
 
   /* save out byz,seyz,bxz,sexz*/
   /*
-  FILE* bsefile=NULL;
+  FILE* bsefile=nullptr;
   std::string bsefilename=atos(xh)+".bse.txt";
   bsefile = fopen(bsefilename.c_str(), "w");
   if (!(bsefile)) {
@@ -2091,10 +2091,10 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
     }
   }
 
-  FILE *smr = NULL, *glst = NULL, *setlst = NULL;
+  FILE *smr = nullptr, *glst = nullptr, *setlst = nullptr;
   long write_count = 0;
   std::string smrfile = "", setlstfile = "", genelstfile = "", outstr = "";
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     setlstfile = std::string(outFileName) + ".snps4msmr.list";
     setlst = fopen(setlstfile.c_str(), "w");
     if (!(setlst)) {
@@ -2146,7 +2146,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
     /* step1: get cis-eQTLs */
     printf("\nInitiating the workspace of probe %s for multi-SNP SMR analysis....\n", probename.c_str());
     long maxid = fill_smr_wk(bdata, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
-    if (refSNP != NULL && maxid == -9) {
+    if (refSNP != nullptr && maxid == -9) {
       printf("WARNING: can't find target SNP %s for probe %s.\n", refSNP, probename.c_str());
       continue;
     }  // ref heidi SNP is not in selected SNPs
@@ -2187,7 +2187,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
     }
     VectorXd zsxz;
     zsxz = ei_bxz.array() / ei_sexz.array();
-    if (refSNP == NULL)
+    if (refSNP == nullptr)
       maxid = max_abs_id(zsxz);  // now maxid point to the sig eQTL SNP or ref SNP in the new datastruct(not the raw).
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
     // double computing, consistency should be checked
@@ -2199,7 +2199,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
     }
     std::string topsnpname = smrwk.rs[maxid];
     printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(), pxz_val);
-    if (refSNP == NULL && pxz_val > p_smr) {
+    if (refSNP == nullptr && pxz_val > p_smr) {
       printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n", p_smr,
              probename.c_str());
       continue;
@@ -2282,7 +2282,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
                                       set_pval_smr, set_pval_gwas, set_pval_eqtl, snp4msmr);
     if (snp_count == -9) continue;
 
-    if (outFileName != NULL) {
+    if (outFileName != nullptr) {
       /* output snp set list*/
       std::string setstr = probename + '\n';
       if (fputs_checked(setstr.c_str(), setlst)) {
@@ -2338,7 +2338,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
     } else {
       printf("skip HEIDI test for probe %s\n", probename.c_str());
     }
-    if (outFileName != NULL) {
+    if (outFileName != nullptr) {
       outstr = probename + '\t' + atos(probechr) + '\t' + probegene + '\t' + atos(probebp) + '\t' + topsnpname + '\t' +
                atos(esdata->_esi_chr[out_raw_id]) + '\t' + atos(esdata->_esi_bp[out_raw_id]) + '\t' +
                esdata->_esi_allele1[out_raw_id] + '\t' + esdata->_esi_allele2[out_raw_id] + '\t' +
@@ -2380,7 +2380,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
       smrrlts.push_back(currlt);
     }
   }
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     std::cout << "\nMultiple-SNP SMR and HEIDI analyses completed.\nSMR and heterogeneity analysis results of "
               << write_count << " sets have been saved in the file [" + smrfile + "]." << std::endl;
     std::cout << "SNP sets included in multi-SNP SMR have been saved in the file [" + setlstfile + "]." << std::endl;
@@ -2405,23 +2405,23 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
 
   bInfo bdata;
   ldInfo ldinfo;
-  FILE* bld = NULL;
+  FILE* bld = nullptr;
   gwasData gdata;
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
-  // if(bFileName == NULL ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  // if(bFileName == nullptr ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
   }
 
-  long int readGwasStart = time(NULL);
+  long int readGwasStart = time(nullptr);
 
   read_gwas_data(&gdata, gwasFileName, enableGwasComments);
 
-  long int readGwasEnd = time(NULL);
+  long int readGwasEnd = time(nullptr);
   long int readGwasUsed = readGwasEnd - readGwasStart;
   std::cout << "read gwas computation time:" << readGwasUsed << std::endl;
 
@@ -2431,15 +2431,15 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
   }
 
-  long int readEsiEnd = time(NULL);
+  long int readEsiEnd = time(nullptr);
   long int readEsiUsed = readEsiEnd - readGwasEnd;
   std::cout << "read esi computation time:" << readEsiUsed << std::endl;
 
   esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, false,
           cis_itvl, prbname);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
 
-  // long int esimanEnd = time(NULL);
+  // long int esimanEnd = time(nullptr);
   // long int esimanUsed = esimanEnd - readEsiEnd;
   // std::cout << "esi man computation time:" << esimanUsed << std::endl;
 
@@ -2447,39 +2447,39 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   // long int curchr = 0;
 
   if (bFileName) {
-    long int readBFileStart = time(NULL);
+    long int readBFileStart = time(nullptr);
 
     read_famfile(&bdata, std::string(bFileName) + ".fam");
-    if (indilstName != NULL) keep_indi(&bdata, indilstName);
-    if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+    if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+    if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
 
-    long int readFamEnd = time(NULL);
+    long int readFamEnd = time(nullptr);
     long int readFamUsed = readFamEnd - readBFileStart;
     std::cout << "read fam computation time:" << readFamUsed << std::endl;
 
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    if (snplstName != NULL) extract_snp(&bdata, snplstName);
-    if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+    if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+    if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
-    long int readBimEnd = time(NULL);
+    long int readBimEnd = time(nullptr);
     long int readBimUsed = readBimEnd - readFamEnd;
     std::cout << "read bim computation time:" << readBimUsed << std::endl;
 
     allele_check(&bdata, &gdata, &esdata);
 
-    long int alleleCheckEnd = time(NULL);
+    long int alleleCheckEnd = time(nullptr);
     long int alleleCheckUsed = alleleCheckEnd - readBimEnd;
     std::cout << "allele check computation time:" << alleleCheckUsed << std::endl;
 
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
 
-    long int readBedEnd = time(NULL);
+    long int readBedEnd = time(nullptr);
     long int readBedUsed = readBedEnd - alleleCheckEnd;
     std::cout << "read bed computation time:" << readBedUsed << std::endl;
 
     if (bdata._mu.empty()) calcu_mu(&bdata);
 
-    long int calcumuEnd = time(NULL);
+    long int calcumuEnd = time(nullptr);
     long int calcumuUsed = calcumuEnd - readBedEnd;
     std::cout << "calcumu computation time:" << calcumuUsed << std::endl;
 
@@ -2502,14 +2502,14 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     //     curchr = bdata._chr[0];
     // }
 
-    long int readBFileEnd = time(NULL);
+    long int readBFileEnd = time(nullptr);
     long int bFileTimeUsed = readBFileEnd - readBFileStart;
     std::cout << "read bfile computation time:" << bFileTimeUsed << std::endl;
 
   } else {
     // Read "<inputname>.esi" and "<inputname>.bld"
 
-    // long int readBldStart = time(NULL);
+    // long int readBldStart = time(nullptr);
 
     char inputname[FNAMESIZE];
     memcpy(inputname, bldFileName, strlen(bldFileName) + 1);
@@ -2517,7 +2517,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     memcpy(suffix, ".esi", 5);
     read_ld_esifile(&ldinfo, inputname);
     ld_esi_man(&ldinfo, snplstName, snplst2exclde, chr, snprs, fromsnprs, tosnprs, snpWind, false, fromsnpkb, tosnpkb,
-               NULL);
+               nullptr);
     if (ldinfo._esi_include.size() == 0) {
       printf("Error: no SNP included.\n");
       exit(EXIT_FAILURE);
@@ -2535,7 +2535,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     std::vector<int> headers;
     headers.resize(RESERVEDUNITS);
     bld = fopen(inputname, "rb");
-    if (bld == NULL) {
+    if (bld == nullptr) {
       printf("Error: can't open file %s.\n", inputname);
       exit(EXIT_FAILURE);
     }
@@ -2563,7 +2563,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       exit(EXIT_FAILURE);
     }
 
-    // long int readBldEnd = time(NULL);
+    // long int readBldEnd = time(nullptr);
     // long int bldTimeUsed = readBldEnd - readBldStart;
 
     // std::cout << "read bld computation time:" << bldTimeUsed << std::endl;
@@ -2575,11 +2575,11 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
 
   // std::cout << "curchr: " << curchr << std::endl;
 
-  // long int updateGwasStart = time(NULL);
+  // long int updateGwasStart = time(nullptr);
 
   update_gwas(&gdata);
 
-  // long int updateGwasEnd = time(NULL);
+  // long int updateGwasEnd = time(nullptr);
   // long int updateGwasUsed = updateGwasEnd - updateGwasStart;
 
   // std::cout << "update gwas computation time:" << updateGwasUsed << std::endl;
@@ -2608,7 +2608,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   }
   */
 
-  long int readeQTLStart = time(NULL);
+  long int readeQTLStart = time(nullptr);
 
   std::cout << "Reading eQTL summary data..." << std::endl;
   read_epifile(&esdata, std::string(eqtlFileName) + ".epi");
@@ -2616,7 +2616,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   epi_man(&esdata, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
           prbwindFlag, genename);
 
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
   read_besdfile(&esdata, std::string(eqtlFileName) + ".besd");
 
   if (esdata._rowid.empty() && esdata._bxz.empty()) {
@@ -2624,7 +2624,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     exit(ERROR_EQTL_NO_DATA);
   }
 
-  long int readeQTLEnd = time(NULL);
+  long int readeQTLEnd = time(nullptr);
   long int readeQTLUsed = readeQTLEnd - readeQTLStart;
 
   std::cout << "read eQTL computation time:" << readeQTLUsed << std::endl;
@@ -2657,8 +2657,8 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   std::vector<std::string> set_name;
   std::vector<std::vector<std::string>> snpset;
   std::vector<int> gene_chr, gene_bp1, gene_bp2;
-  if (setlstName != NULL) sbat_read_snpset(&bdata, setlstName, set_name, gene_chr, gene_bp1, gene_bp2, snpset);
-  else if (geneAnnoFileName != NULL) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
+  if (setlstName != nullptr) sbat_read_snpset(&bdata, setlstName, set_name, gene_chr, gene_bp1, gene_bp2, snpset);
+  else if (geneAnnoFileName != nullptr) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
 
   unsigned int probNum = esdata._probNum;
 
@@ -2676,7 +2676,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   }
 
   std::string setlstfile = std::string(outFileName) + ".snps4msmr.list";
-  FILE* setlst = NULL;
+  FILE* setlst = nullptr;
   setlst = fopen(setlstfile.c_str(), "w");
   if (!(setlst)) {
     printf("Open error %s\n", setlstfile.c_str());
@@ -2684,7 +2684,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   }
 
   std::string genelstfile = std::string(outFileName) + ".prbregion4msmr.list";
-  FILE* glst = NULL;
+  FILE* glst = nullptr;
   glst = fopen(genelstfile.c_str(), "w");
   if (!(glst)) {
     printf("Open error %s\n", genelstfile.c_str());
@@ -2692,7 +2692,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   }
 
   std::string smrfile = std::string(outFileName) + ".msmr";
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   smr = fopen(smrfile.c_str(), "w");
   if (!(smr)) {
     printf("Open error %s\n", smrfile.c_str());
@@ -2713,7 +2713,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   std::map<std::string, int>::iterator iter;
   SMRWK smrwk;
 
-  long int calSMRStart = time(NULL);
+  long int calSMRStart = time(nullptr);
 
   if (set_name.size() > 0) {
     // gene list based or set list based
@@ -2759,7 +2759,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         maxid = fill_smr_wk(&ldinfo, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
       }
 
-      if (refSNP != NULL && maxid == -9) continue;  // heidi SNP is not in selected SNPs
+      if (refSNP != nullptr && maxid == -9) continue;  // heidi SNP is not in selected SNPs
       if (smrwk.bxz.size() == 0) continue;
 
       std::vector<std::uint32_t> slctId;
@@ -2788,7 +2788,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         // set list
         std::vector<int> matchidx;
         match_only(snpset[ii], smrwk.rs, matchidx);
-        if (refSNP != NULL && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
+        if (refSNP != nullptr && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
 
         for (int j = 0; j < matchidx.size(); j++) {
           slctId.push_back(smrwk.curId[matchidx[j]]);
@@ -2811,7 +2811,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       Map<VectorXd> ei_sexz(&slct_sexz[0], slct_sexz.size());
       VectorXd zsxz;
       zsxz = ei_bxz.array() / ei_sexz.array();
-      if (refSNP == NULL) maxid = max_abs_id(zsxz);
+      if (refSNP == nullptr) maxid = max_abs_id(zsxz);
       std::string topsnpname = slct_snpName[maxid];
       slct_maxid = maxid;
       for (int j = 0; j < slct_bxz.size(); j++) slct_zsxz.push_back(zsxz(j));
@@ -2908,7 +2908,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     std::cout << "before probeNum, esdata.esi_include.size(): " << esdata._esi_include.size() << std::endl;
     // top-SNP (/ ref-SNP) based
     for (int i = 0; i < probNum; i++) {
-      // long int ciseQTLStart = time(NULL);
+      // long int ciseQTLStart = time(nullptr);
 
       progr1 = 1.0 * i / probNum;
       if (progr1 - progr0 - 0.05 > 1e-6 || i + 1 == probNum) {
@@ -2951,7 +2951,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         maxid = fill_smr_wk(&ldinfo, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
       }
 
-      // long int ciseQTLEnd = time(NULL);
+      // long int ciseQTLEnd = time(nullptr);
       // long int ciseQTLUsed = ciseQTLEnd - ciseQTLStart;
 
       // std::cout << "probename: " << probename << "  cis-eQTL computation time:" << ciseQTLUsed << std::endl;
@@ -2959,7 +2959,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       // 打印curId
       // std::cout << "curId: " << smrwk.curId.size() << std::endl;
 
-      if (refSNP != NULL && maxid == -9) {
+      if (refSNP != nullptr && maxid == -9) {
         printf("WARNING: can't find target SNP %s for probe %s.\n", refSNP, probename.c_str());
         continue;
       }  // ref heidi SNP is not in selected SNPs
@@ -2970,7 +2970,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       // printf("%ld SNPs are included from the cis-region of the probe %s.\n",smrwk.bxz.size(),probename.c_str());
       // now if you sepcify reference SNP, maxid point to this SNP, otherwise maxid is -9
 
-      // long int topSNPStart = time(NULL);
+      // long int topSNPStart = time(nullptr);
 
       // step2: get top-SNP
       // printf("Checking the top-SNP in the region....\n");
@@ -2978,7 +2978,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
       VectorXd zsxz;
       zsxz = ei_bxz.array() / ei_sexz.array();
-      if (refSNP == NULL)
+      if (refSNP == nullptr)
         maxid = max_abs_id(zsxz);  // now maxid point to the sig eQTL SNP or ref SNP in the new datastruct(not the raw).
       double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
       // double computing, consistency should be checked
@@ -2990,7 +2990,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       }
       std::string topsnpname = smrwk.rs[maxid];
       // printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(),pxz_val);
-      if (refSNP == NULL && pxz_val > p_smr) {
+      if (refSNP == nullptr && pxz_val > p_smr) {
         // printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n",
         // p_smr, probename.c_str());
         continue;
@@ -2999,7 +2999,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       }
       // std::cout<<maxid<<":"<<topsnpname<<":"<<esdata._esi_rs[smrwk.curId[maxid]]<<":"<<bdata._snp_name[bdata._include[smrwk.curId[maxid]]]<<":"<<gdata.snpName[smrwk.curId[maxid]]<<std::endl;
 
-      // long int topSNPEnd = time(NULL);
+      // long int topSNPEnd = time(nullptr);
       // long int topSNPUsed = topSNPEnd - topSNPStart;
 
       // std::cout << "probename: " << probename << "  top snp computation time:" << topSNPUsed << std::endl;
@@ -3081,7 +3081,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
 
       int snp_count;
 
-      // long int smrMultiStart = time(NULL);
+      // long int smrMultiStart = time(nullptr);
 
       if (bFileName) {
         snp_count = smr_setbased_test(&bdata, slctId, slct_bxz, slct_sexz, slct_byz, slct_seyz, p_smr, ld_top_multi,
@@ -3091,7 +3091,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
                                       ld_top_multi, set_pval_smr, set_pval_gwas, set_pval_eqtl, snp4msmr);
       }
 
-      // long int smrMultiEnd = time(NULL);
+      // long int smrMultiEnd = time(nullptr);
       // long int smrMultiUsed = smrMultiEnd - smrMultiStart;
 
       // std::cout << "probename: " << probename << "  smr multi computation time:" << smrMultiUsed << std::endl;
@@ -3127,7 +3127,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
       }
       // end of output
 
-      // long int heidiStart = time(NULL);
+      // long int heidiStart = time(nullptr);
 
       // step6: HEIDI test
       long nsnp = -9;
@@ -3166,7 +3166,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         printf("skip HEIDI test for probe %s\n", probename.c_str());
       }
 
-      // long int heidiEnd = time(NULL);
+      // long int heidiEnd = time(nullptr);
       // long int heidiUsed = heidiEnd - heidiStart;
 
       // std::cout << "probename: " << probename << "  heidi computation time:" << heidiUsed << std::endl;
@@ -3203,7 +3203,7 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
     }
   }
 
-  long int calSMREnd = time(NULL);
+  long int calSMREnd = time(nullptr);
   long int calSMRUsed = calSMREnd - calSMRStart;
 
   std::cout << "cal smr computation time:" << calSMRUsed << std::endl;
@@ -3583,7 +3583,7 @@ void combine_epi(std::vector<smr_probeinfo>& probeinfo, std::vector<std::string>
     read_epifile(&etmp, inputname);
     epi_man(&etmp, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
             prbwindFlag, genename);
-    if (problst2exclde != NULL) exclude_prob(&etmp, problst2exclde);
+    if (problst2exclde != nullptr) exclude_prob(&etmp, problst2exclde);
     nprb.push_back(etmp._probNum);
     for (int jj = 0; jj < etmp._include.size(); jj++) {
       int j = etmp._include[jj];
@@ -3605,8 +3605,8 @@ void combine_epi(std::vector<smr_probeinfo>& probeinfo, std::vector<std::string>
         probinfotmp.gd = etmp._epi_gd[j];
         strcpy2(&probinfotmp.genename, etmp._epi_gene[j]);
         probinfotmp.orien = etmp._epi_orien[j];
-        probinfotmp.bfilepath = NULL;
-        probinfotmp.esdpath = NULL;
+        probinfotmp.bfilepath = nullptr;
+        probinfotmp.esdpath = nullptr;
         probinfotmp.ptr = new int[besds.size()];
         for (int k = 0; k < besds.size(); k++) {
           if (i == k) {
@@ -3649,8 +3649,8 @@ void combine_esi(std::vector<smr_snpinfo>& snpinfo, std::vector<std::string>& be
     memcpy(suffix, ".esi", 5);
     read_esifile(&etmp, inputname);
     esi_man(&etmp, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, smpwindFlag, false,
-            0, NULL);
-    if (snplst2exclde != NULL) exclude_eqtl_snp(&etmp, snplst2exclde);
+            0, nullptr);
+    if (snplst2exclde != nullptr) exclude_eqtl_snp(&etmp, snplst2exclde);
 
     nsnp.push_back(etmp._snpNum);
     for (int jj = 0; jj < etmp._esi_include.size(); jj++) {
@@ -3717,7 +3717,7 @@ void combine_esi(std::vector<smr_snpinfo>& snpinfo, std::vector<std::string>& be
   long ttl_snp_common = snpinfo.size();
   std::string failName = "failed.snp.list";
   FILE* failfptr = fopen(failName.c_str(), "w");
-  if (failfptr == NULL) {
+  if (failfptr == nullptr) {
     printf("ERROR: failed in open file %s.\n", failName.c_str());
     exit(EXIT_FAILURE);
   }
@@ -3762,7 +3762,7 @@ void get_BesdHeaders(char* besdFileName, std::vector<int>& headers)  //
 {
   headers.resize(RESERVEDUNITS);
   FILE* besd = fopen(besdFileName, "rb");
-  if (besd == NULL) {
+  if (besd == nullptr) {
     exit(EXIT_FAILURE);
   }
   printf("Reading eQTL summary data from %s. \n", besdFileName);
@@ -4108,7 +4108,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
 
   std::string epiName = std::string(outFileName) + ".epi";
   FILE* efile = fopen(epiName.c_str(), "w");
-  if (efile == NULL) exit(EXIT_FAILURE);
+  if (efile == nullptr) exit(EXIT_FAILURE);
   for (int i = 0; i < probeinfo.size(); i++) {
     std::string chrstr;
     if (probeinfo[i].probechr == 23) chrstr = "X";
@@ -4129,7 +4129,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   printf("\nGenerating the esi file...\n");
   std::string esiName = std::string(outFileName) + ".esi";
   efile = fopen(esiName.c_str(), "w");
-  if (efile == NULL) exit(EXIT_FAILURE);
+  if (efile == nullptr) exit(EXIT_FAILURE);
   for (int i = 0; i < snpinfo.size(); i++) {
     std::string chrstr;
     if (snpinfo[i].snpchr == 23) chrstr = "X";
@@ -4174,7 +4174,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   for (int i = 0; i < besdNum; i++) {
     std::string besdFileName = besds[i] + ".besd";
     fptrs[i] = fopen(besdFileName.c_str(), "rb");
-    if (fptrs[i] == NULL) {
+    if (fptrs[i] == nullptr) {
       printf("ERROR: in opening file %s .\n", besdFileName.c_str());
       exit(EXIT_FAILURE);
     }
@@ -4184,7 +4184,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::vector<float> val;
   std::string besdName = std::string(outFileName) + ".besd";
   efile = fopen(besdName.c_str(), "wb");
-  if (efile == NULL) exit(EXIT_FAILURE);
+  if (efile == nullptr) exit(EXIT_FAILURE);
 
   std::uint32_t filetype = SPARSE_FILE_TYPE_3;
   cols.resize((metaPrbNum << 1) + 1);
@@ -4200,13 +4200,13 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   fwrite(&ten_ints[0], sizeof(int), nresv, efile);
 
   float* buffer_beta = (float*)malloc(sizeof(float) * besdNum * metaSNPnum);
-  if (buffer_beta == NULL) {
+  if (buffer_beta == nullptr) {
     printf("ERROR: memory allocation failed for beta values.\n");
     exit(EXIT_FAILURE);
   }  // probe major
 
   float* buffer_se = (float*)malloc(sizeof(float) * besdNum * metaSNPnum);
-  if (buffer_se == NULL) {
+  if (buffer_se == nullptr) {
     printf("ERROR: memory allocation failed for SEs.\n");
     exit(EXIT_FAILURE);
   }
@@ -4621,11 +4621,11 @@ void read_esi4u(eqtlInfo* eqtlinfo, std::string esifile) {
 }
 void update_epifile(char* eqtlFileName, char* s_epiFileName) {
   eqtlInfo eqtlinfo;
-  if (eqtlFileName == NULL) {
+  if (eqtlFileName == nullptr) {
     printf("Error: please input the BESD file by the option --beqtl-summary.\n");
     exit(EXIT_FAILURE);
   }
-  if (s_epiFileName == NULL) {
+  if (s_epiFileName == nullptr) {
     printf("Error: please input the probe information file by the option --update-epi.\n");
     exit(EXIT_FAILURE);
   }
@@ -4695,11 +4695,11 @@ void update_epifile(char* eqtlFileName, char* s_epiFileName) {
 }
 void update_esifile(char* eqtlFileName, char* s_esiFileName) {
   eqtlInfo eqtlinfo;
-  if (eqtlFileName == NULL) {
+  if (eqtlFileName == nullptr) {
     printf("Error: please input the BESD file by the option --beqtl-summary.\n");
     exit(EXIT_FAILURE);
   }
-  if (s_esiFileName == NULL) {
+  if (s_esiFileName == nullptr) {
     printf("Error: please input the probe information file by the option --update-epi.\n");
     exit(EXIT_FAILURE);
   }
@@ -4792,8 +4792,8 @@ void smr_multipleSNP_v2(char* outFileName, char* bFileName, char* bldFileName, c
   auto start_mem = get_memory_usage();
 
   // flags check
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (qtllistFileName == NULL) throw("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (qtllistFileName == nullptr) throw("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
   if (qtl_index == 0) throw("Error: please input eQTL list index for SMR analysis by the flag --eqtl-list-index.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
@@ -4887,17 +4887,17 @@ void smr_multipleSNP_for_each_chr(
 
   bInfo bdata;
   ldInfo ldinfo;
-  FILE* bld = NULL;
+  FILE* bld = nullptr;
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
-  // if(bFileName == NULL ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  // if(bFileName == nullptr ) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
   }
 
-  long int readEsiStart = time(NULL);
+  long int readEsiStart = time(nullptr);
 
   if (snpchr != 0) {
     read_esifile_by_chr(&esdata, std::string(eqtlFileName) + ".esi", snpchr);
@@ -4905,15 +4905,15 @@ void smr_multipleSNP_for_each_chr(
     read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
   }
 
-  long int readEsiEnd = time(NULL);
+  long int readEsiEnd = time(nullptr);
   long int readEsiUsed = readEsiEnd - readEsiStart;
   std::cout << "read esi computation time:" << readEsiUsed << std::endl;
 
   esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, false,
           cis_itvl, prbname);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
 
-  // long int esimanEnd = time(NULL);
+  // long int esimanEnd = time(nullptr);
   // long int esimanUsed = esimanEnd - readEsiEnd;
   // std::cout << "esi man computation time:" << esimanUsed << std::endl;
 
@@ -4923,39 +4923,39 @@ void smr_multipleSNP_for_each_chr(
   PerfTimer perf_timer(__FUNCTION__);
 
   if (bFileName) {
-    long int readBFileStart = time(NULL);
+    long int readBFileStart = time(nullptr);
 
     read_famfile(&bdata, std::string(bFileName) + ".fam");
-    if (indilstName != NULL) keep_indi(&bdata, indilstName);
-    if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+    if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+    if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
 
-    long int readFamEnd = time(NULL);
+    long int readFamEnd = time(nullptr);
     long int readFamUsed = readFamEnd - readBFileStart;
     std::cout << "read fam computation time:" << readFamUsed << std::endl;
 
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    if (snplstName != NULL) extract_snp(&bdata, snplstName);
-    if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+    if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+    if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
-    long int readBimEnd = time(NULL);
+    long int readBimEnd = time(nullptr);
     long int readBimUsed = readBimEnd - readFamEnd;
     std::cout << "read bim computation time:" << readBimUsed << std::endl;
 
     allele_check(&bdata, &gdata, &esdata);
 
-    long int alleleCheckEnd = time(NULL);
+    long int alleleCheckEnd = time(nullptr);
     long int alleleCheckUsed = alleleCheckEnd - readBimEnd;
     std::cout << "allele check computation time:" << alleleCheckUsed << std::endl;
 
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
 
-    long int readBedEnd = time(NULL);
+    long int readBedEnd = time(nullptr);
     long int readBedUsed = readBedEnd - alleleCheckEnd;
     std::cout << "read bed computation time:" << readBedUsed << std::endl;
 
     if (bdata._mu.empty()) calcu_mu(&bdata);
 
-    long int calcumuEnd = time(NULL);
+    long int calcumuEnd = time(nullptr);
     long int calcumuUsed = calcumuEnd - readBedEnd;
     std::cout << "calcumu computation time:" << calcumuUsed << std::endl;
 
@@ -4978,14 +4978,14 @@ void smr_multipleSNP_for_each_chr(
     //     curchr = bdata._chr[0];
     // }
 
-    long int readBFileEnd = time(NULL);
+    long int readBFileEnd = time(nullptr);
     long int bFileTimeUsed = readBFileEnd - readBFileStart;
     std::cout << "read bfile computation time:" << bFileTimeUsed << std::endl;
 
   } else {
     // Read "<inputname>.esi" and "<inputname>.bld"
 
-    // long int readBldStart = time(NULL);
+    // long int readBldStart = time(nullptr);
 
     char inputname[FNAMESIZE];
     memcpy(inputname, bldFileName, strlen(bldFileName) + 1);
@@ -4994,7 +4994,7 @@ void smr_multipleSNP_for_each_chr(
     read_ld_esifile(&ldinfo, inputname);
     perf_timer.elapsed("read ld esifile");
     ld_esi_man(&ldinfo, snplstName, snplst2exclde, chr, snprs, fromsnprs, tosnprs, snpWind, false, fromsnpkb, tosnpkb,
-               NULL);
+               nullptr);
     if (ldinfo._esi_include.size() == 0) {
       printf("Error: no SNP included.\n");
       exit(EXIT_FAILURE);
@@ -5013,7 +5013,7 @@ void smr_multipleSNP_for_each_chr(
     std::vector<int> headers;
     headers.resize(RESERVEDUNITS);
     bld = fopen(inputname, "rb");
-    if (bld == NULL) {
+    if (bld == nullptr) {
       printf("Error: can't open file %s.\n", inputname);
       exit(EXIT_FAILURE);
     }
@@ -5070,7 +5070,7 @@ void smr_multipleSNP_for_each_chr(
   }
   */
 
-  long int readeQTLStart = time(NULL);
+  long int readeQTLStart = time(nullptr);
 
   std::cout << "Reading eQTL summary data..." << std::endl;
   read_epifile(&esdata, std::string(eqtlFileName) + ".epi");
@@ -5083,7 +5083,7 @@ void smr_multipleSNP_for_each_chr(
   epi_man(&esdata, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
           prbwindFlag, genename);
 
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
   // read_besdfile(&esdata, std::string(eqtlFileName)+".besd");
   read_besdfile_mmap(&esdata, besd_mapped);
 
@@ -5095,7 +5095,7 @@ void smr_multipleSNP_for_each_chr(
     exit(ERROR_EQTL_NO_DATA);
   }
 
-  long int readeQTLEnd = time(NULL);
+  long int readeQTLEnd = time(nullptr);
   long int readeQTLUsed = readeQTLEnd - readeQTLStart;
 
   std::cout << "read eQTL computation time:" << readeQTLUsed << std::endl;
@@ -5128,8 +5128,8 @@ void smr_multipleSNP_for_each_chr(
   std::vector<std::string> set_name;
   std::vector<std::vector<std::string>> snpset;
   std::vector<int> gene_chr, gene_bp1, gene_bp2;
-  if (setlstName != NULL) sbat_read_snpset(&bdata, setlstName, set_name, gene_chr, gene_bp1, gene_bp2, snpset);
-  else if (geneAnnoFileName != NULL) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
+  if (setlstName != nullptr) sbat_read_snpset(&bdata, setlstName, set_name, gene_chr, gene_bp1, gene_bp2, snpset);
+  else if (geneAnnoFileName != nullptr) read_geneAnno(geneAnnoFileName, set_name, gene_chr, gene_bp1, gene_bp2);
 
   unsigned int probNum = esdata._probNum;
 
@@ -5147,7 +5147,7 @@ void smr_multipleSNP_for_each_chr(
   }
 
   std::string setlstfile = std::string(outFileName) + ".snps4msmr.list";
-  FILE* setlst = NULL;
+  FILE* setlst = nullptr;
   setlst = fopen(setlstfile.c_str(), "w");
   if (!(setlst)) {
     printf("Open error %s\n", setlstfile.c_str());
@@ -5155,7 +5155,7 @@ void smr_multipleSNP_for_each_chr(
   }
 
   std::string genelstfile = std::string(outFileName) + ".prbregion4msmr.list";
-  FILE* glst = NULL;
+  FILE* glst = nullptr;
   glst = fopen(genelstfile.c_str(), "w");
   if (!(glst)) {
     printf("Open error %s\n", genelstfile.c_str());
@@ -5163,7 +5163,7 @@ void smr_multipleSNP_for_each_chr(
   }
 
   std::string smrfile = std::string(outFileName) + ".msmr";
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   smr = fopen(smrfile.c_str(), "w");
   if (!(smr)) {
     printf("Open error %s\n", smrfile.c_str());
@@ -5184,7 +5184,7 @@ void smr_multipleSNP_for_each_chr(
   std::map<std::string, int>::iterator iter;
   SMRWK smrwk;
 
-  long int calSMRStart = time(NULL);
+  long int calSMRStart = time(nullptr);
 
   if (!set_name.empty()) {
     // gene list based or set list based
@@ -5230,7 +5230,7 @@ void smr_multipleSNP_for_each_chr(
         maxid = fill_smr_wk(&ldinfo, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
       }
 
-      if (refSNP != NULL && maxid == -9) continue;  // heidi SNP is not in selected SNPs
+      if (refSNP != nullptr && maxid == -9) continue;  // heidi SNP is not in selected SNPs
       if (smrwk.bxz.size() == 0) continue;
 
       std::vector<std::uint32_t> slctId;
@@ -5259,7 +5259,7 @@ void smr_multipleSNP_for_each_chr(
         // set list
         std::vector<int> matchidx;
         match_only(snpset[ii], smrwk.rs, matchidx);
-        if (refSNP != NULL && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
+        if (refSNP != nullptr && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
 
         for (int j = 0; j < matchidx.size(); j++) {
           slctId.push_back(smrwk.curId[matchidx[j]]);
@@ -5282,7 +5282,7 @@ void smr_multipleSNP_for_each_chr(
       Map<VectorXd> ei_sexz(&slct_sexz[0], slct_sexz.size());
       VectorXd zsxz;
       zsxz = ei_bxz.array() / ei_sexz.array();
-      if (refSNP == NULL) maxid = max_abs_id(zsxz);
+      if (refSNP == nullptr) maxid = max_abs_id(zsxz);
       std::string topsnpname = slct_snpName[maxid];
       slct_maxid = maxid;
       for (int j = 0; j < slct_bxz.size(); j++) slct_zsxz.push_back(zsxz(j));
@@ -5383,7 +5383,7 @@ void smr_multipleSNP_for_each_chr(
     std::cout << "before probeNum, esdata.esi_include.size(): " << esdata._esi_include.size() << std::endl;
     // top-SNP (/ ref-SNP) based
     for (int i = 0; i < probNum; i++) {
-      // long int ciseQTLStart = time(NULL);
+      // long int ciseQTLStart = time(nullptr);
 
       progr1 = 1.0 * i / probNum;
       if (progr1 - progr0 - 0.05 > 1e-6 || i + 1 == probNum) {
@@ -5426,7 +5426,7 @@ void smr_multipleSNP_for_each_chr(
         maxid = fill_smr_wk(&ldinfo, &gdata, &esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
       }
 
-      // long int ciseQTLEnd = time(NULL);
+      // long int ciseQTLEnd = time(nullptr);
       // long int ciseQTLUsed = ciseQTLEnd - ciseQTLStart;
 
       // std::cout << "probename: " << probename << "  cis-eQTL computation time:" << ciseQTLUsed << std::endl;
@@ -5434,7 +5434,7 @@ void smr_multipleSNP_for_each_chr(
       // 打印curId
       // std::cout << "curId: " << smrwk.curId.size() << std::endl;
 
-      if (refSNP != NULL && maxid == -9) {
+      if (refSNP != nullptr && maxid == -9) {
         printf("WARNING: can't find target SNP %s for probe %s.\n", refSNP, probename.c_str());
         continue;
       }  // ref heidi SNP is not in selected SNPs
@@ -5445,7 +5445,7 @@ void smr_multipleSNP_for_each_chr(
       // printf("%ld SNPs are included from the cis-region of the probe %s.\n",smrwk.bxz.size(),probename.c_str());
       // now if you sepcify reference SNP, maxid point to this SNP, otherwise maxid is -9
 
-      // long int topSNPStart = time(NULL);
+      // long int topSNPStart = time(nullptr);
 
       // step2: get top-SNP
       // printf("Checking the top-SNP in the region....\n");
@@ -5453,7 +5453,7 @@ void smr_multipleSNP_for_each_chr(
       Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
       VectorXd zsxz;
       zsxz = ei_bxz.array() / ei_sexz.array();
-      if (refSNP == NULL)
+      if (refSNP == nullptr)
         maxid = max_abs_id(zsxz);  // now maxid point to the sig eQTL SNP or ref SNP in the new datastruct(not the raw).
       double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
       // double computing, consistency should be checked
@@ -5465,7 +5465,7 @@ void smr_multipleSNP_for_each_chr(
       }
       std::string topsnpname = smrwk.rs[maxid];
       // printf("The top SNP of probe %s is %s with p-value %e.\n", probename.c_str(), topsnpname.c_str(),pxz_val);
-      if (refSNP == NULL && pxz_val > p_smr) {
+      if (refSNP == nullptr && pxz_val > p_smr) {
         // printf("WARNING: no SNP passed the p-value threshold %e for Multiple-SNP SMR analysis for probe %s.\n",
         // p_smr, probename.c_str());
         continue;
@@ -5474,7 +5474,7 @@ void smr_multipleSNP_for_each_chr(
       }
       // std::cout<<maxid<<":"<<topsnpname<<":"<<esdata._esi_rs[smrwk.curId[maxid]]<<":"<<bdata._snp_name[bdata._include[smrwk.curId[maxid]]]<<":"<<gdata.snpName[smrwk.curId[maxid]]<<std::endl;
 
-      // long int topSNPEnd = time(NULL);
+      // long int topSNPEnd = time(nullptr);
       // long int topSNPUsed = topSNPEnd - topSNPStart;
 
       // std::cout << "probename: " << probename << "  top snp computation time:" << topSNPUsed << std::endl;
@@ -5556,7 +5556,7 @@ void smr_multipleSNP_for_each_chr(
 
       int snp_count;
 
-      // long int smrMultiStart = time(NULL);
+      // long int smrMultiStart = time(nullptr);
 
       if (bFileName) {
         snp_count = smr_setbased_test(&bdata, slctId, slct_bxz, slct_sexz, slct_byz, slct_seyz, p_smr, ld_top_multi,
@@ -5566,7 +5566,7 @@ void smr_multipleSNP_for_each_chr(
                                       ld_top_multi, set_pval_smr, set_pval_gwas, set_pval_eqtl, snp4msmr);
       }
 
-      // long int smrMultiEnd = time(NULL);
+      // long int smrMultiEnd = time(nullptr);
       // long int smrMultiUsed = smrMultiEnd - smrMultiStart;
 
       // std::cout << "probename: " << probename << "  smr multi computation time:" << smrMultiUsed << std::endl;
@@ -5602,7 +5602,7 @@ void smr_multipleSNP_for_each_chr(
       }
       // end of output
 
-      // long int heidiStart = time(NULL);
+      // long int heidiStart = time(nullptr);
 
       // step6: HEIDI test
       long nsnp = -9;
@@ -5641,7 +5641,7 @@ void smr_multipleSNP_for_each_chr(
         printf("skip HEIDI test for probe %s\n", probename.c_str());
       }
 
-      // long int heidiEnd = time(NULL);
+      // long int heidiEnd = time(nullptr);
       // long int heidiUsed = heidiEnd - heidiStart;
 
       // std::cout << "probename: " << probename << "  heidi computation time:" << heidiUsed << std::endl;
@@ -5680,7 +5680,7 @@ void smr_multipleSNP_for_each_chr(
 
   perf_timer.elapsed("read probenum finished");
 
-  long int calSMREnd = time(NULL);
+  long int calSMREnd = time(nullptr);
   long int calSMRUsed = calSMREnd - calSMRStart;
 
   std::cout << "cal smr computation time:" << calSMRUsed << std::endl;

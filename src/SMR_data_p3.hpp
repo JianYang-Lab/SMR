@@ -13,10 +13,10 @@
 #include <vector>
 
 namespace SMRDATA {
-typedef struct {
+struct F2Prb {
   std::vector<int> pid;
   std::string besdpath;
-} F2Prb;
+};
 
 void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag, int cis_itvl, int trans_itvl,
                  float transThres, float restThres, bool genouni, int addn);

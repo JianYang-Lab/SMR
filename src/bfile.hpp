@@ -82,7 +82,7 @@ struct bInfo {
   std::vector<double> _mu;
 };
 
-typedef struct {
+struct ldInfo {
   std::vector<int> _esi_chr;
   std::vector<std::string> _esi_rs;
   std::vector<int> _esi_gd;
@@ -100,8 +100,7 @@ typedef struct {
 
   std::uint64_t _snpNum;
   std::uint64_t _valNum;
-
-} ldInfo;
+};
 
 void filter_snp_maf(bInfo* bdata, double maf);
 void calcu_mu(bInfo* bdata, bool ssq_flag = false);

@@ -18,7 +18,7 @@ using namespace StatFunc;
 using namespace StrFunc;
 using namespace CommFunc;
 
-FILE* techeQTLfile = NULL;
+FILE* techeQTLfile = nullptr;
 namespace SMRDATA {
 double adjSE(double beta, double p) {
   const double min_p = 1e-300;
@@ -131,7 +131,7 @@ int read_probeinfolst(std::vector<probeinfolst>& prbiflst, char* syllabusName) {
       strcpy2(&tmpinfo.esdpath, vs_buf[6]);
       if (col_num == 8) {
         strcpy2(&tmpinfo.bfilepath, vs_buf[7]);
-      } else tmpinfo.bfilepath = NULL;
+      } else tmpinfo.bfilepath = nullptr;
       prbiflst.push_back(tmpinfo);
       fcount++;
     }
@@ -144,7 +144,7 @@ int read_probeinfolst(std::vector<probeinfolst>& prbiflst, char* syllabusName) {
 void read_smr_sa(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
                  std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float>& freq,
                  std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -251,7 +251,7 @@ void read_smr_sa(std::vector<std::string>& rs, std::vector<int>& chr, std::vecto
 }
 
 void read_smr_sa(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -496,7 +496,7 @@ void read_plink_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std:
 }
 
 void read_plink_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -660,7 +660,7 @@ void read_merlin_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, 
 void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
                        std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
                        std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -762,7 +762,7 @@ void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std:
 void read_bolt_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
                       std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
                       std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -861,7 +861,7 @@ void read_bolt_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::
 }
 
 void read_gemma_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -959,7 +959,7 @@ void read_gemma_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
 }
 
 void read_bolt_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
-  gzFile gzfile = NULL;
+  gzFile gzfile = nullptr;
   std::ifstream flptr;
   bool gzflag = has_suffix(esdpath, "gz");
   if (gzflag) {
@@ -1120,7 +1120,7 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
     // std::map<std::string, int> currs_map;
     // long currssize=0;
     std::string esdfilename = (locinfolst + j)->esdpath;
-    gzFile gzfile = NULL;
+    gzFile gzfile = nullptr;
     std::ifstream flptr;
     bool gzflag = has_suffix(esdfilename, "gz");
     if (gzflag) {
@@ -1500,7 +1500,7 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<in
 
   std::uint64_t bsize = (std::uint64_t)esiNum << 1;
   float* buffer = (float*)malloc(sizeof(float) * bsize);
-  if (NULL == buffer) {
+  if (nullptr == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
   }
@@ -2053,7 +2053,7 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
   std::map<std::string, int>::iterator iter;
 
   // log file
-  FILE* logfile = NULL;
+  FILE* logfile = nullptr;
   std::string logfname = std::string(outFileName) + ".summary";
   logfile = fopen(logfname.c_str(), "w");
   if (!(logfile)) {
@@ -2244,7 +2244,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
         "WARNING: --geno-uni is enabled. Please ensure the SNPs and their alleles identical across all the text "
         "files.\n");
   }
-  if (syllabusName == NULL) throw("Error: please input eQTL file list by the flag --eqtl-flist.");
+  if (syllabusName == nullptr) throw("Error: please input eQTL file list by the flag --eqtl-flist.");
   int flagcount = 0, fformat = 0;
   if (gctaflag) {
     flagcount++;
@@ -2401,8 +2401,8 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     rschrpos = 8;
     rsbppos = 9;
   }
-  gzFile gzfile = NULL;
-  FILE* qfile = NULL;
+  gzFile gzfile = nullptr;
+  FILE* qfile = nullptr;
   bool gzflag = has_suffix(fmatfileName, "gz");
   if (gzflag) {
     gzfile = gzopen(fmatfileName, "rb");
@@ -2466,7 +2466,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   std::map<std::string, int> epi_map;
   std::map<std::string, int> rs_prb_map;
   long rsprbmapsize(0);
-  while ((qfile != NULL && !feof(qfile)) || (gzfile != NULL && !gzeof(gzfile))) {
+  while ((qfile != nullptr && !feof(qfile)) || (gzfile != nullptr && !gzeof(gzfile))) {
     buf[0] = '\0';
     if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);
     else fgets(buf, MAX_LINE_SIZE, qfile);
@@ -2660,7 +2660,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
 
     std::uint64_t bsize = (std::uint64_t)esiNum << 1;
     float* buffer = (float*)malloc(sizeof(float) * bsize);
-    if (NULL == buffer) {
+    if (nullptr == buffer) {
       fprintf(stderr, "Malloc failed\n");
       exit(-1);
     }
@@ -3002,8 +3002,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       strcpy2(&tmpprbinfo.genename, vs_buf[9]);
       tmpprbinfo.orien = vs_buf[10][0];
       tmpprbinfo.gd = 0;
-      tmpprbinfo.bfilepath = NULL;
-      tmpprbinfo.esdpath = NULL;
+      tmpprbinfo.bfilepath = nullptr;
+      tmpprbinfo.esdpath = nullptr;
       prbiflst.push_back(tmpprbinfo);
 
       std::vector<std::string> rstmp;
@@ -3115,7 +3115,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
 
       std::uint64_t bsize = (std::uint64_t)esiNum << 1;
       float* buffer = (float*)malloc(sizeof(float) * bsize);
-      if (NULL == buffer) {
+      if (nullptr == buffer) {
         fprintf(stderr, "Malloc failed\n");
         exit(-1);
       }
@@ -3265,7 +3265,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     std::map<std::string, int>::iterator iter;
 
     // log file
-    FILE* logfile = NULL;
+    FILE* logfile = nullptr;
     std::string logfname = std::string(outFileName) + ".summary";
     logfile = fopen(logfname.c_str(), "w");
     if (!(logfile)) {
@@ -3561,7 +3561,7 @@ void selective_cpy(eqtlInfo* etrait, eqtlInfo* esdata) {
 void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo) {
   std::string epiName = outFileName + ".esi";
   FILE* efile = fopen(epiName.c_str(), "w");
-  if (efile == NULL) exit(EXIT_FAILURE);
+  if (efile == nullptr) exit(EXIT_FAILURE);
   printf("Saving SNP information ...\n");
   for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
     std::string chrstr;
@@ -3586,7 +3586,7 @@ void write_smr_esi(std::string outFileName, eqtlInfo* eqtlinfo) {
 void write_smr_epi(std::string outFileName, eqtlInfo* eqtlinfo) {
   std::string epiName = outFileName + ".epi";
   FILE* efile = fopen(epiName.c_str(), "w");
-  if (efile == NULL) exit(EXIT_FAILURE);
+  if (efile == nullptr) exit(EXIT_FAILURE);
   for (int i = 0; i < eqtlinfo->_include.size(); i++) {
     std::string chrstr;
     if (eqtlinfo->_epi_chr[eqtlinfo->_include[i]] == 23) chrstr = "X";

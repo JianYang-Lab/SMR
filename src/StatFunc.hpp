@@ -11,15 +11,12 @@
 #ifndef _STATFUNC_H
 #define _STATFUNC_H
 
+#include <vector>
+
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Sparse>
-#include <iostream>
 #include <unsupported/Eigen/SparseExtra>
-#include <vector>
-
-#include "CommFunc.hpp"
-#include "dcdflib.hpp"
 
 using namespace Eigen;
 

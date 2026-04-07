@@ -406,8 +406,8 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, std::string esifile, int snpchr, bo
       eqtlinfo->_esi_rs.push_back(vs_buf[1]);
       eqtlinfo->_esi_gd.push_back(-9);
       eqtlinfo->_esi_bp.push_back(-9);
-      eqtlinfo->_esi_allele1.push_back("-9");
-      eqtlinfo->_esi_allele2.push_back("-9");
+      eqtlinfo->_esi_allele1.emplace_back("-9");
+      eqtlinfo->_esi_allele2.emplace_back("-9");
       eqtlinfo->_esi_freq.push_back(-9);
       eqtlinfo->_esi_include.push_back(lineNum);
       lineNum++;
@@ -642,7 +642,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
       }
       char* buffer;
       buffer = (char*) malloc (sizeof(char)*eqtlinfo->_snpNum<<3);
-      if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
+      if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
       float* ft;
       float* se_ptr;
 
@@ -698,7 +698,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
     }
 
     buffer = (char*)malloc(sizeof(char) * (lSize));
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
       fputs("Memory error.\n", stderr);
       exit(1);
     }
@@ -819,7 +819,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
     }
     char* buffer;
     buffer = (char*)malloc(sizeof(char) * eqtlinfo->_snpNum << 3);
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
       fputs("Memory error", stderr);
       exit(1);
     }
@@ -884,7 +884,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
        char* buff;
        std::uint64_t buffszie=0x40000000;
        buff = (char*) malloc (sizeof(char)*buffszie);
-       if (buff == NULL) {fputs ("Memory error",stderr); exit (1);}
+       if (buff == nullptr) {fputs ("Memory error",stderr); exit (1);}
        memset(buff,0,sizeof(char)*buffszie);
        std::uint64_t count=0;
        while(!besd.eof())
@@ -913,7 +913,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
       char* buff;
       std::uint64_t buffszie=0x40000000;
       buff = (char*) malloc (sizeof(char)*buffszie);
-      if (buff == NULL) {fputs ("Memory error",stderr); exit (1);}
+      if (buff == nullptr) {fputs ("Memory error",stderr); exit (1);}
       memset(buff,0,sizeof(char)*buffszie);
 
       std::uint64_t perbeta=(eqtlinfo->_snpNum<<2);
@@ -944,7 +944,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
       char* buff;
       std::uint64_t buffszie = 0x40000000;
       buff = (char*)malloc(sizeof(char) * buffszie);
-      if (buff == NULL) {
+      if (buff == nullptr) {
         fputs("Memory error when reading dense BESD file.", stderr);
         exit(1);
       }
@@ -1007,7 +1007,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
     valNum = ((lSize >> 2) - 3 - colNum) >> 1;
 
     buffer = (char*)malloc(sizeof(char) * (lSize - 8));
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
       fputs("Memory error", stderr);
       exit(1);
     }
@@ -1146,7 +1146,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
         !sorted) {
       std::uint64_t colsize = colNum * sizeof(std::uint64_t);
       buffer = (char*)malloc(sizeof(char) * (colsize));
-      if (buffer == NULL) {
+      if (buffer == nullptr) {
         fputs("Memory error when reading sparse BESD file.", stderr);
         exit(1);
       }
@@ -1198,15 +1198,15 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
           // printf("WARNING: Probe %s with no eQTL found.\n",eqtlinfo->_epi_prbID[pid].c_str());
           continue;
         }
-        char* row_char_ptr = NULL;
+        char* row_char_ptr = nullptr;
         row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(std::uint32_t));
-        if (row_char_ptr == NULL) {
+        if (row_char_ptr == nullptr) {
           fputs("Memory error", stderr);
           exit(1);
         }
         char* val_char_ptr;
         val_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(float));
-        if (val_char_ptr == NULL) {
+        if (val_char_ptr == nullptr) {
           fputs("Memory error", stderr);
           exit(1);
         }
@@ -1256,7 +1256,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
     } else {
       // std::cout << "lSize: " << lSize << std::endl;
       buffer = (char*)malloc(sizeof(char) * (lSize));
-      if (buffer == NULL) {
+      if (buffer == nullptr) {
         fputs("Memory error", stderr);
         exit(1);
       }
@@ -3728,7 +3728,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
           smrwk->allele1.push_back(esdata->_esi_allele1[j]);
           smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-          if (refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+          if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
           if (!heidioffFlag)
             smrwk->freq.push_back(bdata->_mu[bdata->_include[j]] /
@@ -3759,7 +3759,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
         smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
         smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
         smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-        if (refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+        if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
         smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
         if (!heidioffFlag) smrwk->freq.push_back(bdata->_mu[bdata->_include[ge_rowid]] / 2);
         else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
@@ -3828,7 +3828,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
             smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
             smrwk->allele1.push_back(esdata->_esi_allele1[j]);
             smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-            if (refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+            if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
             // std::cout << "bdata->_include[j], snp rowid:" << bdata->_include[j] << std::endl;
             // std::cout << "bdata->_mu:" << bdata->_mu[bdata->_include[j]] << std::endl;
@@ -3864,7 +3864,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
             smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
             smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
             smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-            if (refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+            if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
             if (!heidioffFlag) smrwk->freq.push_back(bdata->_mu[bdata->_include[ge_rowid]] / 2);
             else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
@@ -3898,7 +3898,7 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
           smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
           smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-          if (refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+          if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
           if (!heidioffFlag) smrwk->freq.push_back(bdata->_mu[bdata->_include[ge_rowid]] / 2);
           else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
@@ -3920,7 +3920,7 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
       if (fabs(esdata->_sexz[i][j] + 9) > 1e-6) {
         int snpbp = esdata->_esi_bp[j];
         int snpchr = esdata->_esi_chr[j];
-        if (snpchr == esdata->_epi_chr[i] && fabs(esdata->_epi_bp[i] - snpbp) <= cis_itvl &&
+        if (snpchr == esdata->_epi_chr[i] && abs(esdata->_epi_bp[i] - snpbp) <= cis_itvl &&
             gdata->seyz[j] + 9 > 1e-6) {
           if (esdata->_epi_start.size() > 0 && esdata->_epi_end.size() > 0)  // technical eQTLs should be removed
           {
@@ -3936,7 +3936,7 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
               smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
               smrwk->allele1.push_back(esdata->_esi_allele1[j]);
               smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-              if (refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+              if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
               smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
               if (!heidioffFlag)
                 smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]);  // for bdata, _include should be
@@ -3969,7 +3969,7 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
             smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
             smrwk->allele1.push_back(esdata->_esi_allele1[j]);
             smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-            if (refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+            if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
             if (!heidioffFlag)
               smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]);  // for bdata, _include should be used
@@ -4008,7 +4008,7 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
             smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
             smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
             smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-            if (refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+            if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
             // std::cout << "es ge_rowid:" << ge_rowid << std::endl;
             // std::cout << "snp name:" << esdata->_esi_rs[ge_rowid] << " freq:" <<
@@ -4060,7 +4060,7 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
           // ldinfo->_esi_freq[ldinfo->_esi_include[j]]
           // << std::endl; std::cout << "snp name:" << esdata->_esi_rs[ge_rowid] << " ge_rowid freq:" <<
           // ldinfo->_esi_freq[ldinfo->_esi_include[ge_rowid]] << std::endl;
-          if (refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
+          if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
           // if(!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]);
           // else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
@@ -4083,7 +4083,7 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
       if (fabs(esdata->_sexz[i][j] + 9) > 1e-6) {
         int snpbp = esdata->_esi_bp[j];
         int snpchr = esdata->_esi_chr[j];
-        if (snpchr == topTransChr[tridx] && fabs(topTransBP[tridx] - snpbp) <= trans_itvl &&
+        if (snpchr == topTransChr[tridx] && abs(topTransBP[tridx] - snpbp) <= trans_itvl &&
             gdata->seyz[j] + 9 > 1e-6) {
           smrwk->bxz.push_back(esdata->_bxz[i][j]);
           smrwk->sexz.push_back(esdata->_sexz[i][j]);
@@ -4096,7 +4096,7 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
           smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
           smrwk->allele1.push_back(esdata->_esi_allele1[j]);
           smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-          if ((refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+          if ((refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
             maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
           if (!heidioffFlag)
@@ -4112,7 +4112,7 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
       if (fabs(esdata->_sexz[i][j] + 9) > 1e-6) {
         int snpbp = esdata->_esi_bp[j];
         int snpchr = esdata->_esi_chr[j];
-        if (snpchr == topTransChr[tridx] && fabs(topTransBP[tridx] - snpbp) <= trans_itvl &&
+        if (snpchr == topTransChr[tridx] && abs(topTransBP[tridx] - snpbp) <= trans_itvl &&
             gdata->seyz[j] + 9 > 1e-6) {
           smrwk->bxz.push_back(esdata->_bxz[i][j]);
           smrwk->sexz.push_back(esdata->_sexz[i][j]);
@@ -4125,7 +4125,7 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
           smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
           smrwk->allele1.push_back(esdata->_esi_allele1[j]);
           smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-          if ((refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+          if ((refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
             maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
           if (!heidioffFlag)
@@ -4157,7 +4157,7 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
         smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
         smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
         smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-        if ((refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+        if ((refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) || snpbp == topTransBP[tridx])
           maxid = (smrwk->rs.size() - 1);
         smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
         if (!heidioffFlag) smrwk->freq.push_back(bdata->_mu[bdata->_include[ge_rowid]] / 2);
@@ -4189,7 +4189,7 @@ long fill_trans_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK*
           smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
           smrwk->allele1.push_back(esdata->_esi_allele1[j]);
           smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-          if ((refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+          if ((refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
             maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
           if (!heidioffFlag)
@@ -4217,7 +4217,7 @@ long fill_trans_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK*
           smrwk->snpchrom.push_back(esdata->_esi_chr[j]);
           smrwk->allele1.push_back(esdata->_esi_allele1[j]);
           smrwk->allele2.push_back(esdata->_esi_allele2[j]);
-          if ((refSNP != NULL && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+          if ((refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) || snpbp == topTransBP[tridx])
             maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
           if (!heidioffFlag)
@@ -4249,7 +4249,7 @@ long fill_trans_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK*
         smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
         smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
         smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-        if ((refSNP != NULL && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) || snpbp == topTransBP[tridx])
+        if ((refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) || snpbp == topTransBP[tridx])
           maxid = (smrwk->rs.size() - 1);
         smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
         if (!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]);
@@ -4681,11 +4681,11 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
   MatrixXd _X, _LD, _LD_heidi, _X_heidi;
   std::map<std::string, std::string>::iterator iter;
   std::unordered_map<std::string, int>::iterator iter2;
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   long write_count = 0, noSNPprb = 0, noSNPprbPassthresh = 0;
   std::string outstr = "";
   std::string smrfile = "";
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     smrfile = std::string(outFileName) + ".smr";
     smr = fopen(smrfile.c_str(), "w");
     if (!(smr)) {
@@ -4774,7 +4774,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
 
     } else maxid = fill_smr_wk(bdata, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
-    if (refSNP != NULL && maxid == -9) {
+    if (refSNP != nullptr && maxid == -9) {
       // printf("WARNING: can't find target SNP %s for probe %s.\n",refSNP, probename.c_str());
       continue;
     }
@@ -4810,7 +4810,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     }
     zsxz = ei_bxz.array() / ei_sexz.array();
 
-    if (refSNP == NULL) {
+    if (refSNP == nullptr) {
       if (opt) maxid = max_zsmr_id(&smrwk, p_smr);
       else maxid = max_abs_id(zsxz);
     }
@@ -4822,7 +4822,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     }
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
-    if (refSNP == NULL && pxz_val > p_smr) {
+    if (refSNP == nullptr && pxz_val > p_smr) {
       noSNPprbPassthresh++;
       // printf("WARNING: no SNP passed the p-value threshold %e for the SMR analysis for probe %s.\n", p_smr,
       // probename.c_str());
@@ -4834,7 +4834,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     /*****test***/
     //            std::string failName= probename+".expo";
     //            FILE* failfptr=fopen(failName.c_str(),"w");
-    //            if(failfptr==NULL)
+    //            if(failfptr==nullptr)
     //            {
     //                printf("ERROR: failed in open file %s.\n",failName.c_str()) ;
     //                exit(EXIT_FAILURE);
@@ -4852,7 +4852,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     //            fclose(failfptr);
     //            failName= probename+".outo";
     //            failfptr=fopen(failName.c_str(),"w");
-    //            if(failfptr==NULL)
+    //            if(failfptr==nullptr)
     //            {
     //                printf("ERROR: failed in open file %s.\n",failName.c_str()) ;
     //                exit(EXIT_FAILURE);
@@ -4986,7 +4986,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
       double pdev = -9;
       if (!heidioffFlag) {
         if (new_heidi_mth) {
-          if (refSNP != NULL)
+          if (refSNP != nullptr)
             pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, (int)maxid, ld_min,
                                       opt_hetero, sampleoverlap, theta);
           else
@@ -5029,11 +5029,11 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
   MatrixXd _X, _LD, _LD_heidi, _X_heidi;
   std::map<std::string, std::string>::iterator iter;
   std::unordered_map<std::string, int>::iterator iter2;
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   long write_count = 0, noSNPprb = 0, noSNPprbPassthresh = 0;
   std::string outstr = "";
   std::string smrfile = "";
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     smrfile = std::string(outFileName) + ".smr";
     smr = fopen(smrfile.c_str(), "w");
     if (!(smr)) {
@@ -5113,7 +5113,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
 
     } else maxid = fill_smr_wk(ldinfo, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
-    if (refSNP != NULL && maxid == -9) {
+    if (refSNP != nullptr && maxid == -9) {
       continue;
     }
     if (smrwk.bxz.size() == 0) {
@@ -5143,7 +5143,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
     }
     zsxz = ei_bxz.array() / ei_sexz.array();
 
-    if (refSNP == NULL) {
+    if (refSNP == nullptr) {
       if (opt) maxid = max_zsmr_id(&smrwk, p_smr);
       else maxid = max_abs_id(zsxz);
     }
@@ -5153,7 +5153,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
     }
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
-    if (refSNP == NULL && pxz_val > p_smr) {
+    if (refSNP == nullptr && pxz_val > p_smr) {
       noSNPprbPassthresh++;
       continue;
     }
@@ -5270,32 +5270,32 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
 
   bInfo bdata;
   ldInfo ldinfo;
-  FILE* bld = NULL;
+  FILE* bld = nullptr;
   gwasData gdata;
   eqtlInfo esdata;
   bool targetLstflg = false;
   std::map<std::string, std::string> prb_snp;
 
-  if (!heidioffFlag && bFileName == NULL && bldFileName == NULL)
+  if (!heidioffFlag && bFileName == nullptr && bldFileName == nullptr)
     throw("ERROR: please input Plink file or LD file for the SMR analysis using the flag --bfile or --bld.");
-  if (gwasFileName == NULL)
+  if (gwasFileName == nullptr)
     throw("ERROR: please input GWAS summary data for the SMR analysis using the flag --gwas-summary.");
-  if (eqtlFileName == NULL)
+  if (eqtlFileName == nullptr)
     throw("ERROR: please input eQTL summary data for the SMR analysis using the flag --eqtl-summary.");
 
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
   esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, false,
           cis_itvl, prbname);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
   if (!heidioffFlag) {
     if (bFileName) {
       read_famfile(&bdata, std::string(bFileName) + ".fam");
-      if (indilstName != NULL) keep_indi(&bdata, indilstName);
-      if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+      if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+      if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
       read_bimfile(&bdata, std::string(bFileName) + ".bim");
-      if (snplstName != NULL) extract_snp(&bdata, snplstName);
-      if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+      if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+      if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
       allele_check(&bdata, &gdata, &esdata);
       read_bedfile(&bdata, std::string(bFileName) + ".bed");
       if (bdata._mu.empty()) calcu_mu(&bdata);
@@ -5321,7 +5321,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
       memcpy(suffix, ".esi", 5);
       read_ld_esifile(&ldinfo, inputname);
       ld_esi_man(&ldinfo, snplstName, snplst2exclde, chr, snprs, fromsnprs, tosnprs, snpWind, false, fromsnpkb, tosnpkb,
-                 NULL);
+                 nullptr);
       if (ldinfo._esi_include.size() == 0) {
         printf("Error: no SNP included.\n");
         exit(EXIT_FAILURE);
@@ -5331,7 +5331,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
       std::vector<int> headers;
       headers.resize(RESERVEDUNITS);
       bld = fopen(inputname, "rb");
-      if (bld == NULL) {
+      if (bld == nullptr) {
         printf("Error: can't open file %s.\n", inputname);
         exit(EXIT_FAILURE);
       }
@@ -5376,7 +5376,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
 
   std::cout << "Reading eQTL summary data..." << std::endl;
   read_epifile(&esdata, std::string(eqtlFileName) + ".epi");
-  if (prbseqregion != NULL) {
+  if (prbseqregion != nullptr) {
     read_epistartend(&esdata, prbseqregion);
   }
   epi_man(&esdata, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
@@ -5387,7 +5387,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
   }
   if (snpproblstName) extract_targets(&esdata, snpproblstName, prb_snp);
 
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
   read_besdfile(&esdata, std::string(eqtlFileName) + ".besd");
   if (esdata._rowid.empty() && esdata._bxz.empty()) {
     printf("ERROR: no data are included in the analysis.\n");
@@ -5735,11 +5735,11 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
   VectorXd _byz, _seyz, _bxz, _sexz, _zsxz, ld_v, zsxz;
   MatrixXd _X, _LD, _LD_heidi, _X_heidi;
 
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   long write_count = 0;
   std::string outstr = "";
   std::string smrfile = "";
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     smrfile = std::string(outFileName) + ".smr";
     smr = fopen(smrfile.c_str(), "w");
     if (!(smr)) {
@@ -5835,7 +5835,7 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
 
       long maxid = fill_trans_smr_wk(bdata, gdata, esdata, &smrwk, topTransRowid, topTransBP, topTransChr, refSNP,
                                      cis_itvl, trans_itvl, heidioffFlag, jj);  // return refSNP id or this trans-eQTL id
-      if (refSNP != NULL && maxid == -9) {
+      if (refSNP != nullptr && maxid == -9) {
         printf("WARNING: can't find target SNP %s for probe %s.\n", refSNP, probename.c_str());
         continue;
       }
@@ -5853,7 +5853,7 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
       }
       double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
-      if (refSNP == NULL && pxz_val > p_smr) {
+      if (refSNP == nullptr && pxz_val > p_smr) {
         printf(
             "WARNING: no trans-eQTL passed a p-value threshold (--peqtl-smr) %e for the SMR analysis for probe %s.\n",
             p_smr, probename.c_str());
@@ -5964,22 +5964,22 @@ void smr_trans(char* outFileName, char* bFileName, char* gwasFileName, char* eqt
   eqtlInfo esdata;
   bool heidiFlag = false;
 
-  if (!heidioffFlag && bFileName == NULL) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-  if (refSNP != NULL) heidiFlag = true;
+  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (refSNP != nullptr) heidiFlag = true;
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
   esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, false,
           0, prbname);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
   if (!heidioffFlag) {
     read_famfile(&bdata, std::string(bFileName) + ".fam");
-    if (indilstName != NULL) keep_indi(&bdata, indilstName);
-    if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+    if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+    if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    if (snplstName != NULL) extract_snp(&bdata, snplstName);
-    if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+    if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+    if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
     allele_check(&bdata, &gdata, &esdata);
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
     if (bdata._mu.empty()) calcu_mu(&bdata);
@@ -5997,7 +5997,7 @@ void smr_trans(char* outFileName, char* bFileName, char* gwasFileName, char* eqt
   read_epifile(&esdata, std::string(eqtlFileName) + ".epi");
   epi_man(&esdata, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
           prbwindFlag, genename);
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
   read_besdfile(&esdata, std::string(eqtlFileName) + ".besd");
   if (esdata._rowid.empty() && esdata._bxz.empty()) {
     printf("No data included in the analysis.\n");
@@ -6197,11 +6197,11 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
   VectorXd _byz, _seyz, _bxz, _sexz, _zsxz, ld_v, zsxz;
   MatrixXd _X, _LD, _LD_heidi, _X_heidi;
 
-  FILE* smr = NULL;
+  FILE* smr = nullptr;
   long write_count = 0;
   std::string outstr = "";
   std::string smrfile = "";
-  if (outFileName != NULL) {
+  if (outFileName != nullptr) {
     smrfile = std::string(outFileName) + ".smr";
     smr = fopen(smrfile.c_str(), "w");
     if (!(smr)) {
@@ -6344,12 +6344,12 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
         smrwk.snpchrom.push_back(snpinfo[slct_idx[idx]].snpchr);
         smrwk.allele1.push_back(snpinfo[slct_idx[idx]].a1);
         smrwk.allele2.push_back(snpinfo[slct_idx[idx]].a2);
-        if ((refSNP != NULL && snpinfo[slct_idx[idx]].snprs == std::string(refSNP))) maxid = (smrwk.rs.size() - 1);
+        if ((refSNP != nullptr && snpinfo[slct_idx[idx]].snprs == std::string(refSNP))) maxid = (smrwk.rs.size() - 1);
         smrwk.bpsnp.push_back(snpinfo[slct_idx[idx]].bp);
         smrwk.freq.push_back(snpinfo[slct_idx[idx]].freq);
       }
       statidx += snpNumPerRegion[jj];
-      if (refSNP != NULL && maxid == -9) {
+      if (refSNP != nullptr && maxid == -9) {
         printf("WARNING: can't find target SNP %s for probe %s.\n", refSNP, prbifo.probeId);
         continue;
       }
@@ -6361,7 +6361,7 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
       Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
 
       zsxz = ei_bxz.array() / ei_sexz.array();
-      if (refSNP == NULL) {
+      if (refSNP == nullptr) {
         if (opt) maxid = max_zsmr_id(&smrwk, p_smr);
         else maxid = max_abs_id(zsxz);
       }
@@ -6370,7 +6370,7 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
                    // than p_smr)
       double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
-      if (refSNP == NULL && pxz_val > p_smr) {
+      if (refSNP == nullptr && pxz_val > p_smr) {
         printf(
             "WARNING: current trans-eQTL with p-value %e doen's pass a p-value threshold (--peqtl-smr) %e for the SMR "
             "analysis for probe %s.\n",
@@ -6491,22 +6491,22 @@ void smr_trans_region(char* outFileName, char* bFileName, char* gwasFileName, ch
   double threshold = chi_val(1, p_hetero);
   bool heidiFlag = false;
 
-  if (!heidioffFlag && bFileName == NULL) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (gwasFileName == NULL) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-  if (refSNP != NULL) heidiFlag = true;
+  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (refSNP != nullptr) heidiFlag = true;
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
   esi_man(&esdata, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, false,
           0, prbname);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
   if (!heidioffFlag) {
     read_famfile(&bdata, std::string(bFileName) + ".fam");
-    if (indilstName != NULL) keep_indi(&bdata, indilstName);
-    if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+    if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+    if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    if (snplstName != NULL) extract_snp(&bdata, snplstName);
-    if (snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+    if (snplstName != nullptr) extract_snp(&bdata, snplstName);
+    if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
     allele_check(&bdata, &gdata, &esdata);
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
     if (bdata._mu.empty()) calcu_mu(&bdata);
@@ -6544,7 +6544,7 @@ void smr_trans_region(char* outFileName, char* bFileName, char* gwasFileName, ch
   read_epifile(&esdata, std::string(eqtlFileName) + ".epi");
   epi_man(&esdata, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb,
           prbwindFlag, genename);
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
   read_besdfile(&esdata, std::string(eqtlFileName) + ".besd");
   if (esdata._rowid.empty() && esdata._bxz.empty()) {
     printf("No data included in the analysis.\n");
@@ -6564,16 +6564,16 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
   eqtlInfo eqtlinfo;
 
   std::cout << std::endl << "Reading eQTL summary data..." << std::endl;
-  if (eqtlFileName != NULL) {
+  if (eqtlFileName != nullptr) {
     read_epifile(&eqtlinfo, std::string(eqtlFileName) + ".epi");
     epi_man(&eqtlinfo, problstName, genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb,
             toprbkb, prbwindFlag, genename);
-    if (problst2exclde != NULL) exclude_prob(&eqtlinfo, problst2exclde);
+    if (problst2exclde != nullptr) exclude_prob(&eqtlinfo, problst2exclde);
 
     read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
     esi_man(&eqtlinfo, snplstName, chr, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag,
             cis_flag, cis_itvl, prbname);
-    if (snplst2exclde != NULL) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
+    if (snplst2exclde != nullptr) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
 
     read_besdfile(&eqtlinfo, std::string(eqtlFileName) + ".besd");
     if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
@@ -6783,32 +6783,32 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
   // and the exposure (eqtlFileName) to eqtlFileName2
   setNbThreads(thread_num);
   std::string logstr;
-  if (oproblstName != NULL && oprobe != NULL) {
+  if (oproblstName != nullptr && oprobe != nullptr) {
     logstr =
         "WARNING: --extract-single-outcome-probe is not surpposed to use together with --extract-outcome-probe. "
         "--extract-single-outcome-probe will be disabled.\n";
-    oprobe = NULL;
+    oprobe = nullptr;
     fputs(logstr.c_str(), stdout);
   }
-  if (eproblstName != NULL && eprobe != NULL) {
+  if (eproblstName != nullptr && eprobe != nullptr) {
     logstr =
         "WARNING: --extract-single-exposure-probe is not surpposed to use together with --extract-exposure-probe. "
         "--extract-single-exposure-probe will be disabled.\n";
-    eprobe = NULL;
+    eprobe = nullptr;
     fputs(logstr.c_str(), stdout);
   }
-  if (oproblst2exclde != NULL && oprobe2rm != NULL) {
+  if (oproblst2exclde != nullptr && oprobe2rm != nullptr) {
     logstr =
         "WARNING: --exclude-single-outcome-probe is not surpposed to use together with --exclude-outcome-probe. "
         "--exclude-single-outcome-probe will be disabled.\n";
-    oprobe2rm = NULL;
+    oprobe2rm = nullptr;
     fputs(logstr.c_str(), stdout);
   }
-  if (eproblst2exclde != NULL && eprobe2rm != NULL) {
+  if (eproblst2exclde != nullptr && eprobe2rm != nullptr) {
     logstr =
         "WARNING: --exclude-single-exposure-probe is not surpposed to use together with --exclude-exposure-probe. "
         "--exclude-single-exposure-probe will be disabled.\n";
-    eprobe2rm = NULL;
+    eprobe2rm = nullptr;
     fputs(logstr.c_str(), stdout);
   }
   if (ld_min > ld_top) {
@@ -6831,22 +6831,22 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
   bInfo bdata;
   bool heidiFlag = false;
 
-  if (!heidioffFlag && bFileName == NULL) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-  if (refSNP != NULL) heidiFlag = true;
-  if (problstName != NULL)
+  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (refSNP != nullptr) heidiFlag = true;
+  if (problstName != nullptr)
     std::cout << "WARNING: --extract-probe works when the probes are used as either exposures dataset or outcomes.\n"
               << std::endl;
   read_esifile(&etrait, std::string(eqtlFileName) + ".esi");
-  if (snplstName != NULL) extract_eqtl_snp(&etrait, snplstName);
-  if (snplst2exclde != NULL) exclude_eqtl_snp(&etrait, snplst2exclde);
+  if (snplstName != nullptr) extract_eqtl_snp(&etrait, snplstName);
+  if (snplst2exclde != nullptr) exclude_eqtl_snp(&etrait, snplst2exclde);
   read_epifile(&etrait, std::string(eqtlFileName) + ".epi");
-  if (problstName != NULL) extract_prob(&etrait, problstName);
-  if (problst2exclde != NULL) exclude_prob(&etrait, problst2exclde);
-  if (oproblstName != NULL) extract_prob(&etrait, oproblstName);
-  else if (oprobe != NULL) extract_eqtl_single_probe(&etrait, oprobe);
-  if (oproblst2exclde != NULL) exclude_prob(&etrait, oproblst2exclde);
-  else if (oprobe2rm != NULL) exclude_eqtl_single_probe(&etrait, oprobe2rm);
+  if (problstName != nullptr) extract_prob(&etrait, problstName);
+  if (problst2exclde != nullptr) exclude_prob(&etrait, problst2exclde);
+  if (oproblstName != nullptr) extract_prob(&etrait, oproblstName);
+  else if (oprobe != nullptr) extract_eqtl_single_probe(&etrait, oprobe);
+  if (oproblst2exclde != nullptr) exclude_prob(&etrait, oproblst2exclde);
+  else if (oprobe2rm != nullptr) exclude_eqtl_single_probe(&etrait, oprobe2rm);
 
   read_besdfile(&etrait, std::string(eqtlFileName) + ".besd");
   if (etrait._rowid.empty() && etrait._bxz.empty()) {
@@ -6854,15 +6854,15 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
     exit(EXIT_FAILURE);
   }
   read_esifile(&esdata, std::string(eqtlFileName2) + ".esi");
-  // if (snplstName != NULL) extract_eqtl_snp(&esdata, snplstName); //no need here, already extracted in etrait
-  // if(snplst2exclde != NULL) exclude_eqtl_snp(&esdata, snplst2exclde);
+  // if (snplstName != nullptr) extract_eqtl_snp(&esdata, snplstName); //no need here, already extracted in etrait
+  // if(snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
   if (!heidioffFlag) {
     read_famfile(&bdata, std::string(bFileName) + ".fam");
-    if (indilstName != NULL) keep_indi(&bdata, indilstName);
-    if (indilst2remove != NULL) remove_indi(&bdata, indilst2remove);
+    if (indilstName != nullptr) keep_indi(&bdata, indilstName);
+    if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    // if(snplstName != NULL) extract_snp(&bdata, snplstName);
-    // if(snplst2exclde != NULL) exclude_snp(&bdata, snplst2exclde);
+    // if(snplstName != nullptr) extract_snp(&bdata, snplstName);
+    // if(snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
     allele_check(&bdata, &etrait, &esdata);
     // if no snp left after check
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
@@ -6899,17 +6899,17 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
   // the etrait is not updated, so from now on _esi_include should be used always.
   std::cout << "Reading eQTL summary data..." << std::endl;
   read_epifile(&esdata, std::string(eqtlFileName2) + ".epi");
-  if (problstName != NULL) extract_prob(&esdata, problstName);
-  if (problst2exclde != NULL) exclude_prob(&esdata, problst2exclde);
-  if (eproblstName != NULL) extract_prob(&esdata, eproblstName);
-  else if (eprobe != NULL) extract_eqtl_single_probe(&esdata, eprobe);
+  if (problstName != nullptr) extract_prob(&esdata, problstName);
+  if (problst2exclde != nullptr) exclude_prob(&esdata, problst2exclde);
+  if (eproblstName != nullptr) extract_prob(&esdata, eproblstName);
+  else if (eprobe != nullptr) extract_eqtl_single_probe(&esdata, eprobe);
   if (targetsnpproblstName) {
     targetLstflg = true;
     extract_targets(&esdata, targetsnpproblstName, prb_snp);
   }
   if (snpproblstName) extract_targets(&esdata, snpproblstName, prb_snp);
-  if (eproblst2exclde != NULL) exclude_prob(&esdata, eproblst2exclde);
-  else if (eprobe2rm != NULL) exclude_eqtl_single_probe(&esdata, eprobe2rm);
+  if (eproblst2exclde != nullptr) exclude_prob(&esdata, eproblst2exclde);
+  else if (eprobe2rm != nullptr) exclude_eqtl_single_probe(&esdata, eprobe2rm);
 
   read_besdfile(&esdata, std::string(eqtlFileName2) + ".besd");
   if (esdata._rowid.empty() && esdata._bxz.empty()) {
@@ -7033,11 +7033,11 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
     std::vector<SMRRLT> smrrlts;
     mute = true;
     if (ssmrflag)
-      ssmr_heidi_func(smrrlts, NULL, &bdata, &gdata, &esdata, cis_itvl, heidioffFlag, heidiskipthresh, refSNP, p_hetero,
+      ssmr_heidi_func(smrrlts, nullptr, &bdata, &gdata, &esdata, cis_itvl, heidioffFlag, heidiskipthresh, refSNP, p_hetero,
                       ld_top, m_hetero, p_smr, threshpsmrest, ld_min, opt_hetero, expanWind, sampleoverlap, pmecs,
                       minCor, ld_top_multi);
     else
-      smr_heidi_func(smrrlts, NULL, &bdata, &gdata, &esdata, cis_itvl, heidioffFlag, heidiskipthresh, refSNP, p_hetero,
+      smr_heidi_func(smrrlts, nullptr, &bdata, &gdata, &esdata, cis_itvl, heidioffFlag, heidiskipthresh, refSNP, p_hetero,
                      ld_top, m_hetero, p_smr, threshpsmrest, new_het_mth, opt, ld_min, opt_hetero, sampleoverlap, pmecs,
                      minCor, prb_snp, targetLstflg);
     if (smrrlts.size() > 0) {
@@ -7079,7 +7079,7 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
 
 void update_freq(char* eqtlFileName, char* frqfile) {
   eqtlInfo eqtlinfo;
-  if (eqtlFileName == NULL)
+  if (eqtlFileName == nullptr)
     throw(
         "Error: please input eQTL summary data for updating allele frequency information by the flag --eqtl-summary.");
 
@@ -7247,8 +7247,8 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
   eqtlInfo esdata;
   eqtlInfo metadata;
 
-  if (eqtlFileName == NULL) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
-  if (eqtlFileName2 == NULL)
+  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+  if (eqtlFileName2 == nullptr)
     throw("Error: please input another eQTL summary data for SMR analysis by the flag --eqtl-summary.");
 
   read_esifile(&etrait, std::string(eqtlFileName) + ".esi");
@@ -7414,9 +7414,9 @@ void esi_man(eqtlInfo* eqtlinfo, char* snplstName, int chr, int snpchr, char* sn
              const char* prbname) {
   std::string logstr;
   int flags4snp = 0;
-  if (snplstName != NULL) flags4snp++;
-  if (snprs != NULL) flags4snp++;
-  if (fromsnprs != NULL) flags4snp++;
+  if (snplstName != nullptr) flags4snp++;
+  if (snprs != nullptr) flags4snp++;
+  if (fromsnprs != nullptr) flags4snp++;
   if (fromsnpkb >= 0) flags4snp++;
   if (flags4snp > 1) {
     logstr =
@@ -7430,20 +7430,20 @@ void esi_man(eqtlInfo* eqtlinfo, char* snplstName, int chr, int snpchr, char* sn
     extract_eqtl_by_chr(eqtlinfo, chr);
   }
 
-  if (prbname != NULL && cis_flag) {
+  if (prbname != nullptr && cis_flag) {
     extract_eqtl_snp(eqtlinfo, prbname, cis_itvl, "probe");  // extract cis eQTLs
-  } else if (snplstName != NULL) extract_eqtl_snp(eqtlinfo, snplstName);
+  } else if (snplstName != nullptr) extract_eqtl_snp(eqtlinfo, snplstName);
   else if (snpwindFlag) {
-    if (snprs == NULL) {
+    if (snprs == nullptr) {
       logstr = "ERROR: please specify the SNP name by --snp when using --snp-wind.\n";
       fputs(logstr.c_str(), stdout);
       exit(1);
     }
     extract_eqtl_snp(eqtlinfo, snprs, snpWind, "SNP");
-  } else if (snprs != NULL) {
+  } else if (snprs != nullptr) {
     extract_eqtl_single_snp(eqtlinfo, snprs);
-  } else if (fromsnprs != NULL) {
-    if (tosnprs == NULL) {
+  } else if (fromsnprs != nullptr) {
+    if (tosnprs == nullptr) {
       logstr = "ERROR: please specify the SNP name by --to-snp.\n";
       fputs(logstr.c_str(), stdout);
       exit(1);
@@ -7471,11 +7471,11 @@ void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr,
              char* genename) {
   std::string logstr;
   int flags4prb = 0;
-  if (problstName != NULL) flags4prb++;
-  if (prbname != NULL) flags4prb++;
-  if (fromprbname != NULL) flags4prb++;
+  if (problstName != nullptr) flags4prb++;
+  if (prbname != nullptr) flags4prb++;
+  if (fromprbname != nullptr) flags4prb++;
   if (fromprbkb >= 0) flags4prb++;
-  if (genename != NULL) flags4prb++;
+  if (genename != nullptr) flags4prb++;
   if (flags4prb > 1) {
     logstr =
         "WARNING: Flags for probes in this section are mutual exclusive. \
@@ -7490,20 +7490,20 @@ void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr,
     extract_epi_by_chr(eqtlinfo, chr);
   }
 
-  if (problstName != NULL || genelistName != NULL) {
-    if (problstName != NULL) extract_prob(eqtlinfo, problstName);
-    if (genelistName != NULL) extract_prob_by_gene(eqtlinfo, genelistName);
+  if (problstName != nullptr || genelistName != nullptr) {
+    if (problstName != nullptr) extract_prob(eqtlinfo, problstName);
+    if (genelistName != nullptr) extract_prob_by_gene(eqtlinfo, genelistName);
   } else if (prbwindFlag) {
-    if (prbname == NULL) {
+    if (prbname == nullptr) {
       logstr = "ERROR: Please identify the probe name by --probe when using --probe-wind.\n";
       fputs(logstr.c_str(), stdout);
       exit(1);
     }
     extract_prob(eqtlinfo, prbname, prbWind);
-  } else if (prbname != NULL) {
+  } else if (prbname != nullptr) {
     extract_eqtl_single_probe(eqtlinfo, prbname);
-  } else if (fromprbname != NULL) {
-    if (toprbname == NULL) {
+  } else if (fromprbname != nullptr) {
+    if (toprbname == nullptr) {
       logstr = "ERROR: Please identify the probe name by --to-probe.\n";
       fputs(logstr.c_str(), stdout);
       exit(1);
@@ -7521,7 +7521,7 @@ void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr,
       exit(1);
     }
     extract_eqtl_prob(eqtlinfo, prbchr, fromprbkb, toprbkb);
-  } else if (genename != NULL) {
+  } else if (genename != nullptr) {
     extract_prob_by_single_gene(eqtlinfo, genename);
   }
 }
@@ -7578,7 +7578,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     }
 
     buffer = mapped.offset<char*>(4 + sizeof(std::uint64_t));
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
       fputs("Memory error.\n", stderr);
       exit(1);
     }
@@ -7685,7 +7685,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     }
     char* buffer;
     // buffer = (char*) malloc (sizeof(char) * eqtlinfo->_snpNum << 3);
-    // if (buffer == NULL) {fputs ("Memory error", stderr); exit (1);}
+    // if (buffer == nullptr) {fputs ("Memory error", stderr); exit (1);}
     float* ft;
     float* se_ptr;
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
@@ -7714,7 +7714,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       char* buff = mapped.offset<char*>(4);
       std::uint64_t buffszie = 0x40000000;
       // buff = (char*) malloc (sizeof(char)*buffszie);
-      // if (buff == NULL) { fputs ("Memory error when reading dense BESD file.",stderr); exit (1); }
+      // if (buff == nullptr) { fputs ("Memory error when reading dense BESD file.",stderr); exit (1); }
       // memset(buff, 0, sizeof(char) * buffszie);
 
       std::uint64_t perbeta = (eqtlinfo->_snpNum << 2);
@@ -7781,7 +7781,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     valNum = ((lSize >> 2) - 3 - colNum) >> 1;
 
     // buffer = (char*) malloc (sizeof(char)*(lSize-8));
-    // if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
+    // if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
     // besd.read(buffer,(lSize-8));
     // if (besd.gcount()+8 != lSize) {fputs ("Reading error",stderr); exit (2);}
     buffer = mapped.offset<char*>(4);
@@ -7924,7 +7924,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
         !sorted) {
       // std::uint64_t colsize = colNum * sizeof(std::uint64_t);
       // buffer = (char*) malloc (sizeof(char) * (colsize));
-      // if (buffer == NULL) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
+      // if (buffer == nullptr) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
       // besd.read(buffer, colsize);
 
       buffer = mapped.offset<char*>(read_offset);
@@ -7968,12 +7968,12 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
           eqtlinfo->_cols[(i + 1) << 1] = eqtlinfo->_cols[i << 1];
           continue;
         }
-        char* row_char_ptr = NULL;
+        char* row_char_ptr = nullptr;
         // row_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(std::uint32_t));
-        // if (row_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
-        char* val_char_ptr = NULL;
+        // if (row_char_ptr == nullptr) {fputs ("Memory error",stderr); exit (1);}
+        char* val_char_ptr = nullptr;
         // val_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(float));
-        // if (val_char_ptr == NULL) {fputs ("Memory error",stderr); exit (1);}
+        // if (val_char_ptr == nullptr) {fputs ("Memory error",stderr); exit (1);}
         // memset(row_char_ptr,0,sizeof(char)*2*num*sizeof(std::uint32_t));
         // memset(val_char_ptr,0,sizeof(char)*2*num*sizeof(float));
         // besd.seekg(rowSTART+pos*sizeof(std::uint32_t));
@@ -8021,7 +8021,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     } else {
       // std::cout << "lSize: " << lSize << std::endl;
       //  buffer = (char*) malloc (sizeof(char)*(lSize));
-      //  if (buffer == NULL) {fputs ("Memory error",stderr); exit (1);}
+      //  if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
       //  besd.read(buffer,lSize);
       //  if(gflag==SPARSE_FILE_TYPE_3F)
       //  {

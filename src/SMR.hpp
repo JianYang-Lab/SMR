@@ -172,7 +172,7 @@ static inline void FLAGS_VALID_CK(int option_num, char* option_str[]) {
 }
 
 static inline void FLAG_VALID_CK(std::string str, char* flag) {
-  if (flag == NULL || SMRDATA::has_prefix(flag, "--")) {
+  if (flag == nullptr || SMRDATA::has_prefix(flag, "--")) {
     fprintf(stderr, "Please verify the flag %s!: \n", str.c_str());
     exit(EXIT_FAILURE);
   }

@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_WITH_MKL ON)
+option(BUILD_WITH_MIMALLOC "Use mimalloc for improved memory allocation performance" ON)
 option(SMR_VERBOSE_CONFIGURE "Print extended CMake configuration diagnostics" OFF)
 
 if(UNIX AND NOT APPLE)
@@ -131,6 +132,22 @@ CPMAddPackage(
         "FMT_CUDA_TEST OFF"
 )
 
+if(BUILD_WITH_MIMALLOC)
+    CPMAddPackage(
+        NAME mimalloc
+        GITHUB_REPOSITORY microsoft/mimalloc
+        VERSION 2.2.7
+        EXCLUDE_FROM_ALL YES
+        SYSTEM YES
+        OPTIONS
+            "MI_OVERRIDE ON"
+            "MI_BUILD_SHARED OFF"
+            "MI_BUILD_STATIC ON"
+            "MI_BUILD_TESTS OFF"
+            "MI_BUILD_OBJECT OFF"
+    )
+endif()
+
 file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
 file(GLOB DCDFLIB_SRCS "${CMAKE_SOURCE_DIR}/third_party/dcdflib/*.c")
 add_executable(${PROJECT_NAME} ${SRCS} ${DCDFLIB_SRCS})
@@ -144,6 +161,13 @@ if(NOT APPLE AND BUILD_WITH_MKL)
     target_link_libraries(${PROJECT_NAME} MKL::MKL)
     target_compile_definitions(${PROJECT_NAME} PRIVATE EIGEN_USE_MKL_ALL)
     target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
+endif()
+
+if(BUILD_WITH_MIMALLOC)
+    # Link mimalloc-static for global malloc/free override at link time
+    # No LD_PRELOAD needed - works automatically
+    target_link_libraries(${PROJECT_NAME} mimalloc-static)
+    message(STATUS "mimalloc: enabled (static linking for malloc override)")
 endif()
 
 

@@ -2963,35 +2963,27 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
   std::vector<std::string> essnp(esdata->_esi_include.size());
   if (bdata->_include.size() < bdata->_snp_num || esdata->_esi_include.size() < esdata->_snpNum ||
       etrait->_esi_include.size() < etrait->_snpNum) {
-#pragma omp parallel for
     for (int i = 0; i < bdata->_include.size(); i++) bsnp[i] = bdata->_snp_name[bdata->_include[i]];
-#pragma omp parallel for
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp[i] = etrait->_esi_rs[etrait->_esi_include[i]];
-#pragma omp parallel for
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp[i] = esdata->_esi_rs[esdata->_esi_include[i]];
     match_only(bsnp, etsnp, edId);
     if (edId.empty()) throw("Error: no common SNPs between PLink data and eTrait data.");
     cmmnSNPs.resize(edId.size());
-#pragma omp parallel for
     for (int i = 0; i < edId.size(); i++) cmmnSNPs[i] = etsnp[edId[i]];
     match_only(cmmnSNPs, essnp, edId);
     if (edId.empty()) throw("Error: no common SNPs found.");
-#pragma omp parallel for
     for (int i = 0; i < edId.size(); i++) edId[i] = esdata->_esi_include[edId[i]];
     slctSNPs.resize(edId.size());
-#pragma omp parallel for
     for (int i = 0; i < edId.size(); i++) slctSNPs[i] = esdata->_esi_rs[edId[i]];
   } else {
     match_only(bdata->_snp_name, etrait->_esi_rs, edId);
     if (edId.empty()) throw("Error: no common SNPs between PLink data and GWAS data.");
     cmmnSNPs.resize(edId.size());
-#pragma omp parallel for
     for (int i = 0; i < edId.size(); i++) cmmnSNPs[i] = etrait->_esi_rs[edId[i]];
     edId.clear();
     match_only(cmmnSNPs, esdata->_esi_rs, edId);
     if (edId.empty()) throw("Error: no common SNPs found.");
     slctSNPs.resize(edId.size());
-#pragma omp parallel for
     for (int i = 0; i < edId.size(); i++) slctSNPs[i] = esdata->_esi_rs[edId[i]];
   }
 
@@ -3060,7 +3052,6 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
            */
         } else {
           int gid = gdId[i];
-#pragma omp parallel for
           for (int j = 0; j < etrait->_include.size(); j++)
             if (fabs(etrait->_sexz[j][gid] + 9) > 1e-6) etrait->_bxz[j][gid] = -1 * etrait->_bxz[j][gid];
         }
@@ -3113,7 +3104,6 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
 
         } else {
           int gid = gdId[i];
-#pragma omp parallel for
           for (int j = 0; j < etrait->_include.size(); j++)
             if (fabs(etrait->_sexz[j][gid] + 9) > 1e-6) etrait->_bxz[j][gid] = -1 * etrait->_bxz[j][gid];
         }
@@ -3286,22 +3276,25 @@ void update_gwas(gwasData* gdata) {
 
 void make_XMat(bInfo* bdata, std::vector<std::uint32_t>& snpids, MatrixXd& X, bool minus_2p) {
   // Eigen is column-major by default. here row of X is individual, column of X is SNP.
-  std::uint64_t snpNum = snpids.size();
-  X.resize(bdata->_keep.size(), snpNum);
+  size_t snp_size = snpids.size();
+  X.resize(bdata->_keep.size(), snp_size);
 #pragma omp parallel for
-  for (int i = 0; i < snpNum; i++) {
-    std::uint32_t snpid = snpids[i];
-    for (int j = 0; j < bdata->_keep.size(); j++) {
-      if (!bdata->_snp_1[bdata->_include[snpid]][bdata->_keep[j]] ||
-          bdata->_snp_2[bdata->_include[snpid]][bdata->_keep[j]]) {
-        if (bdata->_allele1[bdata->_include[snpid]] == bdata->_ref_A[bdata->_include[snpid]])
-          X(j, i) = bdata->_snp_1[bdata->_include[snpid]][bdata->_keep[j]] +
-                    bdata->_snp_2[bdata->_include[snpid]][bdata->_keep[j]];
-        else
-          X(j, i) = 2.0 - (bdata->_snp_1[bdata->_include[snpid]][bdata->_keep[j]] +
-                           bdata->_snp_2[bdata->_include[snpid]][bdata->_keep[j]]);
-      } else X(j, i) = bdata->_mu[bdata->_include[snpid]];
-      if (minus_2p) X(j, i) -= bdata->_mu[bdata->_include[snpid]];
+  for (size_t i = 0; i < snp_size; i++) {
+    int snp_idx = bdata->_include[snpids[i]];
+    for (size_t j = 0; j < bdata->_keep.size(); j++) {
+      int indi_idx = bdata->_keep[j];
+      auto snp1 = bdata->_snp_1[snp_idx][indi_idx];
+      auto snp2 = bdata->_snp_2[snp_idx][indi_idx];
+      if (!snp1 || snp2) {
+        if (bdata->_allele1[snp_idx] == bdata->_ref_A[snp_idx]) {
+          X(j, i) = snp1 + snp2;
+        } else {
+          X(j, i) = 2.0 - (snp1 + snp2);
+        }
+      } else {
+        X(j, i) = bdata->_mu[snp_idx];
+      }
+      if (minus_2p) X(j, i) -= bdata->_mu[snp_idx];
     }
   }
 }
@@ -4272,7 +4265,6 @@ double heidi_test(bInfo* bdata, SMRWK* smrwk, long maxid, double ld_top, double 
   _zsxz.resize(sn_ids.size());
   _X_heidi.resize(_X.rows(), sn_ids.size());
 
-#pragma omp parallel for
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk->byz[sn_ids[j]];
     _seyz[j] = smrwk->seyz[sn_ids[j]];
@@ -4387,8 +4379,7 @@ void update_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids) {
   allele1.resize(sn_ids.size());
   allele2.resize(sn_ids.size());
 
-#pragma omp parallel for
-  for (int j = 0; j < sn_ids.size(); j++) {
+  for (size_t j = 0; j < sn_ids.size(); j++) {
     byz[j] = smrwk->byz[sn_ids[j]];
     seyz[j] = smrwk->seyz[sn_ids[j]];
     bxz[j] = smrwk->bxz[sn_ids[j]];
@@ -4438,8 +4429,7 @@ void update_smrwk_x(SMRWK* smrwk, std::vector<int>& sn_ids, MatrixXd& X) {
   allele2.resize(sn_ids.size());
   _X.resize(X.rows(), sn_ids.size());
 
-#pragma omp parallel for
-  for (int j = 0; j < sn_ids.size(); j++) {
+  for (size_t j = 0; j < sn_ids.size(); j++) {
     byz[j] = smrwk->byz[sn_ids[j]];
     seyz[j] = smrwk->seyz[sn_ids[j]];
     bxz[j] = smrwk->bxz[sn_ids[j]];
@@ -4577,7 +4567,7 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   _bxz.resize(sn_ids.size());
   _sexz.resize(sn_ids.size());
   _zsxz.resize(sn_ids.size());
-#pragma omp parallel for
+
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk_heidi.byz[sn_ids[j]];
     _seyz[j] = smrwk_heidi.seyz[sn_ids[j]];
@@ -5484,7 +5474,7 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
   _bxz.resize(sn_ids.size());
   _sexz.resize(sn_ids.size());
   _zsxz.resize(sn_ids.size());
-#pragma omp parallel for
+
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk_heidi.byz[sn_ids[j]];
     _seyz[j] = smrwk_heidi.seyz[sn_ids[j]];
@@ -5582,7 +5572,7 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
   _bxz.resize(sn_ids.size());
   _sexz.resize(sn_ids.size());
   _zsxz.resize(sn_ids.size());
-#pragma omp parallel for
+
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk_heidi.byz[sn_ids[j]];
     _seyz[j] = smrwk_heidi.seyz[sn_ids[j]];
@@ -5690,7 +5680,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   _bxz.resize(sn_ids.size());
   _sexz.resize(sn_ids.size());
   _zsxz.resize(sn_ids.size());
-#pragma omp parallel for
+
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk_heidi.byz[sn_ids[j]];
     _seyz[j] = smrwk_heidi.seyz[sn_ids[j]];

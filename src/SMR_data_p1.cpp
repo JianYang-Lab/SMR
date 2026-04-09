@@ -4003,7 +4003,7 @@ bool mecs_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohor
 }
 void meta_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohortnum) {
 #pragma omp parallel for
-  for (int j = 0; j < snpnum; j++) {
+  for (size_t j = 0; j < snpnum; j++) {
     double numerator = 0.0;
     double deno = 0.0;
     int nmiss = 0;

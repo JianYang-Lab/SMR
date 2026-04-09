@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -210,7 +211,7 @@ void StrFunc::rewind_if(std::istream& in_file) {
 
 void StrFunc::match(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                     std::vector<int>& VecC) {
-  std::unordered_map<std::string, int> id_map;
+  std::unordered_map<std::string_view, int> id_map;
   id_map.reserve(VecB.size());
   VecC.clear();
   VecC.reserve(VecA.size());
@@ -221,13 +222,14 @@ void StrFunc::match(const std::vector<std::string>& VecA, const std::vector<std:
     else VecC.push_back(iter->second);
   }
 }
+
 void StrFunc::match_only(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                          std::vector<std::uint32_t>& VecC) {
-  std::unordered_map<std::string, int> id_map;
+  std::unordered_map<std::string_view, std::uint32_t> id_map;
   id_map.reserve(VecB.size());
   VecC.clear();
   VecC.reserve(VecA.size());
-  for (size_t i = 0; i < VecB.size(); i++) id_map.emplace(VecB[i], static_cast<int>(i));
+  for (size_t i = 0; i < VecB.size(); i++) id_map.emplace(VecB[i], static_cast<std::uint32_t>(i));
   for (const auto& value : VecA) {
     auto iter = id_map.find(value);
     if (iter != id_map.end()) VecC.push_back(iter->second);
@@ -237,7 +239,7 @@ void StrFunc::match_only(const std::vector<std::string>& VecA, const std::vector
 /// Get intersection of `VecA` and `VecB`. `VecC` store the index of intersection in `VecB`.
 void StrFunc::match_only(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                          std::vector<int>& VecC) {
-  std::unordered_map<std::string, int> id_map;
+  std::unordered_map<std::string_view, int> id_map;
   id_map.reserve(VecB.size());
   VecC.clear();
   VecC.reserve(VecA.size());
@@ -250,7 +252,7 @@ void StrFunc::match_only(const std::vector<std::string>& VecA, const std::vector
 
 void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                              const std::vector<int>& tmp, std::vector<int>& VecC) {
-  std::unordered_set<std::string> to_remove(VecA.begin(), VecA.end());
+  std::unordered_set<std::string_view> to_remove(VecA.begin(), VecA.end());
 
   VecC.clear();
   VecC.reserve(VecB.size());
@@ -260,7 +262,7 @@ void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::ve
 
 void StrFunc::set_complement(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                              const std::vector<int>& tmp, std::vector<std::uint32_t>& VecC) {
-  std::unordered_set<std::string> to_remove(VecA.begin(), VecA.end());
+  std::unordered_set<std::string_view> to_remove(VecA.begin(), VecA.end());
 
   VecC.clear();
   VecC.reserve(VecB.size());

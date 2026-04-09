@@ -382,14 +382,16 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
 }
 
 void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
-  int i = 0;
-  bdata->_dosage_flag = 0;
   double fcount = 0.0, f_buf = 0.0;
-  for (i = 0; i < bdata->_keep.size(); i++) {
-    if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
-      f_buf = (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-      if (bdata->_allele2[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]]) f_buf = 2.0 - f_buf;
-      bdata->_mu[bdata->_include[j]] += fac[i] * f_buf;
+  int snp_idx = bdata->_include[j];
+  for (size_t i = 0; i < bdata->_keep.size(); i++) {
+    int indi_idx = bdata->_keep[i];
+    auto snp1 = bdata->_snp_1[snp_idx][indi_idx];
+    auto snp2 = bdata->_snp_2[snp_idx][indi_idx];
+    if (!snp1 || snp2) {
+      f_buf = snp1 + snp2;
+      if (bdata->_allele2[snp_idx] == bdata->_ref_A[snp_idx]) f_buf = 2.0 - f_buf;
+      bdata->_mu[snp_idx] += fac[i] * f_buf;
       fcount += fac[i];
     }
   }
@@ -398,10 +400,8 @@ void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
 }
 
 void calcu_mu(bInfo* bdata, bool ssq_flag) {
-  int i = 0, j = 0;
-
   std::vector<double> auto_fac(bdata->_keep.size()), xfac(bdata->_keep.size()), fac(bdata->_keep.size());
-  for (i = 0; i < bdata->_keep.size(); i++) {
+  for (size_t i = 0; i < bdata->_keep.size(); i++) {
     auto_fac[i] = 1.0;
     if (bdata->_sex[bdata->_keep[i]] == 1) xfac[i] = 0.5;
     else if (bdata->_sex[bdata->_keep[i]] == 2) xfac[i] = 1.0;
@@ -413,7 +413,7 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
   bdata->_mu.resize(bdata->_snp_num);
 
 #pragma omp parallel for
-  for (j = 0; j < bdata->_include.size(); j++) {
+  for (size_t j = 0; j < bdata->_include.size(); j++) {
     if (bdata->_chr[bdata->_include[j]] < (bdata->_autosome_num + 1)) mu_func(bdata, j, auto_fac);
     else if (bdata->_chr[bdata->_include[j]] == (bdata->_autosome_num + 1)) mu_func(bdata, j, xfac);
     else mu_func(bdata, j, fac);
@@ -557,8 +557,8 @@ void filter_snp_maf(bInfo* bdata, double maf) {
 }
 
 void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
-  long size = X.cols();
-  long n = X.rows();
+  size_t size = X.cols();
+  size_t n = X.rows();
 
   VectorXd tmpX(size);
   VectorXd tmpX2(size);
@@ -566,7 +566,7 @@ void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
 
   if (centered) {
 #pragma omp parallel for
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       tmpX2[i] = X.col(i).dot(X.col(i));
       tmpXY[i] = X.col(targetid).dot(X.col(i));
     }
@@ -574,7 +574,7 @@ void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
     ld_v = tmpXY.array() / sqrt(tmpX2.array() * tmpY2);
   } else {
 #pragma omp parallel for
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       tmpX[i] = X.col(i).sum();
       tmpX2[i] = X.col(i).dot(X.col(i));
       tmpXY[i] = X.col(targetid).dot(X.col(i));

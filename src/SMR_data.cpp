@@ -3330,19 +3330,32 @@ void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const std::vector<std:
 }
 
 void cor_calc(MatrixXd& LD, MatrixXd& X) {
-  long size = X.cols();
-  long n = X.rows();
-  VectorXd tmpX(size);
-  VectorXd tmpX2(size);
-#pragma omp parallel for
-  for (int i = 0; i < size; i++) {
-    tmpX[i] = X.col(i).sum();
-    tmpX2[i] = X.col(i).dot(X.col(i));
-  }
+  const Eigen::Index n = X.rows();
+
+  // 1. Use Eigen's built-in parallel reductions (more cache-efficient than manual loops)
+  const VectorXd sum = X.colwise().sum();
+  const VectorXd sum_sq = X.array().square().colwise().sum();
+
+  // 2. Compute scatter matrix
   LD.noalias() = X.transpose() * X;
-  VectorXd tmpXX = (sqrt(tmpX2.array() * n - tmpX.array() * tmpX.array())).matrix();
-  LD = (LD * n - tmpX * tmpX.transpose()).array() / (tmpXX * tmpXX.transpose()).array();
+
+  // 3. Compute n^2 * covariance: n*X'X - sum*sum'
+  LD *= n;
+  LD.noalias() -= sum * sum.transpose();
+
+  // 4. Compute n*std_dev (denominator factors)
+  VectorXd scale = (n * sum_sq.array() - sum.array().square()).sqrt();
+
+  // Handle zero variance to avoid NaN
+  // scale = scale.cwiseMax(Eigen::NumTraits<double>::epsilon());
+
+  // 5. Scale to correlation using reciprocal multiplication (avoid division & temporary matrix)
+  // Instead of: LD ./ (scale * scale') which creates a p×p temporary
+  scale = scale.cwiseInverse();
+  LD.array().colwise() *= scale.array();
+  LD.array().rowwise() *= scale.transpose().array();
 }
+
 void update_geIndx(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
   std::vector<int> tmpIdx1;
   std::vector<int> tmpIdx2;

@@ -8,7 +8,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(BUILD_WITH_MKL ON)
 option(BUILD_WITH_MIMALLOC "Use mimalloc for improved memory allocation performance" ON)
 option(SMR_VERBOSE_CONFIGURE "Print extended CMake configuration diagnostics" OFF)
 
@@ -66,19 +65,8 @@ if(LINUX AND NOT OMP_LIBRARY)
     set(OMP_LIBRARY "/usr/lib/libgomp.so")
 endif()
 
-if(LINUX AND BUILD_WITH_MKL)
-    if(NOT MKL_DIR)
-        set(MKL_DIR "/opt/intel/oneapi/mkl/latest/lib/cmake/mkl")
-    endif()
-    set(MKL_THREADING "gnu_thread")
-    set(MKL_INTERFACE "lp64")
-endif()
-
-
-# APPLE use Apple Accelerate
-if(NOT APPLE AND BUILD_WITH_MKL)
-    find_package(MKL REQUIRED)
-endif()
+include(cmake/SMRMKL.cmake)
+smr_configure_mkl(smr_use_mkl)
 
 find_package(OpenMP REQUIRED)
 
@@ -157,10 +145,8 @@ target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdl
 # -march=native require rebuild it on AMD/Intel
 target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64)
 
-if(NOT APPLE AND BUILD_WITH_MKL)
-    target_link_libraries(${PROJECT_NAME} MKL::MKL)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE EIGEN_USE_MKL_ALL)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fpermissive)
+if(smr_use_mkl)
+    smr_target_enable_mkl(${PROJECT_NAME})
 endif()
 
 if(BUILD_WITH_MIMALLOC)

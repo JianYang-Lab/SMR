@@ -4297,22 +4297,21 @@ void update_snidx(SMRWK* smrwk, std::vector<int>& sn_ids, int max_snp_slct, std:
   }
 }
 void extract_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids, SMRWK* smrwk2) {
-  smrwk2->cur_chr = smrwk->cur_chr;
-  smrwk2->cur_prbidx = smrwk->cur_prbidx;
-  for (int i = 0; i < sn_ids.size(); i++) {
-    smrwk2->bxz.push_back(smrwk->bxz[sn_ids[i]]);
-    smrwk2->sexz.push_back(smrwk->sexz[sn_ids[i]]);
-    smrwk2->freq.push_back(smrwk->freq[sn_ids[i]]);
-    smrwk2->byz.push_back(smrwk->byz[sn_ids[i]]);
-    smrwk2->seyz.push_back(smrwk->seyz[sn_ids[i]]);
-    smrwk2->pyz.push_back(smrwk->pyz[sn_ids[i]]);
-    smrwk2->zxz.push_back(smrwk->zxz[sn_ids[i]]);
-    smrwk2->curId.push_back(smrwk->curId[sn_ids[i]]);
-    smrwk2->bpsnp.push_back(smrwk->bpsnp[sn_ids[i]]);
-    smrwk2->snpchrom.push_back(smrwk->snpchrom[sn_ids[i]]);
-    smrwk2->rs.push_back(smrwk->rs[sn_ids[i]]);
-    smrwk2->allele1.push_back(smrwk->allele1[sn_ids[i]]);
-    smrwk2->allele2.push_back(smrwk->allele2[sn_ids[i]]);
+  smrwk2->init(smrwk->cur_chr, smrwk->cur_prbidx, sn_ids.size());
+  for (int sn_id : sn_ids) {
+    smrwk2->bxz.push_back(smrwk->bxz[sn_id]);
+    smrwk2->sexz.push_back(smrwk->sexz[sn_id]);
+    smrwk2->freq.push_back(smrwk->freq[sn_id]);
+    smrwk2->byz.push_back(smrwk->byz[sn_id]);
+    smrwk2->seyz.push_back(smrwk->seyz[sn_id]);
+    smrwk2->pyz.push_back(smrwk->pyz[sn_id]);
+    smrwk2->zxz.push_back(smrwk->zxz[sn_id]);
+    smrwk2->curId.push_back(smrwk->curId[sn_id]);
+    smrwk2->bpsnp.push_back(smrwk->bpsnp[sn_id]);
+    smrwk2->snpchrom.push_back(smrwk->snpchrom[sn_id]);
+    smrwk2->rs.push_back(smrwk->rs[sn_id]);
+    smrwk2->allele1.push_back(smrwk->allele1[sn_id]);
+    smrwk2->allele2.push_back(smrwk->allele2[sn_id]);
   }
 }
 void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1) {

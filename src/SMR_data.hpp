@@ -203,6 +203,24 @@ struct SMRWK {
   std::vector<std::uint32_t> curId;
   std::vector<int> bpsnp, snpchrom;
   std::vector<std::string> rs, allele1, allele2;
+
+  void init(int chr, int prbidx, size_t data_size) {
+    cur_chr = chr;
+    cur_prbidx = prbidx;
+    bxz.reserve(data_size);
+    sexz.reserve(data_size);
+    freq.reserve(data_size);
+    byz.reserve(data_size);
+    seyz.reserve(data_size);
+    pyz.reserve(data_size);
+    zxz.reserve(data_size);
+    curId.reserve(data_size);
+    bpsnp.reserve(data_size);
+    snpchrom.reserve(data_size);
+    rs.reserve(data_size);
+    allele1.reserve(data_size);
+    allele2.reserve(data_size);
+  }
 };
 
 struct SMRRLT {

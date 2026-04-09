@@ -213,7 +213,7 @@ int CommFunc::max_abs_id(std::vector<double>& zsxz) {
       id = i;
     }
   }
-  return (id);
+  return id;
 }
 
 int CommFunc::max_abs_id(VectorXd& zsxz) {

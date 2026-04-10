@@ -8,8 +8,6 @@
 
 #include "SMR_data.hpp"
 
-#include <fmt/base.h>
-
 #include <fstream>
 #include <iostream>
 #include <istream>
@@ -17,6 +15,9 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+#include <fmt/base.h>
+#include <spdlog/spdlog.h>
 
 #include "CommFunc.hpp"
 #include "StatFunc.hpp"
@@ -4496,8 +4497,8 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   long maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
   make_XMat(bdata, smrwk_heidi.curId, _X);
-  printf("Removing SNPs with LD r-squared between top-SNP %s > %f or < %f...\n", smrwk_heidi.rs[maxid_heidi].c_str(),
-         ldr2_top, ld_min);
+  spdlog::info("Removing SNPs with LD r-squared between top-SNP {:<11} > {} or < {}...",
+               smrwk_heidi.rs[maxid_heidi].c_str(), ldr2_top, ld_min);
   ld_calc_o2m(ld_v, maxid_heidi, _X);
 
   /*for (int i=0;i<ld_v.size();i++) {
@@ -4518,7 +4519,8 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
       }
     }
   }
-  printf("%ld SNPs are removed and %ld SNPs are retained.\n", smrwk_heidi.zxz.size() - sn_ids.size(), sn_ids.size());
+  spdlog::info("{:3d} SNPs are removed and {:3d} SNPs are retained.", smrwk_heidi.zxz.size() - sn_ids.size(),
+               sn_ids.size());
   if (sn_ids.size() < m_hetero) {
     // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
     // m_hetero);

@@ -54,11 +54,5 @@ InlayHints:
   ParameterNames: Yes
   DeducedTypes: Yes
 
----
-
-# If you use specific compiler features or cross-compilation, uncomment:
-# If:
-#   PathMatch: .*\.cpp
-#   PathExclude: (tests|third_party)/.*
-# CompileFlags:
-#   Add: [-D__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16]  # GCC-specific intrinsics
+If:
+  PathExclude: third_party/.*

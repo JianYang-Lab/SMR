@@ -106,6 +106,7 @@ CPMAddPackage(
         "SPDLOG_BUILD_TESTS OFF"
         "SPDLOG_BUILD_TESTS_HO OFF"
         "SPDLOG_BUILD_BENCH OFF"
+        "SPDLOG_FMT_EXTERNAL ON"
 )
 CPMAddPackage(
     NAME fmt

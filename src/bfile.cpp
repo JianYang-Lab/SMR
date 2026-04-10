@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include <fmt/base.h>
+#include <Eigen/Eigen>
 
 #include "CommFunc.hpp"
 #include "StrFunc.hpp"
@@ -556,33 +557,42 @@ void filter_snp_maf(bInfo* bdata, double maf) {
   }
 }
 
-void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered) {
-  size_t size = X.cols();
-  size_t n = X.rows();
+void ld_calc_o2m(VectorXd& ld_v, long target, const MatrixXd& X, bool centered) {
+  const Eigen::Index n = X.rows();
+  const Eigen::Index size = X.cols();
 
-  VectorXd tmpX(size);
-  VectorXd tmpX2(size);
-  VectorXd tmpXY(size);
+  // Safety: resize output and validate target
+  ld_v.resize(size);
+  if (target < 0 || target >= size) throw("target SNP index out of bounds");
+
+  const auto y = X.col(target);
+  auto n_d = static_cast<double>(n);
 
   if (centered) {
-#pragma omp parallel for
-    for (size_t i = 0; i < size; i++) {
-      tmpX2[i] = X.col(i).dot(X.col(i));
-      tmpXY[i] = X.col(targetid).dot(X.col(i));
-    }
-    float tmpY2 = X.col(targetid).dot(X.col(targetid));
-    ld_v = tmpXY.array() / sqrt(tmpX2.array() * tmpY2);
+    // Vectorized: X' * y computes all dot products at once
+    const VectorXd xy = X.transpose() * y;
+    const VectorXd x_norm = X.colwise().squaredNorm();
+    const double y_norm = y.squaredNorm();
+
+    // Array operations for element-wise sqrt and division
+    ld_v = xy.array() / (x_norm.array().sqrt() * std::sqrt(y_norm));
   } else {
-#pragma omp parallel for
-    for (size_t i = 0; i < size; i++) {
-      tmpX[i] = X.col(i).sum();
-      tmpX2[i] = X.col(i).dot(X.col(i));
-      tmpXY[i] = X.col(targetid).dot(X.col(i));
-    }
-    float tmpY = X.col(targetid).sum();
-    float tmpY2 = X.col(targetid).dot(X.col(targetid));
-    ld_v = (tmpXY * n - tmpX * tmpY).array() /
-           sqrt((tmpX2.array() * n - tmpX.array() * tmpX.array()) * (tmpY2 * n - tmpY * tmpY));
+    // Vectorized statistics computation
+    const VectorXd sum_x = X.colwise().sum();
+    const VectorXd sum_x2 = X.colwise().squaredNorm();
+    const VectorXd xy = X.transpose() * y;
+
+    const double sum_y = y.sum();
+    const double sum_y2 = y.squaredNorm();
+
+    // Pearson correlation: cov(x,y) / (sigma_x * sigma_y)
+    const VectorXd cov_numer = xy * n_d - sum_x * sum_y;
+
+    // max(0) guards against numerical errors causing negative variance
+    const VectorXd var_x = (sum_x2.array() * n_d - sum_x.array().square()).max(0.0);
+    const double var_y = std::max(0.0, sum_y2 * n_d - sum_y * sum_y);
+
+    ld_v = cov_numer.array() / (var_x.array() * var_y).sqrt();
   }
 }
 

@@ -117,5 +117,5 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
 void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid, std::vector<float>& ld);
 void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& curId, int sid, std::vector<float>& ld);
 void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, std::string rs, std::vector<float>& ld);
-void ld_calc_o2m(VectorXd& ld_v, long targetid, MatrixXd& X, bool centered = false);
+void ld_calc_o2m(VectorXd& ld_v, long target, const MatrixXd& X, bool centered = false);
 }  // namespace SMRDATA

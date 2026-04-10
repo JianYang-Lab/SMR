@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include <spdlog/spdlog.h>
+
 #include "CommFunc.hpp"
 #include "SMR_data_p1.hpp"
 #include "SMR_data_p2.hpp"
@@ -51,6 +53,8 @@ int main(int argc, char** argv) {
   std::cout << "* Please report bugs to Jian Yang jian.yang@westlake.edu.cn" << std::endl;
   std::cout << "* MIT License" << std::endl;
   std::cout << "*******************************************************************" << std::endl;
+
+  spdlog::set_pattern("%v");
 
   long int time_used = 0, start = time(nullptr);
   time_t curr = time(0);

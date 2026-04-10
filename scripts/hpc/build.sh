@@ -51,15 +51,15 @@ function run {
 
     echo "Current working directory: ${CWD}"
 
-    module load gcc/8.4.0 cmake intelmkl
+    module load gcc/11.2.0 cmake intelmkl
 
     if [[ $cmake_gen == 1 ]]; then
         # Generate cmake
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_TOOLCHAIN_FILE=cmake/hpc-toolchain.cmake \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
-            -DBUILD_WITH_MKL=ON
-            -B build/${BUILD_TYPE} -S . -G Ninja
+            -DBUILD_WITH_MKL=ON \
+            -B build/${BUILD_TYPE} -S .
     fi
 
     cmake --build build/${BUILD_TYPE}
@@ -72,6 +72,7 @@ function run {
         if [[ ! -d ${installed_lib} ]]; then
             mkdir -p installed_lib
         fi
+
         cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_avx512.so.2 ${installed_lib}/
         cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_avx2.so.2 ${installed_lib}/
         cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_def.so.2 ${installed_lib}/

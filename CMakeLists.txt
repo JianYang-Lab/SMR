@@ -143,7 +143,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_par
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
 # -march=native require rebuild it on AMD/Intel
-target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64)
+target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
 
 if(smr_use_mkl)
     smr_target_enable_mkl(${PROJECT_NAME})

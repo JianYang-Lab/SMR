@@ -46,7 +46,10 @@ function run {
     if [[ $cmake_gen == 1 ]]; then
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
-            -B build/${BUILD_TYPE} -S .
+            -DBUILD_WITH_MKL=ON \
+            -DMKL_DIR="/opt/intel/oneapi/mkl/latest/lib/cmake/mkl" \
+            -DSMR_VERBOSE_CONFIGURE=ON \
+            -B build/${BUILD_TYPE} -S . -G Ninja
     fi
 
     cmake --build build/${BUILD_TYPE}

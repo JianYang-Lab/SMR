@@ -58,7 +58,8 @@ function run {
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_TOOLCHAIN_FILE=cmake/hpc-toolchain.cmake \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
-            -B build/${BUILD_TYPE} -S .
+            -DBUILD_WITH_MKL=ON
+            -B build/${BUILD_TYPE} -S . -G Ninja
     fi
 
     cmake --build build/${BUILD_TYPE}

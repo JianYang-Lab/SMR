@@ -43,6 +43,11 @@ function parse_args {
 function run {
     parse_args "$@"
 
+    # Set OpenMP root for macOS (Homebrew libomp)
+    if [[ "$(uname)" == "Darwin" ]]; then
+        export OpenMP_ROOT=/opt/homebrew/opt/libomp
+    fi
+
     if [[ $cmake_gen == 1 ]]; then
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \

@@ -744,7 +744,7 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       std::uint64_t colNum = (etmp._probNum << 1) + 1;
       fseek(fptr, 0L, SEEK_END);
       std::uint64_t lSize = 0;
-#if defined __linux
+#if defined(__linux__) || defined(__APPLE__)
       long fsize = 0;
       fsize = ftell(fptr);
 #elif defined _WIN32 || _WIN64

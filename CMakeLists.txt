@@ -143,8 +143,14 @@ add_executable(${PROJECT_NAME} ${SRCS} ${DCDFLIB_SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_party/dcdflib)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
-# -march=native require rebuild it on AMD/Intel
-target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    # Intel/AMD x86_64
+    target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+    # Apple Silicon (M1/M2/M3) or other ARM64
+    target_compile_options(${PROJECT_NAME} PRIVATE -march=armv8.5-a)
+    # Or use -march=armv8.5-a for generic ARM64 optimization
+endif()
 
 if(smr_use_mkl)
     smr_target_enable_mkl(${PROJECT_NAME})

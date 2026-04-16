@@ -354,7 +354,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
 
 void update_snidx(SMRWK* smrwk, std::vector<int>& sn_ids, int max_snp_slct, std::string forwhat);
 void extract_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids, SMRWK* smrwk2);
-void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1);
+void rm_cor_sbat(const MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1);
 void update_smrwk_x(SMRWK* smrwk, std::vector<int>& sn_ids, MatrixXd& X);
 void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdata, gwasData* gdata, eqtlInfo* esdata,
                     int cis_itvl, bool heidioffFlag, double heidiskipthresh, const char* refSNP, double p_hetero,

@@ -13,7 +13,7 @@
 
 class MappedFile {
  public:
-  MappedFile() : addr_(nullptr), size_(0) {}
+  MappedFile() = default;
   explicit MappedFile(std::string filename) : MappedFile() { filename_ = std::move(filename); }
 
   bool valid() { return addr_ != nullptr && size_ != 0; }

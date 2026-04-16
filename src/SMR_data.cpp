@@ -4297,19 +4297,16 @@ double heidi_test(bInfo* bdata, SMRWK* smrwk, long maxid, double ld_top, double 
 
   return pdev;
 }
+
 void update_snidx(SMRWK* smrwk, std::vector<int>& sn_ids, int max_snp_slct, std::string forwhat) {
   if (sn_ids.size() > max_snp_slct) {
-    // printf("Top %d SNPs (ordered by eQTL p-value) are used int the %s...\n",max_snp_slct,forwhat.c_str());
-    std::priority_queue<std::pair<double, int>> q;
-    std::vector<int> sn_slct_ids;
-    for (int i = 0; i < sn_ids.size(); i++) q.push((std::pair<double, int>(fabs(smrwk->zxz[sn_ids[i]]), sn_ids[i])));
-    for (int i = 0; i < max_snp_slct; i++) {
-      sn_slct_ids.push_back(q.top().second);
-      q.pop();
-    }
-    sn_ids.swap(sn_slct_ids);
+    auto cmp = [&](int a, int b) { return fabs(smrwk->zxz[a]) > fabs(smrwk->zxz[b]); };
+    std::nth_element(sn_ids.begin(), sn_ids.begin() + max_snp_slct, sn_ids.end(), cmp);
+    sn_ids.resize(max_snp_slct);
+    std::sort(sn_ids.begin(), sn_ids.end(), cmp);
   }
 }
+
 void extract_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids, SMRWK* smrwk2) {
   smrwk2->init(smrwk->cur_chr, smrwk->cur_prbidx, sn_ids.size());
   for (int sn_id : sn_ids) {
@@ -4328,50 +4325,47 @@ void extract_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids, SMRWK* smrwk2) {
     smrwk2->allele2.push_back(smrwk->allele2[sn_id]);
   }
 }
-void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1) {
-  // approximate maximum independent set
-  // Modified version of rm_cor_indi from grm.cpp
 
-  int i = 0, j = 0, i_buf = 0;
-  std::vector<int> rm_ID2;
+void rm_cor_sbat(const MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1) {
+  // Approximate maximum independent set by greedily removing the most-connected node
+  // from each correlated pair.
 
-  // float tmpr = 0; //rm_ID1 is the same as indx1 in ld_prune of R Script
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < i; j++) {
-      if (fabs(R(i, j)) > R_cutoff) {
-        rm_ID1.push_back(j);
-        rm_ID2.push_back(i);
+  std::vector<std::pair<int, int>> edges;
+  edges.reserve(m);
+
+  // 1. Collect all correlated pairs
+  for (int i = 1; i < m; i++) {
+    for (int j = 0; j < i; j++) {
+      if (std::fabs(R(i, j)) > R_cutoff) {
+        edges.emplace_back(j, i);
       }
     }
   }
 
-  // count the number of appearance of each "position" in the vector, which involves a few steps
-  std::vector<int> rm_uni_ID(rm_ID1);
-  rm_uni_ID.insert(rm_uni_ID.end(), rm_ID2.begin(), rm_ID2.end());
-  std::stable_sort(rm_uni_ID.begin(), rm_uni_ID.end());
-  rm_uni_ID.erase(std::unique(rm_uni_ID.begin(), rm_uni_ID.end()), rm_uni_ID.end());
-  std::map<int, int> rm_uni_ID_count;
-  for (i = 0; i < rm_uni_ID.size(); i++) {
-    i_buf =
-        std::count(rm_ID1.begin(), rm_ID1.end(), rm_uni_ID[i]) + std::count(rm_ID2.begin(), rm_ID2.end(), rm_uni_ID[i]);
-    rm_uni_ID_count.insert(std::pair<int, int>(rm_uni_ID[i], i_buf));
+  if (edges.empty()) return;
+
+  // 2. Count how many correlated pairs each index participates in
+  std::unordered_map<int, int> degree;
+  degree.reserve(edges.size());
+  for (const auto& [a, b] : edges) {
+    ++degree[a];
+    ++degree[b];
   }
 
-  // swapping
-  std::map<int, int>::iterator iter1, iter2;
-  for (i = 0; i < rm_ID1.size(); i++) {
-    iter1 = rm_uni_ID_count.find(rm_ID1[i]);
-    iter2 = rm_uni_ID_count.find(rm_ID2[i]);
-    int c1 = iter1->second, c2 = iter2->second;
-    if (c1 < c2) {
-      i_buf = rm_ID1[i];
-      rm_ID1[i] = rm_ID2[i];
-      rm_ID2[i] = i_buf;
-    }
+  // 3. For each pair, mark the higher-degree node for removal
+  //    (swap so rm_ID1 always gets the more-connected index)
+  std::unordered_set<int> removed;
+  removed.reserve(degree.size());
+  for (const auto& [a, b] : edges) {
+    int to_remove = (degree[a] >= degree[b]) ? a : b;
+    removed.insert(to_remove);
   }
-  std::stable_sort(rm_ID1.begin(), rm_ID1.end());
-  rm_ID1.erase(std::unique(rm_ID1.begin(), rm_ID1.end()), rm_ID1.end());
+
+  // 4. Produce sorted output
+  rm_ID1.assign(removed.begin(), removed.end());
+  std::sort(rm_ID1.begin(), rm_ID1.end());
 }
+
 void update_smrwk(SMRWK* smrwk, std::vector<int>& sn_ids) {
   std::vector<double> byz, seyz, bxz, sexz, zxz, freq, pyz;
   std::vector<std::uint32_t> curId;
@@ -4471,7 +4465,7 @@ void update_smrwk_x(SMRWK* smrwk, std::vector<int>& sn_ids, MatrixXd& X) {
   smrwk->rs.swap(rs);
   smrwk->allele1.swap(allele1);
   smrwk->allele2.swap(allele2);
-  X = _X;
+  X.swap(_X);
 }
 double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero, long& nsnp,
                       double ld_min, int opt_hetero, bool sampleoverlap, double theta) {
@@ -4497,8 +4491,8 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   long maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
   make_XMat(bdata, smrwk_heidi.curId, _X);
-  spdlog::info("Removing SNPs with LD r-squared between top-SNP {:<11} > {} or < {}...",
-               smrwk_heidi.rs[maxid_heidi].c_str(), ldr2_top, ld_min);
+  spdlog::debug("Removing SNPs with LD r-squared between top-SNP {:<11} > {} or < {}...",
+                smrwk_heidi.rs[maxid_heidi].c_str(), ldr2_top, ld_min);
   ld_calc_o2m(ld_v, maxid_heidi, _X);
 
   /*for (int i=0;i<ld_v.size();i++) {
@@ -4519,8 +4513,8 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
       }
     }
   }
-  spdlog::info("{:3d} SNPs are removed and {:3d} SNPs are retained.", smrwk_heidi.zxz.size() - sn_ids.size(),
-               sn_ids.size());
+  spdlog::debug("{:3d} SNPs are removed and {:3d} SNPs are retained.", smrwk_heidi.zxz.size() - sn_ids.size(),
+                sn_ids.size());
   if (sn_ids.size() < m_hetero) {
     // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
     // m_hetero);

@@ -71,3 +71,37 @@ If you need specify Eigne path you can use `-Deigen_path="path_to_Eigen"` when r
 
 ## Usage
 visit https://yanglab.westlake.edu.cn/software/smr/ for software's document.
+
+## Using SMR with AI Tools
+
+The SMR release package includes a built-in MCP (Model Context Protocol) server, enabling you to run SMR analyses through AI tools such as **Claude**, **Codex**, and **OpenCode** via natural language conversation.
+
+### Quick Start
+
+1. Download and extract the SMR release package.
+2. Configure the MCP server for your AI tool (see `CLAUDE_CODE_USAGE.md` in the release package for details).
+3. Start chatting with the AI — for example: *"Run an SMR analysis with bfile data/1kg_eur, gwas-summary data/bmi.ma, beqtl-summary data/eqtl.besd, output to results/smr_out"*.
+
+### Available MCP Tools
+
+| Tool | Function |
+|------|----------|
+| `run_smr_analysis` | Run the main SMR test (Wald ratio + HEIDI) |
+| `smr_multi` | Run set-based (multi-SNP) SMR analysis |
+| `make_besd` | Create a sparse BESD file from a text eQTL summary |
+| `make_besd_dense` | Create a dense BESD file from a text eQTL summary |
+| `query_besd` | Query a BESD file for significant SNP-probe associations |
+| `show_sample_size` | Display the sample size stored in a BESD file |
+| `recode_besd` | Convert a BESD file to COJO/SMR text format |
+| `plot_smr` | Generate SMR locus plots |
+| `make_bld` | Create a BLD (binary LD) file from a PLINK bfile |
+| `update_freq` | Update allele frequencies in a BESD file |
+| `meta_analysis` | Run meta-analysis of multiple eQTL studies (MeCS) |
+| `combine_besd` | Combine multiple BESD files into one |
+| `count_cis` | Count cis-eQTL in a BESD file |
+| `count_trans` | Count trans-eQTL in a BESD file |
+| `update_epi_esi` | Update EPI/ESI annotation files in a BESD file |
+| `get_version` | Get SMR version information |
+| `run_raw_command` | Pass arbitrary SMR command-line arguments (escape hatch) |
+
+For full configuration instructions for Claude Desktop, Claude Code, OpenCode, and Codex, see **`CLAUDE_CODE_USAGE.md`** in the release package.

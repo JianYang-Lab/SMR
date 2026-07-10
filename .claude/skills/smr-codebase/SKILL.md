@@ -24,7 +24,7 @@ triggers:
 The core scientific question: *Is a SNP's effect on a phenotype mediated through gene expression?*
 
 - **Methods**: SMR test + HEIDI (Heterogeneity in Dependent Instruments) test
-- **Version**: 1.4.0
+- **Version**: 1.4.2
 - **Lab**: Yang Lab, Westlake University
 - **License**: MIT
 - **Reference**: Zhu et al. (2016), Nature Genetics

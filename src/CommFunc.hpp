@@ -69,7 +69,7 @@ inline T ABS(T const& a) {
 template <typename T>
 extern void free2(T** to) {
   if (*to != nullptr) {
-    //   delete(*to);
+    delete[] *to;
     *to = nullptr;
   }
 }

@@ -576,7 +576,7 @@ void read_plink_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
 }
 
 void read_merlin_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<std::string>& a1,
-                           std::vector<std::string>& a2, std::vector<float> freq, std::vector<float>& beta,
+                           std::vector<std::string>& a2, std::vector<float>& freq, std::vector<float>& beta,
                            std::vector<float>& se, std::string esdpath) {
   std::cout << "Reading summary information from [" + esdpath + "]." << std::endl;
   char tbuf[MAX_LINE_SIZE];
@@ -658,7 +658,7 @@ void read_merlin_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, 
 }
 
 void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
-                       std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
+                       std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float>& freq,
                        std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   gzFile gzfile = nullptr;
   std::ifstream flptr;
@@ -760,7 +760,7 @@ void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std:
 }
 
 void read_bolt_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
-                      std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float> freq,
+                      std::vector<std::string>& a1, std::vector<std::string>& a2, std::vector<float>& freq,
                       std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   gzFile gzfile = nullptr;
   std::ifstream flptr;

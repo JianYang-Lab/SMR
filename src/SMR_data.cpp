@@ -3167,7 +3167,7 @@ void cor_calc(MatrixXd& LD, MatrixXd& X) {
   VectorXd scale = (n * sum_sq.array() - sum.array().square()).sqrt();
 
   // Handle zero variance to avoid NaN
-  // scale = scale.cwiseMax(Eigen::NumTraits<double>::epsilon());
+  scale = scale.cwiseMax(Eigen::NumTraits<double>::epsilon());
 
   // 5. Scale to correlation using reciprocal multiplication (avoid division & temporary matrix)
   // Instead of: LD ./ (scale * scale') which creates a p×p temporary
@@ -4378,7 +4378,7 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   }
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
-  if (sn_ids.size() < C.size()) {  // Build new matrix
+  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -5285,7 +5285,7 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
   if (std::find(sn_ids.begin(), sn_ids.end(), refid_heidi) == sn_ids.end()) {
     sn_ids[sn_ids.size() - 1] = (int)refid_heidi;  // in case of target SNP is not in top 20
   }
-  if (sn_ids.size() < C.size()) {  // Build new matrix
+  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -5383,7 +5383,7 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
   if (std::find(sn_ids.begin(), sn_ids.end(), refid_heidi) == sn_ids.end()) {
     sn_ids[sn_ids.size() - 1] = (int)refid_heidi;  // in case that target SNP is not in top 20
   }
-  if (sn_ids.size() < C.size()) {  // Build new matrix
+  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -5491,7 +5491,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   }
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
-  if (sn_ids.size() < C.size()) {  // Build new matrix
+  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -6495,36 +6495,38 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 
 // sort in ascend order
 int comp(const void* a, const void* b) {
-  return (((*(probeinfolst*)a).probechr > (*(probeinfolst*)b).probechr) ||
-          (((*(probeinfolst*)a).probechr == (*(probeinfolst*)b).probechr) &&
-           ((*(probeinfolst*)a).bp > (*(probeinfolst*)b).bp)))
-             ? 1
-             : -1;
+  if ((*(probeinfolst*)a).probechr != (*(probeinfolst*)b).probechr)
+    return ((*(probeinfolst*)a).probechr > (*(probeinfolst*)b).probechr) ? 1 : -1;
+  if ((*(probeinfolst*)a).bp != (*(probeinfolst*)b).bp) return ((*(probeinfolst*)a).bp > (*(probeinfolst*)b).bp) ? 1 : -1;
+  return 0;
 }
 
 int comp2(const void* a, const void* b) {
-  return (((*(probeinfolst2*)a).probechr > (*(probeinfolst2*)b).probechr) ||
-          (((*(probeinfolst2*)a).probechr == (*(probeinfolst2*)b).probechr) &&
-           ((*(probeinfolst2*)a).bp > (*(probeinfolst2*)b).bp)))
-             ? 1
-             : -1;
+  if ((*(probeinfolst2*)a).probechr != (*(probeinfolst2*)b).probechr)
+    return ((*(probeinfolst2*)a).probechr > (*(probeinfolst2*)b).probechr) ? 1 : -1;
+  if ((*(probeinfolst2*)a).bp != (*(probeinfolst2*)b).bp)
+    return ((*(probeinfolst2*)a).bp > (*(probeinfolst2*)b).bp) ? 1 : -1;
+  return 0;
 }
 
 int comp_esi(const void* a, const void* b) {
-  return (((*(snpinfolst*)a).snpchr > (*(snpinfolst*)b).snpchr) ||
-          (((*(snpinfolst*)a).snpchr == (*(snpinfolst*)b).snpchr) && ((*(snpinfolst*)a).bp > (*(snpinfolst*)b).bp)))
-             ? 1
-             : -1;
+  if ((*(snpinfolst*)a).snpchr != (*(snpinfolst*)b).snpchr)
+    return ((*(snpinfolst*)a).snpchr > (*(snpinfolst*)b).snpchr) ? 1 : -1;
+  if ((*(snpinfolst*)a).bp != (*(snpinfolst*)b).bp) return ((*(snpinfolst*)a).bp > (*(snpinfolst*)b).bp) ? 1 : -1;
+  return 0;
 }
 
 int comp_i4tran(const void* a, const void* b) {
-  return (((*(info4trans*)a).snpchr > (*(info4trans*)b).snpchr) ||
-          (((*(info4trans*)a).snpchr == (*(info4trans*)b).snpchr) && ((*(info4trans*)a).bp > (*(info4trans*)b).bp)))
-             ? 1
-             : -1;
+  if ((*(info4trans*)a).snpchr != (*(info4trans*)b).snpchr)
+    return ((*(info4trans*)a).snpchr > (*(info4trans*)b).snpchr) ? 1 : -1;
+  if ((*(info4trans*)a).bp != (*(info4trans*)b).bp) return ((*(info4trans*)a).bp > (*(info4trans*)b).bp) ? 1 : -1;
+  return 0;
 }
 
-int comp_estn(const void* a, const void* b) { return ((*(snpinfolst*)a).estn > (*(snpinfolst*)b).estn) ? 1 : -1; }
+int comp_estn(const void* a, const void* b) {
+  if ((*(snpinfolst*)a).estn == (*(snpinfolst*)b).estn) return 0;
+  return ((*(snpinfolst*)a).estn > (*(snpinfolst*)b).estn) ? 1 : -1;
+}
 
 void free_snplist(std::vector<snpinfolst>& a) {
   for (int i = 0; i < a.size(); i++) {

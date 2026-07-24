@@ -144,7 +144,10 @@ static inline void FLAGS_VALID_CK(int option_num, char* option_str[]) {
                         "--qtltools-permu-format",
                         "--nmecs",
                         "--outcome-wind",
-                        "--enable-gwas-comments"};
+                        "--enable-gwas-comments",
+                        "--esd-std",
+                        "--est-n",
+                        "--opt-selection"};
 
   // define varible flags, using start pointer and end pointer.
   std::vector<std::string> flags(flgs, flgs + sizeof(flgs) / sizeof(flgs[0]));

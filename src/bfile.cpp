@@ -248,7 +248,10 @@ void read_bedfile(bInfo* bdata, const std::string& bedfile) {
   std::fstream BIT(bedfile.c_str(), std::ios::in | std::ios::binary);
   if (!BIT) throw("Error: can not open the file [" + bedfile + "] to read.");
   std::cout << "Reading PLINK BED file from [" + bedfile + "] in SNP-major format ..." << std::endl;
-  for (i = 0; i < 3; i++) BIT.read(ch, 1);  // skip the first three bytes
+  unsigned char bed_magic[3] = {0, 0, 0};
+  for (i = 0; i < 3; i++) BIT.read((char*)&bed_magic[i], 1);
+  if (!BIT || bed_magic[0] != 0x6C || bed_magic[1] != 0x1B || bed_magic[2] != 0x01)
+    throw("Error: [" + bedfile + "] is not a valid PLINK BED file in SNP-major format.");
   int snp_indx = 0, indi_indx = 0;
   for (j = 0, snp_indx = 0; j < bdata->_snp_num;
        j++) {  // Read genotype in SNP-major mode, 00: homozygote AA; 11: homozygote BB; 01: hetezygote; 10: missing

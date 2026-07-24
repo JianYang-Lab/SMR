@@ -78,8 +78,10 @@ int main(int argc, char** argv) {
     option(argc, argv);
   } catch (const std::string& err_msg) {
     std::cerr << "\n" << err_msg << std::endl;
+    return EXIT_FAILURE;
   } catch (const char* err_msg) {
     std::cerr << "\n" << err_msg << std::endl;
+    return EXIT_FAILURE;
   }
 
   curr = time(0);
@@ -328,8 +330,8 @@ void option(int option_num, char* option_str[]) {
     } else if (strcmp(option_str[i], "--beqtl-list-index") == 0) {
       if (eqtllistIndex == 0) {
         char* str = option_str[++i];
-        FLAG_VALID_CK("--beqtl-list", str);
-        printf("--beqtl-list %s\n", str);
+        FLAG_VALID_CK("--beqtl-list-index", str);
+        printf("--beqtl-list-index %s\n", str);
         eqtllistIndex = std::stoi(str);
       }
     } else if (strcmp(option_str[i], "--keep") == 0) {

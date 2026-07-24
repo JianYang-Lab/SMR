@@ -820,6 +820,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       for (int j = 0; j < etmp._probNum; j++) {
         std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
           std::string bpaths = probeinfo[prbindx].besdpath[0];
@@ -1006,6 +1010,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       for (int j = 0; j < etmp._probNum; j++) {
         std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
           std::string bpaths = probeinfo[prbindx].besdpath[0];
@@ -1328,6 +1336,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       for (int j = 0; j < etmp._probNum; j++) {
         std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1)  // or if(probeinfo[prbindx].beta_se.size()>0)
         {
@@ -1411,6 +1423,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       for (int j = 0; j < etmp._probNum; j++) {
         std::string curprb = etmp._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
           printf(
@@ -2013,6 +2029,10 @@ void save_slct_sparses_sbesd(char* outFileName, std::vector<probeinfolst2>& prob
       for (int j = 0; j < eqtlinfo._probNum; j++) {
         std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
           std::string bpaths = probeinfo[prbindx].besdpath[0];
@@ -2227,9 +2247,9 @@ void save_slct_sparses_sbesd(char* outFileName, std::vector<probeinfolst2>& prob
       probeinfo[j].rowid = ridbuff;
       probeinfo[j].beta_se = betasebuff;
       for (int k = 0; k < probeinfo[j].vnum; k++) {
-        delete (probeinfo[j].sinfo[k].snprs);
-        delete (probeinfo[j].sinfo[k].a1);
-        delete (probeinfo[j].sinfo[k].a2);
+        delete[] (probeinfo[j].sinfo[k].snprs);
+        delete[] (probeinfo[j].sinfo[k].a1);
+        delete[] (probeinfo[j].sinfo[k].a2);
       }
       free(probeinfo[j].sinfo);
       probeinfo[j].sinfo = nullptr;
@@ -2420,6 +2440,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         snpinfo.clear();
         std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1)  // or if(probeinfo[prbindx].beta_se.size()>0)
         {
@@ -2581,6 +2605,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         std::vector<std::uint32_t> rowidx;
         std::string curprb = eqtlinfo._epi_prbID[j];
         iter = epi_map.find(curprb);
+        if (iter == epi_map.end()) {
+          printf("ERROR: Probe %s is not found in the .epi file.\n", curprb.c_str());
+          exit(EXIT_FAILURE);
+        }
         int prbindx = iter->second;
         if (probeinfo[prbindx].besdpath.size() > 1) {
           printf(

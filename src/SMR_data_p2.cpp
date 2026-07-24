@@ -2218,9 +2218,9 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
     cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
 
     for (int k = 0; k < snpinfo.size(); k++) {
-      if (fformat != 1) delete (snpinfo[k].a1);
-      if (fformat != 1) delete (snpinfo[k].a2);
-      delete (snpinfo[k].snprs);
+      if (fformat != 1) delete[] (snpinfo[k].a1);
+      if (fformat != 1) delete[] (snpinfo[k].a2);
+      delete[] (snpinfo[k].snprs);
     }
   }
   std::uint64_t valNum = val.size();

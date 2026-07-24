@@ -189,8 +189,8 @@ std::uint64_t countNotNullNum(std::vector<std::string>& smasNames, int& densefnu
     }
     if (filetype == DENSE_FILE_TYPE_1) {
       densefnum++;
-      while (!feof(fptr)) {
-        float tmpfloat = readfloat(fptr);
+      float tmpfloat;
+      while (fread(&tmpfloat, sizeof(float), 1, fptr) == 1) {
         if (fabs(tmpfloat + 9) > 1e-6) valnum++;
       }
     }
@@ -551,7 +551,10 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
           printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
           exit(EXIT_FAILURE);
         }
-        fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
+        if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
+          printf("ERROR: File read failed!\n");
+          exit(EXIT_FAILURE);
+        }
 
         ptr = colbuf;
         rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
@@ -810,7 +813,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
+      if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
+        printf("ERROR: File read failed!\n");
+        exit(EXIT_FAILURE);
+      }
 
       ptr = colbuf;
       rowSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
@@ -1326,7 +1332,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
+      if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
+        printf("ERROR: File read failed!\n");
+        exit(EXIT_FAILURE);
+      }
 
       ptr = colbuf;
       rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
@@ -2019,7 +2028,10 @@ void save_slct_sparses_sbesd(char* outFileName, std::vector<probeinfolst2>& prob
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
+      if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
+        printf("ERROR: File read failed!\n");
+        exit(EXIT_FAILURE);
+      }
 
       ptr = colbuf;
       rowSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
@@ -2429,7 +2441,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
         exit(EXIT_FAILURE);
       }
-      fread(colbuf, colNum, sizeof(std::uint64_t), fptr);
+      if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
+        printf("ERROR: File read failed!\n");
+        exit(EXIT_FAILURE);
+      }
 
       ptr = colbuf;
       rowSTART = descriptive * sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);

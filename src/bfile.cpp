@@ -369,11 +369,8 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
       }
     }
     ldnum += preldnum - 1;
-    // 注意：这里ldnum有可能是负数，如果为负，需要重新置为0
-    if (ldnum < 0) {
-      std::cout << "i:" << i << "ldnum: " << ldnum << std::endl;
-      // ldnum = 0;
-    }
+    // ldnum can be negative here; clamp it to 0
+    if (ldnum < 0) ldnum = 0;
     preldnum = ldnum;
     // 在这里已经是和第i个snp距离小于window的snp数量之和了
     cols[i + 1] = cols[i] + ldnum;
@@ -1080,11 +1077,17 @@ void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& cu
     if (testid == toid) ld[i] = 1;
     else if (testid > toid) {
       long poss = ldinfo->_cols[toid];
-      fseek(ldfprt, (poss + testid - toid - 1) * sizeof(float) + valSTART, SEEK_SET);
+      if (fseek(ldfprt, (poss + testid - toid - 1) * sizeof(float) + valSTART, SEEK_SET) != 0) {
+        printf("ERROR: File seek failed!\n");
+        exit(EXIT_FAILURE);
+      }
       ld[i] = readfloat(ldfprt);
     } else {
       long poss = ldinfo->_cols[testid];
-      fseek(ldfprt, (poss + toid - testid - 1) * sizeof(float) + valSTART, SEEK_SET);
+      if (fseek(ldfprt, (poss + toid - testid - 1) * sizeof(float) + valSTART, SEEK_SET) != 0) {
+        printf("ERROR: File seek failed!\n");
+        exit(EXIT_FAILURE);
+      }
       ld[i] = readfloat(ldfprt);
     }
   }
@@ -1098,7 +1101,10 @@ void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid,
   std::uint64_t post = ldinfo->_cols[sid + 1];
   long num = post - poss;
   ld.resize(num);
-  fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET);
+  if (fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET) != 0) {
+    printf("ERROR: File seek failed!\n");
+    exit(EXIT_FAILURE);
+  }
   if (fread(&ld[0], sizeof(float), num, ldfprt) != num) {
     printf("ERROR: File read failed!\n");
     exit(EXIT_FAILURE);
@@ -1119,7 +1125,10 @@ void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, std::string rs, std::vector<
   std::uint64_t post = ldinfo->_cols[sid + 1];
   long num = post - poss;
   ld.resize(num);
-  fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET);
+  if (fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET) != 0) {
+    printf("ERROR: File seek failed!\n");
+    exit(EXIT_FAILURE);
+  }
   if (fread(&ld[0], sizeof(float), num, ldfprt) != num) {
     printf("ERROR: File read failed!\n");
     exit(EXIT_FAILURE);
@@ -1148,7 +1157,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     printf("Error: can't open file %s.\n", inputname);
     exit(EXIT_FAILURE);
   }
-  if (fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) < 1) {
+  if (fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) != RESERVEDUNITS) {
     printf("ERROR: File %s read failed!\n", inputname);
     exit(EXIT_FAILURE);
   }
@@ -1176,7 +1185,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   }
 
   ldinfo._cols.resize(colNum);
-  if (fread(&ldinfo._cols[0], sizeof(std::uint64_t), colNum, bld) < 1) {
+  if (fread(&ldinfo._cols[0], sizeof(std::uint64_t), colNum, bld) != colNum) {
     printf("ERROR: File %s read failed!\n", inputname);
     exit(EXIT_FAILURE);
   }
@@ -1217,7 +1226,10 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
       int bpj = ldinfo._esi_bp[sidi];
       std::string rsj = ldinfo._esi_rs[sidi];
       std::uint64_t poss = ldinfo._cols[sidi];
-      fseek(bld, (poss + sid - sidi - 1) * sizeof(float) + valSTART, SEEK_SET);
+      if (fseek(bld, (poss + sid - sidi - 1) * sizeof(float) + valSTART, SEEK_SET) != 0) {
+        printf("ERROR: File seek failed!\n");
+        exit(EXIT_FAILURE);
+      }
       float ldv = readfloat(bld);
       std::string tmpstr = atos(chrj) + '\t' + atos(bpj) + '\t' + rsj + '\t' + atos(chri) + '\t' + atos(bpi) + '\t' +
                            rsi + '\t' + atos(ldv) + '\n';
@@ -1233,7 +1245,10 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
     std::uint64_t poss = ldinfo._cols[sid];
     std::uint64_t post = ldinfo._cols[sid + 1];
     long num = post - poss;
-    fseek(bld, poss * sizeof(float) + valSTART, SEEK_SET);
+    if (fseek(bld, poss * sizeof(float) + valSTART, SEEK_SET) != 0) {
+      printf("ERROR: File seek failed!\n");
+      exit(EXIT_FAILURE);
+    }
     if (fread(buffer, sizeof(float), num, bld) != num) {
       printf("ERROR: File %s read failed!\n", inputname);
       exit(EXIT_FAILURE);

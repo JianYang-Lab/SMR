@@ -3568,55 +3568,64 @@ bool mecs_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohor
   bool enoughsnp = pcc(Corr, buffer_beta, buffer_se, snpnum, cohortnum, pmecs, nmecs);
   if (!enoughsnp) return false;
 // std::cout<<Corr<<std::endl;
-#pragma omp parallel for
-  for (int j = 0; j < snpnum; j++) {
-    std::vector<double> ses, betas;
-    std::vector<int> keep;
-    // MatrixXd Corr_work = Corr;
-    MatrixXd Corr_work;
-    int nmiss = 0, miss = 0;
-    for (int k = 0; k < cohortnum; k++) {
-      double se = buffer_se[k * snpnum + j];
-      double beta = buffer_beta[k * snpnum + j];
-      buffer_se[k * snpnum + j] = -9;
-      if (fabs(se + 9) > 1e-6) {
-        ses.push_back(se);
-        betas.push_back(beta);
-        keep.push_back(k);
-        nmiss++;
-      } else {
-        // removeRow(Corr_work, k-miss);
-        // removeColumn(Corr_work, k-miss);
-        miss++;
+#pragma omp parallel
+  {
+    std::vector<int> noninvertible_th, negativedeno_th;
+#pragma omp for nowait
+    for (int j = 0; j < snpnum; j++) {
+      std::vector<double> ses, betas;
+      std::vector<int> keep;
+      // MatrixXd Corr_work = Corr;
+      MatrixXd Corr_work;
+      int nmiss = 0, miss = 0;
+      for (int k = 0; k < cohortnum; k++) {
+        double se = buffer_se[k * snpnum + j];
+        double beta = buffer_beta[k * snpnum + j];
+        buffer_se[k * snpnum + j] = -9;
+        if (fabs(se + 9) > 1e-6) {
+          ses.push_back(se);
+          betas.push_back(beta);
+          keep.push_back(k);
+          nmiss++;
+        } else {
+          // removeRow(Corr_work, k-miss);
+          // removeColumn(Corr_work, k-miss);
+          miss++;
+        }
+      }
+
+      if (nmiss == 1) {
+        buffer_beta[j] = betas[0];
+        buffer_se[j] = ses[0];
+      } else if (nmiss > 1) {
+        if (nmiss < cohortnum) subMatrix_symm(Corr_work, Corr, keep);
+        else if (nmiss == cohortnum) Corr_work = Corr;
+        else {
+          printf("Can't happen. I can guarantee!\n");
+        }
+        VectorXd sev(ses.size());
+        for (int k = 0; k < ses.size(); k++) sev(k) = ses[k];
+        MatrixXd W = sev * sev.transpose();
+        W = W.array() * Corr_work.array();
+        bool determinant_zero = false;
+        inverse_V(W, determinant_zero);
+        if (determinant_zero) noninvertible_th.push_back(j);
+        double deno = W.sum();
+        if (deno <= 0) {
+          negativedeno_th.push_back(j);
+        } else {
+          VectorXd colsum = W.colwise().sum();
+          double numerator = 0.0;
+          for (int k = 0; k < betas.size(); k++) numerator += colsum(k) * betas[k];
+          buffer_beta[j] = numerator / deno;
+          buffer_se[j] = 1 / sqrt(deno);
+        }
       }
     }
-
-    if (nmiss == 1) {
-      buffer_beta[j] = betas[0];
-      buffer_se[j] = ses[0];
-    } else if (nmiss > 1) {
-      if (nmiss < cohortnum) subMatrix_symm(Corr_work, Corr, keep);
-      else if (nmiss == cohortnum) Corr_work = Corr;
-      else {
-        printf("Can't happen. I can guarantee!\n");
-      }
-      VectorXd sev(ses.size());
-      for (int k = 0; k < ses.size(); k++) sev(k) = ses[k];
-      MatrixXd W = sev * sev.transpose();
-      W = W.array() * Corr_work.array();
-      bool determinant_zero = false;
-      inverse_V(W, determinant_zero);
-      if (determinant_zero) noninvertible.push_back(j);
-      double deno = W.sum();
-      if (deno <= 0) {
-        negativedeno.push_back(j);
-      } else {
-        VectorXd colsum = W.colwise().sum();
-        double numerator = 0.0;
-        for (int k = 0; k < betas.size(); k++) numerator += colsum(k) * betas[k];
-        buffer_beta[j] = numerator / deno;
-        buffer_se[j] = 1 / sqrt(deno);
-      }
+#pragma omp critical
+    {
+      noninvertible.insert(noninvertible.end(), noninvertible_th.begin(), noninvertible_th.end());
+      negativedeno.insert(negativedeno.end(), negativedeno_th.begin(), negativedeno_th.end());
     }
   }
   return true;
@@ -3832,7 +3841,10 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
     printf("ERROR: memory allocation failed for SEs.\n");
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < besdNum * metaSNPnum; i++) buffer_se[i] = -9;
+  for (long i = 0; i < besdNum * metaSNPnum; i++) {
+    buffer_beta[i] = -9;
+    buffer_se[i] = -9;
+  }
   std::vector<std::string> noninvtb_prbs;
   std::vector<std::string> nega_prbs;
   std::vector<std::string> snpdeficent;

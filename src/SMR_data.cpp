@@ -788,10 +788,10 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
-      for (int i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
+      for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
       auto* val_ptr = (float*)ptr;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
         std::cout << "eQTL summary-level statistics of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -1090,8 +1090,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
       for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = (std::uint32_t)*ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
         std::cout << "eQTL summary data of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -1304,11 +1304,11 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       // std::cout << "colNum: " << colNum << std::endl;
       // std::cout << "valNum: " << valNum << std::endl;
 
-      for (int i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
+      for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       std::uint32_t* ptr4B = (std::uint32_t*)ptr;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
       float* val_ptr = (float*)ptr4B;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       // std::cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << std::endl;
       // std::cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << std::endl;
@@ -3126,12 +3126,18 @@ void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const std::vector<std:
 
       if (id1 > id2) {
         long poss = ldinfo->_cols[id2];
-        fseek(ldfprt, (poss + id1 - id2 - 1) * sizeof(float) + valSTART, SEEK_SET);
+        if (fseek(ldfprt, (poss + id1 - id2 - 1) * sizeof(float) + valSTART, SEEK_SET) != 0) {
+          printf("ERROR: File seek failed!\n");
+          exit(EXIT_FAILURE);
+        }
         if (indicator) LD(i, j) = LD(j, i) = sqrt(readfloat(ldfprt));
         else LD(i, j) = LD(j, i) = readfloat(ldfprt);
       } else {
         long poss = ldinfo->_cols[id1];
-        fseek(ldfprt, (poss + id2 - id1 - 1) * sizeof(float) + valSTART, SEEK_SET);
+        if (fseek(ldfprt, (poss + id2 - id1 - 1) * sizeof(float) + valSTART, SEEK_SET) != 0) {
+          printf("ERROR: File seek failed!\n");
+          exit(EXIT_FAILURE);
+        }
         if (indicator) LD(i, j) = LD(j, i) = sqrt(readfloat(ldfprt));
         else LD(i, j) = LD(j, i) = readfloat(ldfprt);
       }
@@ -5128,7 +5134,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
         printf("Error: can't open file %s.\n", inputname);
         exit(EXIT_FAILURE);
       }
-      if (fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) < 1) {
+      if (fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) != RESERVEDUNITS) {
         printf("ERROR: File %s read failed!\n", inputname);
         exit(EXIT_FAILURE);
       }
@@ -5147,7 +5153,7 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
         exit(EXIT_FAILURE);
       }
       ldinfo._cols.resize(colNum);
-      if (fread(&ldinfo._cols[0], sizeof(std::uint64_t), colNum, bld) < 1) {
+      if (fread(&ldinfo._cols[0], sizeof(std::uint64_t), colNum, bld) != colNum) {
         printf("ERROR: File %s read failed!\n", inputname);
         exit(EXIT_FAILURE);
       }
@@ -7422,10 +7428,10 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
-      for (int i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
+      for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
       float* val_ptr = (float*)ptr;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
         std::cout << "eQTL summary-level statistics of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -7624,8 +7630,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
       for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = (std::uint32_t)*ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
         std::cout << "eQTL summary data of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -7835,11 +7841,11 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       // std::cout << "colNum: " << colNum << std::endl;
       // std::cout << "valNum: " << valNum << std::endl;
 
-      for (int i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
+      for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       std::uint32_t* ptr4B = (std::uint32_t*)ptr;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
       float* val_ptr = (float*)ptr4B;
-      for (int i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       // std::cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << std::endl;
       // std::cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << std::endl;

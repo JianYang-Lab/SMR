@@ -555,6 +555,10 @@ void option(int option_num, char* option_str[]) {
     } else if (0 == strcmp(option_str[i], "--thread-num")) {
       thread_num = atoi(option_str[++i]);
       printf("--thread-num %d\n", thread_num);
+      if (thread_num < 1) {
+        printf("ERROR: --thread-num must be a positive integer.\n");
+        exit(EXIT_FAILURE);
+      }
     } else if (0 == strcmp(option_str[i], "--besd-flist")) {
       combineFlg = true;
       eqtlsmaslstName = option_str[++i];

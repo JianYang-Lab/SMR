@@ -290,25 +290,29 @@ void CommFunc::strcpy2(char** to, const std::string& from) {
 
 float CommFunc::readfloat(FILE* f) {
   float v;
-  fread((void*)(&v), sizeof(v), 1, f);
+  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+    throw("ERROR: unexpected end of file or read error while reading float data.");
   return v;
 }
 
 std::uint64_t CommFunc::readuint64(FILE* f) {
   std::uint64_t v;
-  fread((void*)(&v), sizeof(v), 1, f);
+  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+    throw("ERROR: unexpected end of file or read error while reading uint64 data.");
   return v;
 }
 
 std::uint32_t CommFunc::readuint32(FILE* f) {
   std::uint32_t v;
-  fread((void*)(&v), sizeof(v), 1, f);
+  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+    throw("ERROR: unexpected end of file or read error while reading uint32 data.");
   return v;
 }
 
 int CommFunc::readint(FILE* f) {
   int v;
-  fread((void*)(&v), sizeof(v), 1, f);
+  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+    throw("ERROR: unexpected end of file or read error while reading int data.");
   return v;
 }
 

@@ -12,35 +12,16 @@ The SMR software tool was originally developed to implement the SMR & HEIDI meth
 ## Installation
 
 ### Install requirments
-Install Eigen and libz. If you want build smr staticlly, you need static library of those them. And the static version of omp is needed too.
+Dependencies (Eigen, zlib, spdlog, fmt, mimalloc) are fetched automatically by CMake — no manual installation needed. A C++17 compiler, CMake ≥ 3.16, and OpenMP are required.
 
 ### Build
 
 #### using make
 
-Simply, in smr directoy,
+Simply, in smr directory (delegates to `scripts/local/build.sh`):
 
 ```
 make
-```
-
-If you want compile static version, type:
-
-```
-make smr_static
-```
-
-If your Eigen or libz is not installed in standard head file and library searching path, you can
-specific them as following:
-
-```
-make EIGEN_PATH="where the Eigen's head file located" ZLIB_INCLUDE="path of zlib head file" ZLIB_LIB="path of zlib library"
-```
-
-To build smr by debug mode, using:
-
-```
-make DEBUG=ON
 ```
 
 #### using cmake
@@ -54,19 +35,19 @@ cmake ..
 make
 ```
 
-To turn on debug,
+The default build type is Release. To build with debug information,
 
 ```shell
-cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+cmake -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-To build static version of SMR,
+Useful CMake options:
 
-```shell
-cmake -DBUILD_STATIC=ON ..
-```
+- `-DBUILD_WITH_MKL=ON/OFF` (default ON): accelerate Eigen with Intel oneMKL; falls back to Eigen's native backend if MKL is not found. Use `-DMKL_DIR=...` or `-DMKL_ROOT=...` to point at your oneMKL installation.
+- `-DBUILD_WITH_MIMALLOC=ON/OFF` (default ON): link mimalloc for faster memory allocation.
+- `-DSMR_VERBOSE_CONFIGURE=ON`: print extended CMake configuration diagnostics.
 
-If you need specify Eigne path you can use `-Deigen_path="path_to_Eigen"` when run `cmake ..`. To specify zlib head and library files, using `-Dzlib_path=path_to_your_zlib`. If your zlib head file and library located in different directory, you can use `-Dzlib_include_path=where_zlib_head_files` and `-Dzlib_lib_path=where_zlib_lib` to specify them.
+Helper build scripts: `scripts/local/build.sh [-f|--fresh] [-g|--generate]` (Linux/macOS, uses oneMKL) and `scripts/hpc/build.sh` (HPC clusters).
 
 
 ## Usage

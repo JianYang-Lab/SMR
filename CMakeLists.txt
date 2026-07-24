@@ -1,12 +1,20 @@
 #SMR CMakeLists.txt
 
 cmake_minimum_required(VERSION 3.16)
-project(smr C CXX)
+
+file(STRINGS "${CMAKE_SOURCE_DIR}/src/config.h" SMR_VERSION_LINE REGEX "#define SMR_VERSION")
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" SMR_VERSION "${SMR_VERSION_LINE}")
+project(smr VERSION ${SMR_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
 
 option(BUILD_WITH_MIMALLOC "Use mimalloc for improved memory allocation performance" ON)
 option(SMR_VERBOSE_CONFIGURE "Print extended CMake configuration diagnostics" OFF)
@@ -59,10 +67,6 @@ if(SMR_VERBOSE_CONFIGURE)
     message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
     message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
     message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-endif()
-
-if(LINUX AND NOT OMP_LIBRARY)
-    set(OMP_LIBRARY "/usr/lib/libgomp.so")
 endif()
 
 include(cmake/SMRMKL.cmake)
@@ -137,19 +141,41 @@ if(BUILD_WITH_MIMALLOC)
     )
 endif()
 
-file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
-file(GLOB DCDFLIB_SRCS "${CMAKE_SOURCE_DIR}/third_party/dcdflib/*.c")
+set(SRCS
+    src/bfile.cpp
+    src/CommFunc.cpp
+    src/mmap_read.cpp
+    src/perf_timer.cpp
+    src/SMR.cpp
+    src/SMR_data.cpp
+    src/SMR_data_p1.cpp
+    src/SMR_data_p2.cpp
+    src/SMR_data_p3.cpp
+    src/SMR_plot.cpp
+    src/StatFunc.cpp
+    src/StrFunc.cpp
+)
+set(DCDFLIB_SRCS
+    third_party/dcdflib/dcdflib.c
+    third_party/dcdflib/ipmpar.c
+)
 add_executable(${PROJECT_NAME} ${SRCS} ${DCDFLIB_SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_party/dcdflib)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
+include(CheckCXXCompilerFlag)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     # Intel/AMD x86_64
-    target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+    check_cxx_compiler_flag("-march=x86-64-v3" SMR_HAS_MARCH_X86_64_V3)
+    if(SMR_HAS_MARCH_X86_64_V3)
+        target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+    endif()
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
     # Apple Silicon (M1/M2/M3) or other ARM64
-    target_compile_options(${PROJECT_NAME} PRIVATE -march=armv8.5-a)
-    # Or use -march=armv8.5-a for generic ARM64 optimization
+    check_cxx_compiler_flag("-march=armv8.5-a" SMR_HAS_MARCH_ARMV85A)
+    if(SMR_HAS_MARCH_ARMV85A)
+        target_compile_options(${PROJECT_NAME} PRIVATE -march=armv8.5-a)
+    endif()
 endif()
 
 if(smr_use_mkl)

@@ -70,7 +70,7 @@ function run {
 
         installed_lib=build/${BUILD_TYPE}/installed/usr/lib
         if [[ ! -d ${installed_lib} ]]; then
-            mkdir -p installed_lib
+            mkdir -p ${installed_lib}
         fi
 
         cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_avx512.so.2 ${installed_lib}/

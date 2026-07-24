@@ -23,8 +23,8 @@ function parse_args {
     # named args
     while [ "$1" != "" ]; do
         case "$1" in
-            -f | --an_arg )               fresh_build="--fresh";;
-            -g | --some_more_args )       cmake_gen=1;;
+            -f | --fresh )                fresh_build="--fresh";;
+            -g | --generate )             cmake_gen=1;;
             -h | --help )                 usage;                   exit;; # quit and show usage
             * )                           args+=("$1")             # if no match, add it to the positional args
         esac

@@ -93,12 +93,6 @@ std::string CommFunc::dtos(double value) {
   return (ss.str());
 }
 
-std::string CommFunc::dtosf(double value) {
-  std::stringstream ss;
-  ss << std::fixed << value;
-  return (ss.str());
-}
-
 std::string CommFunc::itos(int value) {
   std::stringstream ss;
   ss << value;

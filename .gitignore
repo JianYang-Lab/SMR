@@ -4,3 +4,6 @@ docs
 test
 comp.log
 build/
+
+.DS_Store
+.cache

@@ -22,7 +22,7 @@ using namespace CommFunc;
 using namespace StrFunc;
 
 namespace SMRDATA {
-void read_famfile(bInfo* bdata, std::string famfile) {
+void read_famfile(bInfo* bdata, const std::string& famfile) {
   bdata->_autosome_num = 22;
   std::ifstream ifs_fam(famfile.c_str());
   if (!ifs_fam) throw("Error: can not open the file [" + famfile + "] to read.");
@@ -156,7 +156,7 @@ void update_fam(bInfo* bdata, std::vector<int>& rindi) {
   }
 }
 
-void read_bimfile(bInfo* bdata, std::string bimfile) {
+void read_bimfile(bInfo* bdata, const std::string& bimfile) {
   // Read bim file: recombination rate is defined between SNP i and SNP i-1
   int ibuf = 0;
   std::string cbuf = "0";
@@ -213,7 +213,7 @@ void read_bimfile(bInfo* bdata, std::string bimfile) {
 }
 
 // some code are adopted from PLINK with modifications
-void read_bedfile(bInfo* bdata, std::string bedfile) {
+void read_bedfile(bInfo* bdata, const std::string& bedfile) {
   int i = 0, j = 0, k = 0;
 
   // Flag for reading individuals and SNPs
@@ -285,14 +285,14 @@ void read_bedfile(bInfo* bdata, std::string bedfile) {
   update_bim(bdata, rsnp);
 }
 
-void keep_indi(bInfo* bdata, std::string indi_list_file) {
+void keep_indi(bInfo* bdata, const std::string& indi_list_file) {
   std::vector<std::string> indi_list;
   read_indi_list(indi_list_file, indi_list);
   update_id_map_kp(indi_list, bdata->_id_map, bdata->_keep);
   std::cout << bdata->_keep.size() << " individuals are kept from [" + indi_list_file + "]." << std::endl;
 }
 
-void remove_indi(bInfo* bdata, std::string indi_list_file) {
+void remove_indi(bInfo* bdata, const std::string& indi_list_file) {
   std::vector<std::string> indi_list;
   read_indi_list(indi_list_file, indi_list);
   int prev_size = bdata->_keep.size();
@@ -328,7 +328,7 @@ void extract_snp(bInfo* bdata, int chr) {
   std::cout << bdata->_include.size() << " SNPs are extracted from chromosome " << chr << "." << std::endl;
 }
 
-void extract_snp(bInfo* bdata, std::string snplistfile) {
+void extract_snp(bInfo* bdata, const std::string& snplistfile) {
   std::vector<std::string> snplist;
   std::string msg = "SNPs";
   read_msglist(snplistfile, snplist, msg);
@@ -336,7 +336,7 @@ void extract_snp(bInfo* bdata, std::string snplistfile) {
   std::cout << bdata->_include.size() << " SNPs are extracted from [" + snplistfile + "]." << std::endl;
 }
 
-void exclude_snp(bInfo* bdata, std::string snplistfile) {
+void exclude_snp(bInfo* bdata, const std::string& snplistfile) {
   std::vector<std::string> snplist;
   std::string msg = "SNPs";
   read_msglist(snplistfile, snplist, msg);
@@ -1065,21 +1065,6 @@ void ld_esi_man(ldInfo* ldinfo, char* snplstName, char* snplst2exclde, int chr, 
   }
   if (snplst2exclde != nullptr) exclude_ld_esi_snp(ldinfo, snplst2exclde);
   if (snprs2exclde != nullptr) exclude_ld_esi_snps(ldinfo, snprs2exclde);
-}
-
-void get_BlddHeaders(char* blddFileName, std::vector<int>& headers)  //
-{
-  headers.resize(RESERVEDUNITS);
-  FILE* bld = fopen(blddFileName, "rb");
-  if (bld == nullptr) {
-    printf("Error: can't open file %s.\n", blddFileName);
-    exit(EXIT_FAILURE);
-  }
-  if (fread(&headers[0], sizeof(int), RESERVEDUNITS, bld) < 1) {
-    printf("ERROR: File %s read failed!\n", blddFileName);
-    exit(EXIT_FAILURE);
-  }
-  fclose(bld);
 }
 
 void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& curId, int sid, std::vector<float>& ld) {

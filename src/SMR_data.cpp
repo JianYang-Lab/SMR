@@ -176,6 +176,22 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
     printf("ERROR: %s should have headers that start with \"snp\".\n", gwasFileName);
     exit(EXIT_FAILURE);
   }
+  long gwas_start = gwasFile.tellg();
+  int line_count = 0;
+  while (gwasFile.getline(buf, MAX_LINE_SIZE)) {
+    if (buf[0] != '\0' && !(enableGwasComments && buf[0] == '#')) line_count++;
+  }
+  gwasFile.clear();
+  gwasFile.seekg(gwas_start);
+  gdata->snpName.reserve(line_count);
+  gdata->allele_1.reserve(line_count);
+  gdata->allele_2.reserve(line_count);
+  gdata->freq.reserve(line_count);
+  gdata->byz.reserve(line_count);
+  gdata->seyz.reserve(line_count);
+  gdata->pvalue.reserve(line_count);
+  gdata->splSize.reserve(line_count);
+  gdata->_include.reserve(line_count);
   while (gwasFile.getline(buf, MAX_LINE_SIZE)) {
     if (buf[0] == '\0') {
       continue;
@@ -253,21 +269,8 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
   fmt::print("GWAS summary data of {} SNPs to be included from [{}].\n", gdata->snpNum, gwasFileName);
   gwasFile.close();
 }
-/*
-void update_include_map(eqtlInfo* eqtlinfo)
-{
-eqtlinfo->_incld_id_map.clear();
-long size=0;
-for(int i=0;i<eqtlinfo->_esi_include.size();i++)
-{
-    eqtlinfo->_incld_id_map.insert(std::pair<int,int>(eqtlinfo->_esi_include[i],i));
-    if (size == eqtlinfo->_incld_id_map.size()) throw ("Error: Duplicated SNP IDs found: \"" +
-eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\"."); size = eqtlinfo->_incld_id_map.size();
-}
 
-}
-*/
-void read_esifile(eqtlInfo* eqtlinfo, std::string esifile, bool prtscr) {
+void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr) {
   std::ifstream esi(esifile.c_str());
   if (!esi.is_open()) throw("ERROR: can not open the file [" + esifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL SNP information from [" + esifile + "]." << std::endl;
@@ -277,6 +280,21 @@ void read_esifile(eqtlInfo* eqtlinfo, std::string esifile, bool prtscr) {
   std::vector<std::string> cols;
   int lineNum(0);
   bool ptrnullfrq = false, warn1 = false, warn2 = false;
+  long esi_start = esi.tellg();
+  int line_count = 0;
+  while (esi.getline(buf, MAX_LINE_SIZE)) {
+    if (buf[0] != '\0') line_count++;
+  }
+  esi.clear();
+  esi.seekg(esi_start);
+  eqtlinfo->_esi_chr.reserve(line_count);
+  eqtlinfo->_esi_rs.reserve(line_count);
+  eqtlinfo->_esi_gd.reserve(line_count);
+  eqtlinfo->_esi_bp.reserve(line_count);
+  eqtlinfo->_esi_allele1.reserve(line_count);
+  eqtlinfo->_esi_allele2.reserve(line_count);
+  eqtlinfo->_esi_freq.reserve(line_count);
+  eqtlinfo->_esi_include.reserve(line_count);
   while (esi.getline(buf, MAX_LINE_SIZE)) {
     if (buf[0] == '\0') continue;
 
@@ -367,7 +385,7 @@ void read_esifile(eqtlInfo* eqtlinfo, std::string esifile, bool prtscr) {
 }
 
 // read esifile rows which chr field equal param chr
-void read_esifile_by_chr(eqtlInfo* eqtlinfo, std::string esifile, int snpchr, bool prtscr) {
+void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snpchr, bool prtscr) {
   std::ifstream esi(esifile.c_str());
   if (!esi.is_open()) throw("ERROR: can not open the file [" + esifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL SNP information from [" + esifile + "]." << std::endl;
@@ -495,7 +513,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, std::string esifile, int snpchr, bo
     Read epi file which is part of beqtl summary file.
     and store the content into eqtlInfo structure.
  */
-void read_epifile(eqtlInfo* eqtlinfo, std::string epifile, bool prtscr) {
+void read_epifile(eqtlInfo* eqtlinfo, const std::string& epifile, bool prtscr) {
   std::ifstream epi(epifile.c_str());
   if (!epi) throw("ERROR: can not open the file [" + epifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL probe information from [" + epifile + "]." << std::endl;
@@ -505,6 +523,20 @@ void read_epifile(eqtlInfo* eqtlinfo, std::string epifile, bool prtscr) {
   char buf[MAX_LINE_SIZE];
   std::vector<std::string> cols;
   int rowNum = 0;
+  long epi_start = epi.tellg();
+  int line_count = 0;
+  while (epi.getline(buf, MAX_LINE_SIZE)) {
+    if (buf[0] != '\0') line_count++;
+  }
+  epi.clear();
+  epi.seekg(epi_start);
+  eqtlinfo->_epi_chr.reserve(line_count);
+  eqtlinfo->_epi_prbID.reserve(line_count);
+  eqtlinfo->_epi_gd.reserve(line_count);
+  eqtlinfo->_epi_bp.reserve(line_count);
+  eqtlinfo->_epi_gene.reserve(line_count);
+  eqtlinfo->_epi_orien.reserve(line_count);
+  eqtlinfo->_include.reserve(line_count);
   while (epi.getline(buf, MAX_LINE_SIZE)) {
     rowNum++;
     if (buf[0] == '\0') continue;
@@ -559,7 +591,7 @@ void read_epifile(eqtlInfo* eqtlinfo, std::string epifile, bool prtscr) {
   epi.close();
 }
 
-int shown(std::string besdfile) {
+int shown(const std::string& besdfile) {
   std::string fname = besdfile + ".besd";
   FILE* besd = fopen(fname.c_str(), "rb");
   if (!besd) {
@@ -592,7 +624,7 @@ int shown(std::string besdfile) {
   return ss;
 }
 
-void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
+void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr) {
   if (eqtlinfo->_include.empty()) throw("Error: No probe is retained for analysis.");
   if (eqtlinfo->_esi_include.empty()) throw("Error: No SNP is retained for analysis.");
   bool sorted = std::is_sorted(eqtlinfo->_esi_include.begin(), eqtlinfo->_esi_include.end()) &&
@@ -1306,9 +1338,11 @@ void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr) {
 
 void filter_probe_null(eqtlInfo* eqtlinfo) {
   std::vector<std::string> nullprobes;
+  nullprobes.reserve(eqtlinfo->_probNum);
   std::cout << "\nfiltering out the probes with no value..." << std::endl;
   if (eqtlinfo->_valNum == 0) {
     eqtlinfo->_include.clear();
+    eqtlinfo->_include.reserve(eqtlinfo->_probNum);
     for (int i = 0; i < eqtlinfo->_probNum; i++) {
       bool NA_flag = true;
       for (int j = 0; j < eqtlinfo->_snpNum; j++) {
@@ -1322,25 +1356,25 @@ void filter_probe_null(eqtlInfo* eqtlinfo) {
     }
   } else {
     eqtlinfo->_include.clear();
+    eqtlinfo->_include.reserve(eqtlinfo->_probNum);
     for (int i = 0; i < eqtlinfo->_probNum; i++) {
       if (eqtlinfo->_cols[(i << 1) + 1] > eqtlinfo->_cols[i << 1]) eqtlinfo->_include.push_back(i);
       else nullprobes.push_back(eqtlinfo->_epi_prbID[i]);
     }
   }
   eqtlinfo->_probe_name_map.clear();
-  for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-    eqtlinfo->_probe_name_map.insert(
-        std::pair<std::string, int>(eqtlinfo->_epi_prbID[eqtlinfo->_include[i]], eqtlinfo->_include[i]));
+  for (int i = 0, n = eqtlinfo->_include.size(); i < n; i++) {
+    eqtlinfo->_probe_name_map.emplace(eqtlinfo->_epi_prbID[eqtlinfo->_include[i]], eqtlinfo->_include[i]);
   }
-  if (nullprobes.size() > 0) {
+  if (!nullprobes.empty()) {
     std::string fname = "chr" + atos(eqtlinfo->_esi_chr[0]) + ".nullprobes.log";
     FILE* nullprobefile = fopen(fname.c_str(), "w");
     if (!(nullprobefile)) {
       printf("Error: Failed to open null probe log file.\n");
     }
-    for (int i = 0; i < nullprobes.size(); i++) {
-      std::string tmpstr = nullprobes[i] + '\n';
-      fputs(tmpstr.c_str(), nullprobefile);
+    for (int i = 0, n = nullprobes.size(); i < n; i++) {
+      fputs(nullprobes[i].c_str(), nullprobefile);
+      fputs("\n", nullprobefile);
     }
     fclose(nullprobefile);
   }
@@ -1351,10 +1385,12 @@ void filter_snp_null(eqtlInfo* eqtlinfo) {
   std::vector<std::string> nullSNPs;
   std::cout << "\nfiltering out the SNPs with no value..." << std::endl;
   std::vector<int> esi_include;
+  esi_include.reserve(eqtlinfo->_esi_include.size());
+  nullSNPs.reserve(eqtlinfo->_esi_include.size());
   if (eqtlinfo->_valNum == 0) {
-    for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
+    for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
       bool NA_flag = true;
-      for (int j = 0; j < eqtlinfo->_include.size(); j++) {
+      for (int j = 0, m = eqtlinfo->_include.size(); j < m; j++) {
         if (fabs(eqtlinfo->_sexz[eqtlinfo->_include[j]][eqtlinfo->_esi_include[i]] + 9) > 1e-6) {
           NA_flag = false;
           break;
@@ -1368,37 +1404,37 @@ void filter_snp_null(eqtlInfo* eqtlinfo) {
     rowid = eqtlinfo->_rowid;
     getUnique(rowid);
     std::vector<int> idx;
+    idx.reserve(eqtlinfo->_esi_include.size());
 
-    std::map<std::uint32_t, int> id_map;
-    std::map<std::uint32_t, int>::iterator iter;
-    for (int i = 0; i < rowid.size(); i++) id_map.insert(std::pair<std::uint32_t, int>(rowid[i], i));
-    for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
-      iter = id_map.find(eqtlinfo->_esi_include[i]);
+    std::unordered_map<std::uint32_t, int> id_map;
+    id_map.reserve(rowid.size() * 2);
+    for (int i = 0, n = rowid.size(); i < n; i++) id_map.emplace(rowid[i], i);
+    for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
+      auto iter = id_map.find(eqtlinfo->_esi_include[i]);
       if (iter == id_map.end()) idx.push_back(-9);
       else idx.push_back(iter->second);
     }
 
-    for (int i = 0; i < idx.size(); i++) {
+    for (int i = 0, n = idx.size(); i < n; i++) {
       if (idx[i] != -9) esi_include.push_back(eqtlinfo->_esi_include[i]);
       else nullSNPs.push_back(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]]);
     }
   }
   eqtlinfo->_esi_include.swap(esi_include);
   eqtlinfo->_snp_name_map.clear();
-  for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
-    eqtlinfo->_snp_name_map.insert(
-        std::pair<std::string, int>(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]], eqtlinfo->_esi_include[i]));
+  for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
+    eqtlinfo->_snp_name_map.emplace(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]], eqtlinfo->_esi_include[i]);
   }
-  if (nullSNPs.size() > 0) {
+  if (!nullSNPs.empty()) {
     std::string fname = "chr" + atos(eqtlinfo->_esi_chr[0]) + ".nullSNPs.log";
     FILE* nullsnpfile = fopen(fname.c_str(), "w");
     if (!(nullsnpfile)) {
       printf("Error: Failed to open null probe log file.\n");
       exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < nullSNPs.size(); i++) {
-      std::string tmpstr = nullSNPs[i] + '\n';
-      fputs(tmpstr.c_str(), nullsnpfile);
+    for (int i = 0, n = nullSNPs.size(); i < n; i++) {
+      fputs(nullSNPs[i].c_str(), nullsnpfile);
+      fputs("\n", nullsnpfile);
     }
     fclose(nullsnpfile);
   }
@@ -1417,17 +1453,6 @@ void get_square_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double threshold
   for (int i = 0; i < zsxz.size(); i++) {
     if (zsxz[i] * zsxz[i] - threshold > 1e-6) sn_ids.push_back(i);
   }
-}
-void get_square_idxes_sort(std::vector<int>& sn_ids, VectorXd& zsxz, double threshold) {
-  std::vector<double> z;
-  std::vector<int> rk;
-  for (int i = 0; i < zsxz.size(); i++) {
-    if (zsxz[i] * zsxz[i] - threshold > 1e-6) {
-      sn_ids.push_back(i);
-      z.push_back(zsxz(i));
-    }
-  }
-  getRank(z, rk);
 }
 void get_square_ldpruning_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double threshold, MatrixXd& LD, long maxid,
                                 double ld_top) {
@@ -1662,69 +1687,6 @@ void free_gwas_data(gwasData* gdata) {
   gdata->splSize.clear();
 }
 
-MatrixXf reg(std::vector<double>& y, std::vector<double>& x, std::vector<double>& rst, bool table = false) {
-  int N = x.size();
-  if (N != y.size() || N < 1) throw("Error: The lengths of x and y do not match.");
-
-  int i = 0;
-  double d_buf = 0.0, y_mu = 0.0, x_mu = 0.0, x_var = 0.0, y_var = 0.0, cov = 0.0;
-  for (i = 0; i < N; i++) {
-    x_mu += x[i];
-    y_mu += y[i];
-  }
-  x_mu /= (double)N;
-  y_mu /= (double)N;
-  for (i = 0; i < N; i++) {
-    d_buf = (x[i] - x_mu);
-    x_var += d_buf * d_buf;
-    d_buf = (y[i] - y_mu);
-    y_var += d_buf * d_buf;
-  }
-  x_var /= (double)(N - 1.0);
-  y_var /= (double)(N - 1.0);
-  for (i = 0; i < N; i++) cov += (x[i] - x_mu) * (y[i] - y_mu);
-  cov /= (double)(N - 1);
-  double a = 0.0, b = 0.0, sse = 0.0, a_se = 0.0, b_se = 0.0, p = 0.0, rsq = 0.0, r = 0.0;
-  if (x_var > 0.0) b = cov / x_var;
-  a = y_mu - b * x_mu;
-  for (i = 0; i < N; i++) {
-    d_buf = y[i] - a - b * x[i];
-    sse += d_buf * d_buf;
-  }
-  if (x_var > 0.0) {
-    a_se = sqrt((sse / (N - 2.0)) * (1.0 / N + x_mu * x_mu / (x_var * (N - 1.0))));
-    b_se = sqrt(sse / x_var / (N - 1.0) / (N - 2.0));
-  }
-  if (x_var > 0.0 && y_var > 0.0) {
-    r = cov / sqrt(y_var * x_var);
-    rsq = r * r;
-  }
-  double t = 0.0;
-  if (b_se > 0.0) t = fabs(b / b_se);
-  p = StatFunc::t_prob(N - 2.0, t, true);
-  rst.clear();
-  rst.push_back(b);
-  rst.push_back(b_se);
-  rst.push_back(p);
-  rst.push_back(rsq);
-  rst.push_back(r);
-
-  MatrixXf reg_sum(3, 3);
-  if (table) {
-    reg_sum(2, 0) = rsq;
-    reg_sum(1, 0) = b;
-    reg_sum(1, 1) = b_se;
-    reg_sum(1, 2) = p;
-    if (a_se > 0.0) t = fabs(a / a_se);
-    p = StatFunc::t_prob(N - 2.0, t, true);
-    reg_sum(0, 0) = a;
-    reg_sum(0, 1) = a_se;
-    reg_sum(0, 2) = p;
-    return (reg_sum);
-  }
-  return (reg_sum);
-}
-
 bool make_XMat(bInfo* bdata, MatrixXf& X) {
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
@@ -1764,22 +1726,6 @@ bool make_XMat(bInfo* bdata, MatrixXf& X) {
     }
   }
   return have_mis;
-}
-
-void makex_VectorXd(bInfo* bdata, int j, VectorXd& x, bool resize, bool minus_2p) {
-  int i = 0;
-  if (resize) x.resize(bdata->_keep.size());
-  for (i = 0; i < bdata->_keep.size(); i++) {
-    if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
-      if (bdata->_allele1[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]])
-        x[i] =
-            (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-      else
-        x[i] = 2.0 - (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] +
-                      bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-    } else x[i] = bdata->_mu[bdata->_include[j]];
-    if (minus_2p) x[i] -= bdata->_mu[bdata->_include[j]];
-  }
 }
 
 void makeptrx(bInfo* bdata, int bsnpid, int cursnpid, float* X, bool minus_2p) {
@@ -1832,7 +1778,7 @@ void read_snpprblist(std::string snpprblistfile, std::vector<std::string>& prbli
   printf("%d SNP - probe pairs have been read from %s.\n", line_idx, snpprblistfile.c_str());
 }
 
-void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile,
+void extract_targets(eqtlInfo* eqtlinfo, const std::string& snpprblistfile,
                      std::unordered_map<std::string, std::string>& prb_snp) {
   std::vector<std::string> prblist;
   read_snpprblist(snpprblistfile, prblist, prb_snp);
@@ -1873,7 +1819,7 @@ void extract_epi_by_chr(eqtlInfo* eqtlinfo, int prbchr) {
   fmt::println("{} probes are extracted from chromosome [{}].", epi_size, prbchr);
 }
 
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName) {
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snplstName) {
   std::vector<std::string> snplist;
   std::string msg = "SNPs";
   read_msglist(snplstName, snplist, msg);
@@ -1895,7 +1841,7 @@ void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName) {
   std::cout << eqtlinfo->_esi_include.size() << " SNPs are extracted from [" + snplstName + "]." << std::endl;
 }
 
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snporprb, int Wind, std::string msg) {
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snporprb, int Wind, const std::string& msg) {
   std::string logstr;
 
   int bp = -9;
@@ -1938,7 +1884,7 @@ void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snporprb, int Wind, std::s
   std::cout << eqtlinfo->_esi_include.size()
             << " SNPs are extracted from the region: " + atos(Wind) + " Kb around [" + snporprb + "]." << std::endl;
 }
-void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, std::string snprs) {
+void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, const std::string& snprs) {
   std::string logstr;
   long idx = std::find(eqtlinfo->_esi_rs.begin(), eqtlinfo->_esi_rs.end(), snprs) - eqtlinfo->_esi_rs.begin();
   if (idx == eqtlinfo->_esi_rs.size()) {
@@ -1950,7 +1896,7 @@ void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, std::string snprs) {
   eqtlinfo->_esi_include.push_back((int)idx);
   std::cout << snprs << " is extracted. " << std::endl;
 }
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string fromsnprs, std::string tosnprs) {
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& fromsnprs, const std::string& tosnprs) {
   std::string logstr;
   long fromidx = std::find(eqtlinfo->_esi_rs.begin(), eqtlinfo->_esi_rs.end(), fromsnprs) - eqtlinfo->_esi_rs.begin();
   if (fromidx == eqtlinfo->_esi_rs.size()) {
@@ -2017,7 +1963,7 @@ void extract_eqtl_snp(eqtlInfo* eqtlinfo, int chr, int fromsnpkb, int tosnpkb) {
             << std::endl;
 }
 
-void exclude_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName) {
+void exclude_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snplstName) {
   std::vector<std::string> snplist;
   std::vector<std::string> mapstr;
   std::vector<int> tmp;
@@ -2036,37 +1982,6 @@ void exclude_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName) {
   std::stable_sort(eqtlinfo->_esi_include.begin(), eqtlinfo->_esi_include.end());
   std::cout << pre_num - eqtlinfo->_esi_include.size() << " SNPs are excluded from [" + snplstName + "] and there are "
             << eqtlinfo->_esi_include.size() << " SNPs remaining." << std::endl;
-}
-
-void extract_gwas_snp(gwasData* gdata, std::string snplstName) {
-  std::vector<std::string> snplist;
-  std::string msg = "SNPs";
-  read_msglist(snplstName, snplist, msg);
-  gdata->_include.clear();
-  StrFunc::match_only(snplist, gdata->snpName, gdata->_include);
-  std::stable_sort(gdata->_include.begin(), gdata->_include.end());
-  std::cout << gdata->_include.size() << " SNPs are extracted from [" + snplstName + "]." << std::endl;
-}
-
-void exclude_gwas_snp(gwasData* gdata, std::string snplstName) {
-  std::vector<std::string> snplist;
-  std::vector<std::string> mapstr;
-  std::vector<int> tmp;
-  std::string msg = "SNPs";
-  read_msglist(snplstName, snplist, msg);
-  int pre_num = gdata->_include.size();
-  mapstr.resize(pre_num);
-  tmp.resize(pre_num);
-  for (int i = 0; i < pre_num; i++) {
-    mapstr[i] = gdata->snpName[gdata->_include[i]];
-    tmp[i] = gdata->_include[i];
-  }
-
-  gdata->_include.clear();
-  StrFunc::set_complement(snplist, mapstr, tmp, gdata->_include);  // sorted
-  std::stable_sort(gdata->_include.begin(), gdata->_include.end());
-  std::cout << pre_num - gdata->_include.size() << " SNPs are excluded from [" + snplstName + "] and there are "
-            << gdata->_include.size() << " SNPs remaining." << std::endl;
 }
 
 void read_epistartend(eqtlInfo* eqtlinfo, char* prbseqregion) {
@@ -2123,7 +2038,7 @@ void read_epistartend(eqtlInfo* eqtlinfo, char* prbseqregion) {
   fclose(epifile);
 }
 
-void extract_prob(eqtlInfo* eqtlinfo, std::string problstName) {
+void extract_prob(eqtlInfo* eqtlinfo, const std::string& problstName) {
   std::vector<std::string> problist;
   std::string msg = "probes";
   read_msglist(problstName, problist, msg);
@@ -2138,7 +2053,7 @@ void extract_prob(eqtlInfo* eqtlinfo, std::string problstName) {
   std::cout << eqtlinfo->_include.size() << " probes are extracted from [" + problstName + "]." << std::endl;
 }
 
-void extract_prob_by_gene(eqtlInfo* eqtlinfo, std::string genelistName) {
+void extract_prob_by_gene(eqtlInfo* eqtlinfo, const std::string& genelistName) {
   std::vector<std::string> genelist;
   std::string msg = "genes";
   read_msglist(genelistName, genelist, msg);
@@ -2171,7 +2086,7 @@ void extract_prob_by_gene(eqtlInfo* eqtlinfo, std::string genelistName) {
   std::cout << eqtlinfo->_include.size() << " probes are extracted from [" + genelistName + "]." << std::endl;
 }
 
-void extract_prob(eqtlInfo* eqtlinfo, std::string prbname, int prbWind) {
+void extract_prob(eqtlInfo* eqtlinfo, const std::string& prbname, int prbWind) {
   std::string logstr;
   long idx =
       std::find(eqtlinfo->_epi_prbID.begin(), eqtlinfo->_epi_prbID.end(), prbname) - eqtlinfo->_epi_prbID.begin();
@@ -2199,7 +2114,7 @@ void extract_prob(eqtlInfo* eqtlinfo, std::string prbname, int prbWind) {
             << " probes are extracted from the region: " + atos(prbWind) + " Kb around [" + prbname + "]." << std::endl;
 }
 
-void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, std::string prbname, bool prtscr) {
+void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, const std::string& prbname, bool prtscr) {
   std::string logstr;
   int idx = std::find(eqtlinfo->_epi_prbID.begin(), eqtlinfo->_epi_prbID.end(), prbname) - eqtlinfo->_epi_prbID.begin();
   if (idx == eqtlinfo->_epi_prbID.size()) {
@@ -2213,7 +2128,7 @@ void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, std::string prbname, bool prt
   if (prtscr) std::cout << prbname << " is extracted. " << std::endl;
 }
 
-void extract_eqtl_prob(eqtlInfo* eqtlinfo, std::string fromprbname, std::string toprbname) {
+void extract_eqtl_prob(eqtlInfo* eqtlinfo, const std::string& fromprbname, const std::string& toprbname) {
   std::string logstr;
   long fromidx =
       std::find(eqtlinfo->_epi_prbID.begin(), eqtlinfo->_epi_prbID.end(), fromprbname) - eqtlinfo->_epi_prbID.begin();
@@ -2280,7 +2195,7 @@ void extract_eqtl_prob(eqtlInfo* eqtlinfo, int chr, int fromprbkb, int toprbkb) 
   fmt::println("{} probes are extracted from probe BP: {}Kb to probe BP: {}Kb.", probs_len, fromprbkb, toprbkb);
 }
 
-void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, std::string genename) {
+void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, const std::string& genename) {
   std::vector<int> newIcld;
   for (int i = 0; i < eqtlinfo->_include.size(); i++) {
     int tmpint = eqtlinfo->_include[i];
@@ -2292,7 +2207,7 @@ void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, std::string genename) {
             << std::endl;
 }
 
-void exclude_prob(eqtlInfo* eqtlinfo, std::string problstName) {
+void exclude_prob(eqtlInfo* eqtlinfo, const std::string& problstName) {
   std::vector<std::string> problist;
   std::vector<std::string> mappro;
   std::vector<int> tmp;
@@ -2670,108 +2585,6 @@ void allele_check_opt(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
   std::unordered_map<std::string, int> id_map_buf(bdata->_snp_name_map);
   for (int i = 0; i < bdata->_include.size(); i++) id_map_buf.erase(bdata->_snp_name[bdata->_include[i]]);
   for (iter = id_map_buf.begin(); iter != id_map_buf.end(); iter++) bdata->_snp_name_map.erase(iter->first);
-}
-
-bool allele_check_(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
-  // get the common SNPs
-  std::vector<std::string> slctSNPs;
-  std::vector<std::string> b_snp_name;
-  std::vector<std::string> cmmnSNPs;
-  std::vector<int> bdId;
-  std::vector<int> gdId;
-  std::vector<int> edId;
-  cmmnSNPs.clear();
-  edId.clear();
-  std::string logstr =
-      "Checking the consistency of the alleles of each SNP between pairwise data sets (including the GWAS summary "
-      "data, the eQTL summary data and the LD reference data).\n ";
-  std::cout << logstr << std::endl;
-
-  std::vector<std::string> bsnp;
-  std::vector<std::string> essnp;
-  if (bdata->_include.size() < bdata->_snp_num || esdata->_esi_include.size() < esdata->_snpNum) {
-    for (int i = 0; i < bdata->_include.size(); i++) bsnp.push_back(bdata->_snp_name[bdata->_include[i]]);
-    for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
-    StrFunc::match_only(bsnp, gdata->snpName, edId);
-    if (edId.empty()) return false;
-    for (int i = 0; i < edId.size(); i++) cmmnSNPs.push_back(gdata->snpName[edId[i]]);
-    StrFunc::match_only(cmmnSNPs, essnp, edId);
-    if (edId.empty()) return false;
-    for (int i = 0; i < edId.size(); i++) edId[i] = esdata->_esi_include[edId[i]];
-    for (int i = 0; i < edId.size(); i++) slctSNPs.push_back(esdata->_esi_rs[edId[i]]);
-  } else {
-    StrFunc::match_only(bdata->_snp_name, gdata->snpName, edId);
-    if (edId.empty()) return false;
-    for (int i = 0; i < edId.size(); i++) cmmnSNPs.push_back(gdata->snpName[edId[i]]);
-    edId.clear();
-    StrFunc::match_only(cmmnSNPs, esdata->_esi_rs, edId);
-    if (edId.empty()) return false;
-    for (int i = 0; i < edId.size(); i++) slctSNPs.push_back(esdata->_esi_rs[edId[i]]);
-  }
-
-  // slctSNPs is in the order as bdata. so bdId is in increase order. edId and gdId may not.
-
-  // alleles check
-  StrFunc::match(slctSNPs, bdata->_snp_name, bdId);
-  StrFunc::match(slctSNPs, gdata->snpName, gdId);
-  cmmnSNPs.clear();
-  bdata->_include.clear();
-  gdata->_include.clear();
-  esdata->_esi_include.clear();
-
-  for (int i = 0; i < edId.size(); i++) {
-    std::string a1, a2, ga1, ga2, ea1, ea2;
-    a1 = bdata->_allele1[bdId[i]];
-    a2 = bdata->_allele2[bdId[i]];
-    ga1 = gdata->allele_1[gdId[i]];
-    ga2 = gdata->allele_2[gdId[i]];
-    ea1 = esdata->_esi_allele1[edId[i]];
-    ea2 = esdata->_esi_allele2[edId[i]];
-    // use the allele in eQTL summary data as the reference allele. so we won't get the whole besd into memroy
-    if (ea1 == a1 && ea2 == a2) {
-      if (ea1 == ga1 && ea2 == ga2) {
-        bdata->_include.push_back(bdId[i]);
-        gdata->_include.push_back(gdId[i]);
-        esdata->_esi_include.push_back(edId[i]);
-      } else if (ea1 == ga2 && ea2 == ga1) {
-        bdata->_include.push_back(bdId[i]);
-        gdata->_include.push_back(gdId[i]);
-        esdata->_esi_include.push_back(edId[i]);
-
-        gdata->byz[gdId[i]] = -gdata->byz[gdId[i]];
-      }
-    } else if (ea1 == a2 && ea2 == a1) {
-      if (ea1 == ga1 && ea2 == ga2) {
-        bdata->_include.push_back(bdId[i]);
-        gdata->_include.push_back(gdId[i]);
-        esdata->_esi_include.push_back(edId[i]);
-
-        std::string tmpch = bdata->_ref_A[bdId[i]];
-        bdata->_ref_A[bdId[i]] = bdata->_other_A[bdId[i]];
-        bdata->_other_A[bdId[i]] = tmpch;
-
-      } else if (ea1 == ga2 && ea2 == ga1) {
-        bdata->_include.push_back(bdId[i]);
-        gdata->_include.push_back(gdId[i]);
-        esdata->_esi_include.push_back(edId[i]);
-
-        gdata->byz[gdId[i]] = -gdata->byz[gdId[i]];
-        std::string tmpch = bdata->_ref_A[bdId[i]];
-        bdata->_ref_A[bdId[i]] = bdata->_other_A[bdId[i]];
-        bdata->_other_A[bdId[i]] = tmpch;
-      }
-    }
-  }
-
-  logstr = itos(bdata->_include.size()) + " SNPs are included after allele check. ";
-  std::cout << logstr << std::endl;
-
-  // only update _snp_name_map which would be used in read bed file.
-  std::unordered_map<std::string, int> id_map_buf(bdata->_snp_name_map);
-  for (int i = 0; i < bdata->_include.size(); i++) id_map_buf.erase(bdata->_snp_name[bdata->_include[i]]);
-  for (const auto& [snp, _] : id_map_buf) bdata->_snp_name_map.erase(snp);
-
-  return true;
 }
 
 void allele_check(gwasData* gdata, eqtlInfo* esdata) {
@@ -3663,7 +3476,7 @@ void update_geIndx(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
   esdata->_esi_include = tmpIdx2;
 }
 
-void read_smaslist(std::vector<std::string>& smasNames, std::string eqtlsmaslstName) {
+void read_smaslist(std::vector<std::string>& smasNames, const std::string& eqtlsmaslstName) {
   std::ifstream smas(eqtlsmaslstName.c_str());
   if (!smas) throw("Error: can not open the file [" + eqtlsmaslstName + "] to read.");
   std::cout << "Reading eQTL summary file names from [" + eqtlsmaslstName + "]." << std::endl;
@@ -6672,22 +6485,6 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
   std::cout << "Effect sizes (beta) and SEfor " << eqtlinfo._include.size() << " Probes and " << eqtlinfo._snpNum
             << " SNPs have been saved in the binary file [" + esdfile + "]." << std::endl;
   // }
-}
-
-int get_besd_format(std::string besdfName) {
-  std::string besdfile = besdfName + ".besd";
-  char buf[8];
-  std::ifstream besd(besdfile.c_str(), std::ios::in | std::ios::binary);
-  if (!besd) {
-    fprintf(stderr, "%s: Couldn't open file %s\n", besdfile.c_str(), strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-
-  besd.read(buf, 4);
-  besd.close();
-
-  float* flag = (float*)buf;
-  return (int)*flag;
 }
 
 // sort in ascend order

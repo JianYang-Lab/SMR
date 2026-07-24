@@ -276,15 +276,15 @@ struct smr_snpinfo {
   float estn;
 };
 
-void read_bimfile(bInfo* bdata, std::string bimfile);
-void read_famfile(bInfo* bdata, std::string famfile);
-void read_bedfile(bInfo* bdata, std::string bedfile);
+void read_bimfile(bInfo* bdata, const std::string& bimfile);
+void read_famfile(bInfo* bdata, const std::string& famfile);
+void read_bedfile(bInfo* bdata, const std::string& bedfile);
 void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments = false);
-void read_esifile(eqtlInfo* eqtlinfo, std::string esifile, bool prtscr = true);
-void read_esifile_by_chr(eqtlInfo* eqtlinfo, std::string esifile, int snpchr, bool prtscr = true);
+void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr = true);
+void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snpchr, bool prtscr = true);
 
-void read_epifile(eqtlInfo* eqtlinfo, std::string epifile, bool prtscr = true);
-void read_besdfile(eqtlInfo* eqtlinfo, std::string besdfile, bool prtscr = true);
+void read_epifile(eqtlInfo* eqtlinfo, const std::string& epifile, bool prtscr = true);
+void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr = true);
 void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr = true);
 
 bool has_prefix(const std::string& str, const std::string& prefix);
@@ -306,7 +306,6 @@ void allele_check(gwasData* gdata, eqtlInfo* esdata);
 void update_gwas(gwasData* gdata);
 
 bool make_XMat(bInfo* bdata, MatrixXd& X);
-void makex_eigenVector(bInfo* bdata, int j, VectorXd& x, bool resize, bool minus_2p);
 // inline functions
 template <typename ElemType>
 void makex(bInfo* bdata, int j, std::vector<ElemType>& x, bool minus_2p = false) {
@@ -326,18 +325,17 @@ void makex(bInfo* bdata, int j, std::vector<ElemType>& x, bool minus_2p = false)
 }
 
 void makeptrx(bInfo* bdata, int bsnpid, int cursnpid, float* x, bool minus_2p = false);
-void keep_indi(bInfo* bdata, std::string indi_list_file);
-void extract_snp(bInfo* bdata, std::string snplistfile);
+void keep_indi(bInfo* bdata, const std::string& indi_list_file);
+void extract_snp(bInfo* bdata, const std::string& snplistfile);
 void extract_snp(bInfo* bdata, int chr);
 
-void extract_prob(eqtlInfo* eqtlinfo, std::string problstName);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName);
-void exclude_eqtl_snp(eqtlInfo* eqtlinfo, std::string snplstName);
-void exclude_prob(eqtlInfo* eqtlinfo, std::string problstName);
+void extract_prob(eqtlInfo* eqtlinfo, const std::string& problstName);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snplstName);
+void exclude_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snplstName);
+void exclude_prob(eqtlInfo* eqtlinfo, const std::string& problstName);
 
 void free_gwas_data(gwasData* gdata);
 
-int file_read_check(std::ifstream* in_file, const char* filename);
 void init_smr_wk(SMRWK* smrwk);
 long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, const char* refSNP, int lowerbp,
                  int upperbp, bool heidioffFlag);
@@ -419,10 +417,9 @@ int comp2(const void* a, const void* b);
 int comp_estn(const void* a, const void* b);
 int comp_i4tran(const void* a, const void* b);
 
-void read_smaslist(std::vector<std::string>& smasNames, std::string eqtlsmaslstName);
-void remove_indi(bInfo* bdata, std::string indi_list_file);
-void extract_snp(bInfo* bdata, std::string snplistfile);
-void exclude_snp(bInfo* bdata, std::string snplistfile);
+void read_smaslist(std::vector<std::string>& smasNames, const std::string& eqtlsmaslstName);
+void remove_indi(bInfo* bdata, const std::string& indi_list_file);
+void exclude_snp(bInfo* bdata, const std::string& snplistfile);
 void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata);
 void update_geIndx(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata);
 void progress_print(float progress);
@@ -432,21 +429,21 @@ void get_square_ldpruning_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double
 void cor_calc(MatrixXd& LD, MatrixXd& X);
 void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const std::vector<std::uint32_t>& curId, int indicator);
 
-void extract_prob_by_gene(eqtlInfo* eqtlinfo, std::string genelistName);
+void extract_prob_by_gene(eqtlInfo* eqtlinfo, const std::string& genelistName);
 void update_freq(char* eqtlFileName, char* frqfile);
 void write_besd(std::string outFileName, eqtlInfo* eqtlinfo);
 void extract_region_bp(bInfo* bdata, int chr, int fromkb, int tokb);
-void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, std::string snprs);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string fromsnprs, std::string tosnprs);
+void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, const std::string& snprs);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& fromsnprs, const std::string& tosnprs);
 void extract_eqtl_snp(eqtlInfo* eqtlinfo, int chr, int fromsnpkb, int tosnpkb);
-void extract_prob(eqtlInfo* eqtlinfo, std::string prbname, int prbWind);
-void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, std::string prbname, bool prtscr = true);
-void extract_eqtl_prob(eqtlInfo* eqtlinfo, std::string fromprbname, std::string toprbname);
+void extract_prob(eqtlInfo* eqtlinfo, const std::string& prbname, int prbWind);
+void extract_eqtl_single_probe(eqtlInfo* eqtlinfo, const std::string& prbname, bool prtscr = true);
+void extract_eqtl_prob(eqtlInfo* eqtlinfo, const std::string& fromprbname, const std::string& toprbname);
 void extract_eqtl_prob(eqtlInfo* eqtlinfo, int chr, int fromprbkb, int toprbkb);
-void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, std::string genename);
+void extract_prob_by_single_gene(eqtlInfo* eqtlinfo, const std::string& genename);
 void extract_epi_by_chr(eqtlInfo* eqtlinfo, int prbchr);
 void extract_eqtl_by_chr(eqtlInfo* eqtlinfo, int snpchr);
-void extract_eqtl_snp(eqtlInfo* eqtlinfo, std::string snporprb, int Wind, std::string msg);
+void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& snporprb, int Wind, const std::string& msg);
 void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr, int prbchr, const char* prbname,
              char* fromprbname, char* toprbname, int prbWind, int fromprbkb, int toprbkb, bool prbwindFlag,
              char* genename);
@@ -474,11 +471,11 @@ void free_probelist(std::vector<probeinfolst>& a);
 void free_snplist(std::vector<info4trans>& a);
 void free_probelist(std::vector<probeinfolst2>& a);
 void read_epistartend(eqtlInfo* eqtlinfo, char* prbseqregion);
-int shown(std::string besdfile);
+int shown(const std::string& besdfile);
 double freq_check(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, double& freqthresh, double& percenthresh);
 void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr, std::vector<long>& snpNumPerRegion,
                         std::vector<long>& leftbound, std::vector<long>& rightbound, probeinfolst* prbifo,
                         std::vector<info4trans>& snpinfo, long cis_itvl, long trans_itvl, double transThres);
-void extract_targets(eqtlInfo* eqtlinfo, std::string snpprblistfile,
+void extract_targets(eqtlInfo* eqtlinfo, const std::string& snpprblistfile,
                      std::unordered_map<std::string, std::string>& prb_snp);
 }  // namespace SMRDATA

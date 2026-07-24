@@ -42,6 +42,8 @@ std::string getOSName() {
 }
 
 int main(int argc, char** argv) {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
   std::cout << "*******************************************************************" << std::endl;
   std::cout << "* SMR (Summary-data-based Mendelian Randomization)" << std::endl;
   std::cout << "* Version " << SMR_VERSION << " " << getOSName().c_str() << std::endl;

@@ -123,7 +123,6 @@ inline std::string atos(T const& a) {
 }
 
 std::string dtos(double value);
-std::string dtosf(double value);
 std::string itos(int value);
 std::string ltos(long value);
 void update_id_map_kp(const std::vector<std::string>& id_list, std::unordered_map<std::string, int>& id_map,

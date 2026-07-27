@@ -3095,20 +3095,25 @@ void make_XMat(bInfo* bdata, std::vector<std::uint32_t>& snpids, MatrixXd& X, bo
 #pragma omp parallel for
   for (size_t i = 0; i < snp_size; i++) {
     int snp_idx = bdata->_include[snpids[i]];
-    for (size_t j = 0; j < bdata->_keep.size(); j++) {
+    const auto& snp_row1 = bdata->_snp_1[snp_idx];
+    const auto& snp_row2 = bdata->_snp_2[snp_idx];
+    const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);
+    const double mu = bdata->_mu[snp_idx];
+    const size_t keep_size = bdata->_keep.size();
+    for (size_t j = 0; j < keep_size; j++) {
       int indi_idx = bdata->_keep[j];
-      auto snp1 = bdata->_snp_1[snp_idx][indi_idx];
-      auto snp2 = bdata->_snp_2[snp_idx][indi_idx];
+      auto snp1 = snp_row1[indi_idx];
+      auto snp2 = snp_row2[indi_idx];
       if (!snp1 || snp2) {
-        if (bdata->_allele1[snp_idx] == bdata->_ref_A[snp_idx]) {
+        if (!flip) {
           X(j, i) = snp1 + snp2;
         } else {
           X(j, i) = 2.0 - (snp1 + snp2);
         }
       } else {
-        X(j, i) = bdata->_mu[snp_idx];
+        X(j, i) = mu;
       }
-      if (minus_2p) X(j, i) -= bdata->_mu[snp_idx];
+      if (minus_2p) X(j, i) -= mu;
     }
   }
 }
@@ -3156,8 +3161,11 @@ void cor_calc(MatrixXd& LD, MatrixXd& X) {
   const VectorXd sum = X.colwise().sum();
   const VectorXd sum_sq = X.array().square().colwise().sum();
 
-  // 2. Compute scatter matrix
-  LD.noalias() = X.transpose() * X;
+  // 2. Compute scatter matrix (symmetric rank-k update: half the flops of a full GEMM, X^T * X)
+  LD.resize(X.cols(), X.cols());
+  LD.setZero();
+  LD.selfadjointView<Eigen::Lower>().rankUpdate(X.transpose());
+  LD.triangularView<Eigen::Upper>() = LD.triangularView<Eigen::Lower>().transpose();
 
   // 3. Compute n^2 * covariance: n*X'X - sum*sum'
   LD *= n;

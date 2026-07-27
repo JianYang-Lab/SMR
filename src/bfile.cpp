@@ -383,21 +383,24 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
 }
 
 void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
-  double fcount = 0.0, f_buf = 0.0;
+  double fcount = 0.0, f_buf = 0.0, mu_acc = 0.0;
   int snp_idx = bdata->_include[j];
+  const auto& snp_row1 = bdata->_snp_1[snp_idx];
+  const auto& snp_row2 = bdata->_snp_2[snp_idx];
+  const bool flip = (bdata->_allele2[snp_idx] == bdata->_ref_A[snp_idx]);
   for (size_t i = 0; i < bdata->_keep.size(); i++) {
     int indi_idx = bdata->_keep[i];
-    auto snp1 = bdata->_snp_1[snp_idx][indi_idx];
-    auto snp2 = bdata->_snp_2[snp_idx][indi_idx];
+    auto snp1 = snp_row1[indi_idx];
+    auto snp2 = snp_row2[indi_idx];
     if (!snp1 || snp2) {
       f_buf = snp1 + snp2;
-      if (bdata->_allele2[snp_idx] == bdata->_ref_A[snp_idx]) f_buf = 2.0 - f_buf;
-      bdata->_mu[snp_idx] += fac[i] * f_buf;
+      if (flip) f_buf = 2.0 - f_buf;
+      mu_acc += fac[i] * f_buf;
       fcount += fac[i];
     }
   }
 
-  if (fcount > 0.0) bdata->_mu[bdata->_include[j]] /= fcount;
+  if (fcount > 0.0) bdata->_mu[bdata->_include[j]] = mu_acc / fcount;
 }
 
 void calcu_mu(bInfo* bdata, bool ssq_flag) {

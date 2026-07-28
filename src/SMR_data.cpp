@@ -3156,20 +3156,32 @@ void cor_calc(MatrixXd& LD, ldInfo* ldinfo, FILE* ldfprt, const std::vector<std:
 
 void cor_calc(MatrixXd& LD, MatrixXd& X) {
   const Eigen::Index n = X.rows();
+  const Eigen::Index p = X.cols();
 
-  // 1. Use Eigen's built-in parallel reductions (more cache-efficient than manual loops)
-  const VectorXd sum = X.colwise().sum();
-  const VectorXd sum_sq = X.array().square().colwise().sum();
+  // 1. Column sums and squared sums in a single pass over X
+  VectorXd sum = VectorXd::Zero(p);
+  VectorXd sum_sq = VectorXd::Zero(p);
+#pragma omp parallel for
+  for (Eigen::Index j = 0; j < p; j++) {
+    double s = 0.0, sq = 0.0;
+    for (Eigen::Index i = 0; i < n; i++) {
+      const double v = X(i, j);
+      s += v;
+      sq += v * v;
+    }
+    sum(j) = s;
+    sum_sq(j) = sq;
+  }
 
   // 2. Compute scatter matrix (symmetric rank-k update: half the flops of a full GEMM, X^T * X)
-  LD.resize(X.cols(), X.cols());
+  LD.resize(p, p);
   LD.setZero();
   LD.selfadjointView<Eigen::Lower>().rankUpdate(X.transpose());
-  LD.triangularView<Eigen::Upper>() = LD.triangularView<Eigen::Lower>().transpose();
 
-  // 3. Compute n^2 * covariance: n*X'X - sum*sum'
-  LD *= n;
-  LD.noalias() -= sum * sum.transpose();
+  // 3. Compute n^2 * covariance on the lower triangle only: n*X'X - sum*sum'
+  LD.triangularView<Eigen::Lower>() *= n;
+  LD.selfadjointView<Eigen::Lower>().rankUpdate(sum, -1.0);
+  LD.triangularView<Eigen::Upper>() = LD.triangularView<Eigen::Lower>().transpose();
 
   // 4. Compute n*std_dev (denominator factors)
   VectorXd scale = (n * sum_sq.array() - sum.array().square()).sqrt();

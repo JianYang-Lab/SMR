@@ -178,7 +178,7 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
   _bxz.resize(sn_ids.size());
   _sexz.resize(sn_ids.size());
   _zsxz.resize(sn_ids.size());
-#pragma omp parallel for
+  #pragma omp parallel for
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk_heidi.byz[sn_ids[j]];
     _seyz[j] = smrwk_heidi.seyz[sn_ids[j]];
@@ -244,7 +244,7 @@ double heidi_test_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperprb, 
   _zsxz.resize(sn_ids.size());
   _X_heidi.resize(_X.rows(), sn_ids.size());
 
-#pragma omp parallel for
+  #pragma omp parallel for
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = smrwk->byz[sn_ids[j]];
     _seyz[j] = smrwk->seyz[sn_ids[j]];

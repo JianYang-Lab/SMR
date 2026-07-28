@@ -981,15 +981,15 @@ void option(int option_num, char* option_str[]) {
     }
   }
 #ifndef __APPLE__
-#if defined _WIN64 || defined _WIN32
+  #if defined _WIN64 || defined _WIN32
   omp_set_num_threads(thread_num);
-#else
+  #else
   std::stringstream ss;
   ss << thread_num;
   setenv("OMP_NUM_THREADS", ss.str().c_str(), 1);
   omp_set_num_threads(thread_num);
 
-#endif
+  #endif
 #endif
 
   std::cout << std::endl;

@@ -13,9 +13,9 @@
 
 #define MAX_BUF_SIZE 0x40000000
 #if defined _WIN64 || defined _WIN32
-#define MAX_LINE_SIZE 0x10000
+  #define MAX_LINE_SIZE 0x10000
 #else
-#define MAX_LINE_SIZE 0x80000
+  #define MAX_LINE_SIZE 0x80000
 #endif
 
 // #define __DBL_MIN__ 2.225e-308

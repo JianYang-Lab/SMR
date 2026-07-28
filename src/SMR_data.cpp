@@ -3092,7 +3092,7 @@ void make_XMat(bInfo* bdata, std::vector<std::uint32_t>& snpids, MatrixXd& X, bo
   // Eigen is column-major by default. here row of X is individual, column of X is SNP.
   size_t snp_size = snpids.size();
   X.resize(bdata->_keep.size(), snp_size);
-#pragma omp parallel for
+  #pragma omp parallel for
   for (size_t i = 0; i < snp_size; i++) {
     int snp_idx = bdata->_include[snpids[i]];
     const auto& snp_row1 = bdata->_snp_1[snp_idx];
@@ -3161,7 +3161,8 @@ void cor_calc(MatrixXd& LD, MatrixXd& X) {
   // 1. Column sums and squared sums in a single pass over X
   VectorXd sum = VectorXd::Zero(p);
   VectorXd sum_sq = VectorXd::Zero(p);
-#pragma omp parallel for
+
+  #pragma omp parallel for
   for (Eigen::Index j = 0; j < p; j++) {
     double s = 0.0, sq = 0.0;
     for (Eigen::Index i = 0; i < n; i++) {
@@ -6517,7 +6518,8 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 int comp(const void* a, const void* b) {
   if ((*(probeinfolst*)a).probechr != (*(probeinfolst*)b).probechr)
     return ((*(probeinfolst*)a).probechr > (*(probeinfolst*)b).probechr) ? 1 : -1;
-  if ((*(probeinfolst*)a).bp != (*(probeinfolst*)b).bp) return ((*(probeinfolst*)a).bp > (*(probeinfolst*)b).bp) ? 1 : -1;
+  if ((*(probeinfolst*)a).bp != (*(probeinfolst*)b).bp)
+    return ((*(probeinfolst*)a).bp > (*(probeinfolst*)b).bp) ? 1 : -1;
   return 0;
 }
 

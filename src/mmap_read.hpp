@@ -5,10 +5,10 @@
 #include <string>
 
 #if defined(__linux__) || defined(__APPLE__)
-#include <fcntl.h>     // open
-#include <sys/mman.h>  // mmap
-#include <sys/stat.h>  // fstat
-#include <unistd.h>    // close
+  #include <fcntl.h>     // open
+  #include <sys/mman.h>  // mmap
+  #include <sys/stat.h>  // fstat
+  #include <unistd.h>    // close
 #endif
 
 class MappedFile {

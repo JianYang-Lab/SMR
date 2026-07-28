@@ -416,7 +416,7 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
   bdata->_mu.clear();
   bdata->_mu.resize(bdata->_snp_num);
 
-#pragma omp parallel for
+  #pragma omp parallel for
   for (size_t j = 0; j < bdata->_include.size(); j++) {
     if (bdata->_chr[bdata->_include[j]] < (bdata->_autosome_num + 1)) mu_func(bdata, j, auto_fac);
     else if (bdata->_chr[bdata->_include[j]] == (bdata->_autosome_num + 1)) mu_func(bdata, j, xfac);

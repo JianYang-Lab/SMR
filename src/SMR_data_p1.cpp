@@ -1169,7 +1169,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
       _zsxz.resize(sn_ids.size());
       _X_heidi.resize(_X.rows(), sn_ids.size());
 
-#pragma omp parallel for
+      #pragma omp parallel for
       for (int j = 0; j < sn_ids.size(); j++) {
         _byz[j] = byz[sn_ids[j]];
         _seyz[j] = seyz[sn_ids[j]];
@@ -1787,7 +1787,7 @@ double heidi_test(bInfo* bdata, std::vector<double>& slct_zsxz, std::vector<std:
   _zsxz.resize(sn_ids.size());
   _X_heidi.resize(_X.rows(), sn_ids.size());
 
-#pragma omp parallel for
+  #pragma omp parallel for
   for (int j = 0; j < sn_ids.size(); j++) {
     _byz[j] = slct_byz[sn_ids[j]];
     _seyz[j] = slct_seyz[sn_ids[j]];
@@ -3567,11 +3567,12 @@ bool mecs_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohor
   // matrix.\n",pmecs);
   bool enoughsnp = pcc(Corr, buffer_beta, buffer_se, snpnum, cohortnum, pmecs, nmecs);
   if (!enoughsnp) return false;
-// std::cout<<Corr<<std::endl;
-#pragma omp parallel
+  // std::cout<<Corr<<std::endl;
+
+  #pragma omp parallel
   {
     std::vector<int> noninvertible_th, negativedeno_th;
-#pragma omp for nowait
+    #pragma omp for nowait
     for (int j = 0; j < snpnum; j++) {
       std::vector<double> ses, betas;
       std::vector<int> keep;
@@ -3622,7 +3623,7 @@ bool mecs_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohor
         }
       }
     }
-#pragma omp critical
+    #pragma omp critical
     {
       noninvertible.insert(noninvertible.end(), noninvertible_th.begin(), noninvertible_th.end());
       negativedeno.insert(negativedeno.end(), negativedeno_th.begin(), negativedeno_th.end());
@@ -3631,7 +3632,7 @@ bool mecs_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohor
   return true;
 }
 void meta_per_prob(float* buffer_beta, float* buffer_se, long snpnum, long cohortnum) {
-#pragma omp parallel for
+  #pragma omp parallel for
   for (size_t j = 0; j < snpnum; j++) {
     double numerator = 0.0;
     double deno = 0.0;

@@ -3,8 +3,7 @@
 set -e
 
 CWD=$(pwd)
-# BUILD_TYPE=Release
-BUILD_TYPE=RelWithDebInfo
+BUILD_TYPE=${BUILD_TYPE:-RelWithDebInfo}
 fresh_build=""
 cmake_gen=0
 

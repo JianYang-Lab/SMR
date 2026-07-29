@@ -1,7 +1,8 @@
-#SMR CMakeLists.txt
+# SMR CMakeLists.txt
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16...3.28)
 
+# Version: src/config.h is the single source of truth
 file(STRINGS "${CMAKE_SOURCE_DIR}/src/config.h" SMR_VERSION_LINE REGEX "#define SMR_VERSION")
 string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" SMR_VERSION "${SMR_VERSION_LINE}")
 project(smr VERSION ${SMR_VERSION} LANGUAGES C CXX)
@@ -17,213 +18,87 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 option(BUILD_WITH_MIMALLOC "Use mimalloc for improved memory allocation performance" ON)
-option(SMR_VERBOSE_CONFIGURE "Print extended CMake configuration diagnostics" OFF)
 
-if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
-
-#information of CPU architecture
-message(STATUS "CPU_ARCH: " ${CMAKE_HOST_SYSTEM_PROCESSOR})
-
-#information of operation system
-message(STATUS ${CMAKE_HOST_SYSTEM})
-if (UNIX)
-    set(system "UNIX-like")
-elseif(APPLE)
-    set(system "macOS")
-elseif(WIN32)
-    set(system "windows")
-else()
-    message(FATAL_ERROR "Operation system not recognized, only support unix apple and windows.")
-endif()
-message(STATUS "OS: " ${system})
-
-#information of compilation toolchain
-message(STATUS "CMAKE_C_COMPILER:  " ${CMAKE_C_COMPILER} " " ${CMAKE_C_COMPILER_ID} ":" ${CMAKE_C_COMPILER_VERSION} " " ${CMAKE_C_STANDARD})
-message(STATUS "CMAKE_CXX_COMPILER: " ${CMAKE_CXX_COMPILER} " " ${CMAKE_CXX_COMPILER_ID} ":" ${CMAKE_CXX_COMPILER_VERSION} " " ${CMAKE_CXX_STANDARD})
-message(STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE})
-
-if(SMR_VERBOSE_CONFIGURE)
-    message(STATUS "CUSTORM_INCLUDE_SERACH_PATH: ${CUSTORM_INCLUDE_SERACH_PATH}")
-    message(STATUS "CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES: ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES}")
-    message(STATUS "CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES: ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
-    message(STATUS "CMAKE_C_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}")
-    message(STATUS "CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
-    message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
-    message(STATUS "CMAKE_AR: ${CMAKE_AR}")
-    message(STATUS "CMAKE_RANLIB: ${CMAKE_RANLIB}")
-    message(STATUS "CMAKE_COMMAND: ${CMAKE_COMMAND}")
-    message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
-    message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
-    message(STATUS "CMAKE_BUILD_TOOL: ${CMAKE_BUILD_TOOL}")
-    message(STATUS "CMAKE_SHARED_LIBRARY_PREFIX: ${CMAKE_SHARED_LIBRARY_PREFIX}")
-    message(STATUS "CMAKE_SHARED_LIBRARY_SUFFIX: ${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    message(STATUS "CMAKE_STATIC_LIBRARY_PREFIX: ${CMAKE_STATIC_LIBRARY_PREFIX}")
-    message(STATUS "CMAKE_STATIC_LIBRARY_SUFFIX: ${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    message(STATUS "CMAKE_FIND_LIBRARY_PREFIXES: ${CMAKE_FIND_LIBRARY_PREFIXES}")
-    message(STATUS "CMAKE_FIND_LIBRARY_SUFFIXES: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
-    message(STATUS "CMAKE_PROJECT_NAME: ${CMAKE_PROJECT_NAME}")
-    message(STATUS "CMAKE_PROJECT_VERSION: ${CMAKE_PROJECT_VERSION}")
-    message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
-    message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-endif()
-
+# ---- Dependencies ----
 include(cmake/SMRMKL.cmake)
 smr_configure_mkl(smr_use_mkl)
 
 find_package(OpenMP REQUIRED)
 
-# Fetch 3rd parties
 include(cmake/CPM.cmake)
 set(FETCHCONTENT_QUIET ON)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
-CPMAddPackage(
-    NAME eigen
-    GITHUB_REPOSITORY eigen-mirror/eigen
-    GIT_TAG 3.4.0
-    EXCLUDE_FROM_ALL YES
-    SYSTEM YES
-    OPTIONS
-        "BUILD_TESTING OFF"
-        "EIGEN_BUILD_DOC OFF"
-)
-CPMAddPackage(
-    NAME zlib
-    GITHUB_REPOSITORY madler/zlib
-    VERSION 1.3.1
-    EXCLUDE_FROM_ALL YES
-    SYSTEM YES
-    OPTIONS
-        "ZLIB_BUILD_EXAMPLES OFF"
-)
-CPMAddPackage(
-    NAME spdlog
-    GITHUB_REPOSITORY gabime/spdlog
-    VERSION 1.15.3
-    EXCLUDE_FROM_ALL YES
-    SYSTEM YES
-    OPTIONS
-        "SPDLOG_BUILD_EXAMPLE OFF"
-        "SPDLOG_BUILD_EXAMPLE_HO OFF"
-        "SPDLOG_BUILD_TESTS OFF"
-        "SPDLOG_BUILD_TESTS_HO OFF"
-        "SPDLOG_BUILD_BENCH OFF"
-        "SPDLOG_FMT_EXTERNAL ON"
-)
-CPMAddPackage(
-    NAME fmt
-    GITHUB_REPOSITORY fmtlib/fmt
-    GIT_TAG 12.1.0
-    EXCLUDE_FROM_ALL YES
-    SYSTEM YES
-    OPTIONS
-        "FMT_DOC OFF"
-        "FMT_TEST OFF"
-        "FMT_FUZZ OFF"
-        "FMT_CUDA_TEST OFF"
-)
+# Silence deprecation warnings from third-party projects with old
+# cmake_minimum_required (e.g. Eigen 3.4.0). Only effective on CMake >= 4.0.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 
+CPMAddPackage(NAME eigen GITHUB_REPOSITORY eigen-mirror/eigen GIT_TAG 3.4.0
+              EXCLUDE_FROM_ALL YES SYSTEM YES OPTIONS "BUILD_TESTING OFF" "EIGEN_BUILD_DOC OFF")
+# Fetch zlib as a release tarball (not git): zlib's CMakeLists renames
+# zconf.h inside its own source tree, which permanently dirties CPM's
+# git cache and triggers a 'cache is dirty' warning on every configure.
+CPMAddPackage(NAME zlib
+              URL https://github.com/madler/zlib/archive/refs/tags/v1.3.1.tar.gz
+              URL_HASH SHA256=17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c
+              EXCLUDE_FROM_ALL YES SYSTEM YES OPTIONS "ZLIB_BUILD_EXAMPLES OFF")
+CPMAddPackage(NAME spdlog GITHUB_REPOSITORY gabime/spdlog VERSION 1.15.3
+              EXCLUDE_FROM_ALL YES SYSTEM YES OPTIONS "SPDLOG_BUILD_EXAMPLE OFF" "SPDLOG_FMT_EXTERNAL ON")
+CPMAddPackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 12.1.0
+              EXCLUDE_FROM_ALL YES SYSTEM YES OPTIONS "FMT_DOC OFF" "FMT_TEST OFF")
 if(BUILD_WITH_MIMALLOC)
-    CPMAddPackage(
-        NAME mimalloc
-        GITHUB_REPOSITORY microsoft/mimalloc
-        VERSION 2.2.7
-        EXCLUDE_FROM_ALL YES
-        SYSTEM YES
-        OPTIONS
-            "MI_OVERRIDE ON"
-            "MI_BUILD_SHARED OFF"
-            "MI_BUILD_STATIC ON"
-            "MI_BUILD_TESTS OFF"
-            "MI_BUILD_OBJECT OFF"
-    )
+    CPMAddPackage(NAME mimalloc GITHUB_REPOSITORY microsoft/mimalloc VERSION 2.2.7
+                  EXCLUDE_FROM_ALL YES SYSTEM YES
+                  OPTIONS "MI_OVERRIDE ON" "MI_BUILD_SHARED OFF" "MI_BUILD_STATIC ON" "MI_BUILD_TESTS OFF" "MI_BUILD_OBJECT OFF")
 endif()
 
-set(SRCS
-    src/bfile.cpp
-    src/CommFunc.cpp
-    src/mmap_read.cpp
-    src/perf_timer.cpp
-    src/SMR.cpp
-    src/SMR_data.cpp
-    src/SMR_data_p1.cpp
-    src/SMR_data_p2.cpp
-    src/SMR_data_p3.cpp
-    src/SMR_plot.cpp
-    src/StatFunc.cpp
-    src/StrFunc.cpp
-)
-set(DCDFLIB_SRCS
-    third_party/dcdflib/dcdflib.c
-    third_party/dcdflib/ipmpar.c
-)
+# ---- Target ----
+set(SRCS src/bfile.cpp src/CommFunc.cpp src/mmap_read.cpp src/perf_timer.cpp src/SMR.cpp
+         src/SMR_data.cpp src/SMR_data_p1.cpp src/SMR_data_p2.cpp src/SMR_data_p3.cpp
+         src/SMR_plot.cpp src/StatFunc.cpp src/StrFunc.cpp)
+set(DCDFLIB_SRCS third_party/dcdflib/dcdflib.c third_party/dcdflib/ipmpar.c)
+
 add_executable(${PROJECT_NAME} ${SRCS} ${DCDFLIB_SRCS})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_party/dcdflib)
+target_include_directories(${PROJECT_NAME} PRIVATE third_party/dcdflib)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX Eigen3::Eigen zlib spdlog::spdlog fmt::fmt)
 
 include(CheckCXXCompilerFlag)
+set(smr_arch_flag "none")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
-    # Intel/AMD x86_64
     check_cxx_compiler_flag("-march=x86-64-v3" SMR_HAS_MARCH_X86_64_V3)
     if(SMR_HAS_MARCH_X86_64_V3)
         target_compile_options(${PROJECT_NAME} PRIVATE -march=x86-64-v3)
+        set(smr_arch_flag "-march=x86-64-v3")
     endif()
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
-    # Apple Silicon (M1/M2/M3) or other ARM64
     check_cxx_compiler_flag("-march=armv8.5-a" SMR_HAS_MARCH_ARMV85A)
     if(SMR_HAS_MARCH_ARMV85A)
         target_compile_options(${PROJECT_NAME} PRIVATE -march=armv8.5-a)
+        set(smr_arch_flag "-march=armv8.5-a")
     endif()
 endif()
 
 if(smr_use_mkl)
     smr_target_enable_mkl(${PROJECT_NAME})
 endif()
-
 if(BUILD_WITH_MIMALLOC)
-    # Link mimalloc-static for global malloc/free override at link time
-    # No LD_PRELOAD needed - works automatically
-    target_link_libraries(${PROJECT_NAME} mimalloc-static)
-    message(STATUS "mimalloc: enabled (static linking for malloc override)")
+    target_link_libraries(${PROJECT_NAME} mimalloc-static)  # global malloc override at link time
 endif()
 
-
-IF(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json")
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
-        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
-    )
-ENDIF()
-
-if(SMR_VERBOSE_CONFIGURE)
-    get_property(imported_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
-    foreach(target IN LISTS imported_targets)
-        message(STATUS "imported target: ${target}")
-    endforeach()
-
-    get_property(local_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY BUILDSYSTEM_TARGETS)
-    foreach(target IN LISTS local_targets)
-        message(STATUS "built target: ${target}")
-    endforeach()
+# Keep compile_commands.json in the source root for clangd
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json" "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json")
 endif()
 
-# Installation
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
+# ---- Install ----
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# Targets
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+# Required by AppImage packaging (scripts/hpc/build.sh, linuxdeploy)
+install(FILES resources/smr.desktop DESTINATION share/applications)
+install(FILES resources/smr.png DESTINATION share/icons/hicolor/256x256/apps)
+install(FILES resources/smr.svg DESTINATION share/icons/hicolor/scalable/apps)
 
-# Resource
-install(FILES ${CMAKE_SOURCE_DIR}/resources/smr.desktop
-    DESTINATION share/applications)
-install(FILES ${CMAKE_SOURCE_DIR}/resources/smr.png
-    DESTINATION share/icons/hicolor/256x256/apps)
-install(FILES ${CMAKE_SOURCE_DIR}/resources/smr.svg
-    DESTINATION share/icons/hicolor/scalable/apps)
+# ---- Summary ----
+message(STATUS "smr ${PROJECT_VERSION} | ${CMAKE_BUILD_TYPE} | MKL: ${smr_use_mkl} | mimalloc: ${BUILD_WITH_MIMALLOC} | arch: ${smr_arch_flag}")

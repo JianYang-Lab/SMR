@@ -13,30 +13,6 @@
 #include "mmap_read.hpp"
 
 namespace SMRDATA {
-struct eSMRrlt {
-  long lineNum;
-  std::vector<std::string> _Expo_id;
-  std::vector<int> _Expo_chr;
-  std::vector<std::string> _Expo_gene;
-  std::vector<int> _Expo_bp;
-  std::vector<std::string> _Outco_id;
-  std::vector<int> _Outco_chr;
-  std::vector<std::string> _Outco_gene;
-  std::vector<int> _Outco_bp;
-  std::vector<std::string> _snp_rs;
-  std::vector<int> _snp_chr;
-  std::vector<int> _snp_bp;
-  std::vector<std::string> _snp_a1;
-  std::vector<std::string> _snp_a2;
-  std::vector<float> _snp_frq;
-  std::vector<double> _b;
-  std::vector<double> _se;
-  std::vector<double> _p_smr;
-  std::vector<double> _p_heidi;
-  std::vector<int> _nsnp;
-  std::vector<std::uint32_t> _include;
-};
-
 void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstName, char* problstName,
                         char* snplst2exclde, char* problst2exclde, float thres);
 void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* snplst2exclde, char* problstName,

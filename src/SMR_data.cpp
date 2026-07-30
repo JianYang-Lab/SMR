@@ -1383,66 +1383,6 @@ void filter_probe_null(eqtlInfo* eqtlinfo) {
 
   std::cout << eqtlinfo->_include.size() << " probes to be included." << std::endl;
 }
-void filter_snp_null(eqtlInfo* eqtlinfo) {
-  std::vector<std::string> nullSNPs;
-  std::cout << "\nfiltering out the SNPs with no value..." << std::endl;
-  std::vector<int> esi_include;
-  esi_include.reserve(eqtlinfo->_esi_include.size());
-  nullSNPs.reserve(eqtlinfo->_esi_include.size());
-  if (eqtlinfo->_valNum == 0) {
-    for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
-      bool NA_flag = true;
-      for (int j = 0, m = eqtlinfo->_include.size(); j < m; j++) {
-        if (fabs(eqtlinfo->_sexz[eqtlinfo->_include[j]][eqtlinfo->_esi_include[i]] + 9) > 1e-6) {
-          NA_flag = false;
-          break;
-        }
-      }
-      if (!NA_flag) esi_include.push_back(i);
-      else nullSNPs.push_back(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]]);
-    }
-  } else {
-    std::vector<std::uint32_t> rowid;
-    rowid = eqtlinfo->_rowid;
-    getUnique(rowid);
-    std::vector<int> idx;
-    idx.reserve(eqtlinfo->_esi_include.size());
-
-    std::unordered_map<std::uint32_t, int> id_map;
-    id_map.reserve(rowid.size() * 2);
-    for (int i = 0, n = rowid.size(); i < n; i++) id_map.emplace(rowid[i], i);
-    for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
-      auto iter = id_map.find(eqtlinfo->_esi_include[i]);
-      if (iter == id_map.end()) idx.push_back(-9);
-      else idx.push_back(iter->second);
-    }
-
-    for (int i = 0, n = idx.size(); i < n; i++) {
-      if (idx[i] != -9) esi_include.push_back(eqtlinfo->_esi_include[i]);
-      else nullSNPs.push_back(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]]);
-    }
-  }
-  eqtlinfo->_esi_include.swap(esi_include);
-  eqtlinfo->_snp_name_map.clear();
-  for (int i = 0, n = eqtlinfo->_esi_include.size(); i < n; i++) {
-    eqtlinfo->_snp_name_map.emplace(eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]], eqtlinfo->_esi_include[i]);
-  }
-  if (!nullSNPs.empty()) {
-    std::string fname = "chr" + atos(eqtlinfo->_esi_chr[0]) + ".nullSNPs.log";
-    FILE* nullsnpfile = fopen(fname.c_str(), "w");
-    if (!(nullsnpfile)) {
-      printf("Error: Failed to open null probe log file.\n");
-      exit(EXIT_FAILURE);
-    }
-    for (int i = 0, n = nullSNPs.size(); i < n; i++) {
-      fputs(nullSNPs[i].c_str(), nullsnpfile);
-      fputs("\n", nullsnpfile);
-    }
-    fclose(nullsnpfile);
-  }
-
-  std::cout << eqtlinfo->_esi_include.size() << " SNPs to be included." << std::endl;
-}
 
 bool has_suffix(const std::string& str, const std::string& suffix) {
   return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
@@ -1699,51 +1639,21 @@ bool make_XMat(bInfo* bdata, MatrixXf& X) {
   X.resize(0, 0);
   X.resize(n, m);
   for (i = 0; i < n; i++) {
-    if (bdata->_dosage_flag) {
-      for (j = 0; j < m; j++) {
-        if (bdata->_geno_dose[bdata->_keep[i]][bdata->_include[j]] < 1e5) {
-          if (bdata->_allele1[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]])
-            X(i, j) = bdata->_geno_dose[bdata->_keep[i]][bdata->_include[j]];
-          else X(i, j) = 2.0 - bdata->_geno_dose[bdata->_keep[i]][bdata->_include[j]];
-        } else {
-          X(i, j) = 1e6;
-          have_mis = true;
-        }
-      }
-      bdata->_geno_dose[i].clear();
-    } else {
-      for (j = 0; j < bdata->_include.size(); j++) {
-        if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
-          if (bdata->_allele1[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]])
-            X(i, j) =
-                bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]];
-          else
-            X(i, j) = 2.0 - (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] +
-                             bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-        } else {
-          X(i, j) = 1e6;
-          have_mis = true;
-        }
+    for (j = 0; j < bdata->_include.size(); j++) {
+      if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
+        if (bdata->_allele1[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]])
+          X(i, j) =
+              bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]];
+        else
+          X(i, j) = 2.0 - (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] +
+                           bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
+      } else {
+        X(i, j) = 1e6;
+        have_mis = true;
       }
     }
   }
   return have_mis;
-}
-
-void makeptrx(bInfo* bdata, int bsnpid, int cursnpid, float* X, bool minus_2p) {
-  int i = 0;
-  for (i = 0; i < bdata->_keep.size(); i++) {
-    if (!bdata->_snp_1[bdata->_include[bsnpid]][bdata->_keep[i]] ||
-        bdata->_snp_2[bdata->_include[bsnpid]][bdata->_keep[i]]) {
-      if (bdata->_allele1[bdata->_include[bsnpid]] == bdata->_ref_A[bdata->_include[bsnpid]])
-        X[cursnpid * bdata->_indi_num + i] = (bdata->_snp_1[bdata->_include[bsnpid]][bdata->_keep[i]] +
-                                              bdata->_snp_2[bdata->_include[bsnpid]][bdata->_keep[i]]);
-      else
-        X[cursnpid * bdata->_indi_num + i] = 2.0 - (bdata->_snp_1[bdata->_include[bsnpid]][bdata->_keep[i]] +
-                                                    bdata->_snp_2[bdata->_include[bsnpid]][bdata->_keep[i]]);
-    } else X[cursnpid * bdata->_indi_num + i] = bdata->_mu[bdata->_include[bsnpid]];
-    if (minus_2p) X[cursnpid * bdata->_indi_num + i] -= bdata->_mu[bdata->_include[bsnpid]];
-  }
 }
 
 void read_snpprblist(std::string snpprblistfile, std::vector<std::string>& prblist,
@@ -2498,96 +2408,6 @@ void allele_check(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, double maf,
            comm_count, fail_allele, fail_frq);
   printf("%ld SNPs are finally included.\n", gdata->_include.size());
 }
-void allele_check_opt(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
-  std::string logstr =
-      "Checking the consistency of the alleles of each SNP between pairwise data sets (including the GWAS summary "
-      "data, the eQTL summary data and the LD reference data).\n ";
-  std::cout << logstr << std::endl;
-  std::map<std::string, int> allel_map;
-  // std::map<std::string, int>::iterator iter, iter1, iter2;
-  std::unordered_map<std::string, int>::iterator iter, iter2;
-  std::unordered_map<std::string, int>::iterator iter1;
-
-  std::vector<int> bin, ein, gin;
-  double disp = 0;
-  for (int i = 0; i < gdata->_include.size(); i++)  // no map in gwas data
-  {
-    progress(i, disp, (int)gdata->_include.size());
-
-    int rid = gdata->_include[i];
-    std::string grs = gdata->snpName[rid];
-    allel_map.clear();
-    std::string a1, a2, ga1, ga2, ea1, ea2;
-    ga1 = gdata->allele_1[rid];
-    ga2 = gdata->allele_2[rid];
-    allel_map.insert(std::pair<std::string, int>(ga1, 0));
-    allel_map.insert(std::pair<std::string, int>(ga2, 1));
-    bool hitall = false;
-    iter1 = esdata->_snp_name_map.find(grs);
-    if (iter1 != esdata->_snp_name_map.end()) {
-      iter2 = bdata->_snp_name_map.find(grs);
-      if (iter2 != bdata->_snp_name_map.end()) {
-        ea1 = esdata->_esi_allele1[iter1->second];
-        ea2 = esdata->_esi_allele2[iter1->second];
-        a1 = bdata->_allele1[iter2->second];
-        a2 = bdata->_allele2[iter2->second];
-        allel_map.insert(std::pair<std::string, int>(ea1, allel_map.size()));
-        allel_map.insert(std::pair<std::string, int>(ea2, allel_map.size()));
-        allel_map.insert(std::pair<std::string, int>(a1, allel_map.size()));
-        allel_map.insert(std::pair<std::string, int>(a2, allel_map.size()));
-        if (allel_map.size() > 2) {
-          hitall = false;
-        } else {
-          hitall = true;
-          // use the allele in eQTL summary data as the reference allele. so we won't get the whole besd into memroy
-          if (ea1 == a1 && ea2 == a2) {
-            if (ea1 == ga1 && ea2 == ga2) {
-              bin.push_back(iter2->second);
-              gin.push_back(rid);
-              ein.push_back(iter1->second);
-            } else if (ea1 == ga2 && ea2 == ga1) {
-              bin.push_back(iter2->second);
-              gin.push_back(rid);
-              ein.push_back(iter1->second);
-
-              gdata->byz[rid] = -1.0 * gdata->byz[rid];
-            }
-          } else if (ea1 == a2 && ea2 == a1) {
-            if (ea1 == ga1 && ea2 == ga2) {
-              bin.push_back(iter2->second);
-              gin.push_back(rid);
-              ein.push_back(iter1->second);
-
-              std::string tmpch = bdata->_ref_A[iter2->second];
-              bdata->_ref_A[iter2->second] = bdata->_other_A[iter2->second];
-              bdata->_other_A[iter2->second] = tmpch;
-
-            } else if (ea1 == ga2 && ea2 == ga1) {
-              bin.push_back(iter2->second);
-              gin.push_back(rid);
-              ein.push_back(iter1->second);
-
-              gdata->byz[rid] = -1.0 * gdata->byz[rid];
-              std::string tmpch = bdata->_ref_A[iter2->second];
-              bdata->_ref_A[iter2->second] = bdata->_other_A[iter2->second];
-              bdata->_other_A[iter2->second] = tmpch;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  bdata->_include.swap(bin);
-  gdata->_include.swap(gin);
-  esdata->_esi_include.swap(ein);
-  printf("%ld SNPs are included after allele checking.\n ", bdata->_include.size());
-
-  // only update _snp_name_map which would be used in read bed file.
-  std::unordered_map<std::string, int> id_map_buf(bdata->_snp_name_map);
-  for (int i = 0; i < bdata->_include.size(); i++) id_map_buf.erase(bdata->_snp_name[bdata->_include[i]]);
-  for (iter = id_map_buf.begin(); iter != id_map_buf.end(); iter++) bdata->_snp_name_map.erase(iter->first);
-}
 
 void allele_check(gwasData* gdata, eqtlInfo* esdata) {
   // get the common SNPs
@@ -2939,105 +2759,6 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
   for (const auto& [snp, _] : id_map_buf) bdata->_snp_name_map.erase(snp);
 }
 
-void allele_check_opt(
-    bInfo* bdata, eqtlInfo* etrait,
-    eqtlInfo* esdata) { /*
-                           std::string logstr="Checking the consistency of SNP alleles among GWAS summary data, eQTL
-                           summary data and reference data.\n "; std::cout<<logstr<<std::endl; std::map<std::string,
-                           int> allel_map; std::map<std::string, int>::iterator iter, iter1, iter2; std::vector<int>
-                           bin,ein,gin; for(int i=0;i<gdata->_include.size();i++) //no map in gwas data
-                           {
-                               printf("%3.0f%%\r", 100.0*i/gdata->_include.size());
-                               fflush(stdout);
-                               int rid=gdata->_include[i];
-                               std::string grs=gdata->snpName[rid];
-                               allel_map.clear();
-                               std::string a1, a2, ga1, ga2, ea1, ea2;
-                               ga1 = gdata->allele_1[rid];
-                               ga2 = gdata->allele_2[rid];
-                               allel_map.insert(std::pair<std::string,int>(ga1,0));
-                               allel_map.insert(std::pair<std::string,int>(ga2,1));
-                               bool hitall=false;
-                               iter1 = esdata-> _snp_name_map.find(grs);
-                               if (iter1 != esdata->_snp_name_map.end()) {
-                                   iter2 = bdata-> _snp_name_map.find(grs);
-                                   if (iter2 != bdata->_snp_name_map.end()) {
-                                       ea1=esdata->_esi_allele1[iter1->second];
-                                       ea2=esdata->_esi_allele2[iter1->second];
-                                       a1=bdata->_allele1[iter2->second];
-                                       a2=bdata->_allele2[iter2->second];
-                                       allel_map.insert(std::pair<std::string,int>(ea1,allel_map.size()));
-                                       allel_map.insert(std::pair<std::string,int>(ea2,allel_map.size()));
-                                       allel_map.insert(std::pair<std::string,int>(a1,allel_map.size()));
-                                       allel_map.insert(std::pair<std::string,int>(a2,allel_map.size()));
-                                       if(allel_map.size()>2) {
-                                           hitall=false;
-                                       } else {
-                                           hitall=true;
-                                           // use the allele in eQTL summary data as the reference allele. so we won't
-                           get the whole besd into memroy if(ea1 == a1 &&  ea2 == a2)
-                                           {
-                                               if( ea1 == ga1 && ea2 == ga2)
-                                               {
-                                                   bin.push_back(iter2->second);
-                                                   gin.push_back(rid);
-                                                   ein.push_back(iter1->second);
-                                               }
-                                               else if(ea1 == ga2 && ea2 == ga1)
-                                               {
-                                                   bin.push_back(iter2->second);
-                                                   gin.push_back(rid);
-                                                   ein.push_back(iter1->second);
-
-                                                   gdata->byz[rid]=-1.0*gdata->byz[rid];
-
-                                               }
-                                           }
-                                           else if(ea1 == a2 &&  ea2 == a1)
-                                           {
-
-                                               if( ea1 == ga1 && ea2 == ga2)
-                                               {
-                                                   bin.push_back(iter2->second);
-                                                   gin.push_back(rid);
-                                                   ein.push_back(iter1->second);
-
-                                                   std::string tmpch=bdata->_ref_A[iter2->second];
-                                                   bdata->_ref_A[iter2->second]=bdata->_other_A[iter2->second];
-                                                   bdata->_other_A[iter2->second]=tmpch;
-
-                                               }
-                                               else if(ea1 == ga2 && ea2 == ga1)
-                                               {
-                                                   bin.push_back(iter2->second);
-                                                   gin.push_back(rid);
-                                                   ein.push_back(iter1->second);
-
-                                                   gdata->byz[rid]=-1.0*gdata->byz[rid];
-                                                   std::string tmpch=bdata->_ref_A[iter2->second];
-                                                   bdata->_ref_A[iter2->second]=bdata->_other_A[iter2->second];
-                                                   bdata->_other_A[iter2->second]=tmpch;
-
-                                               }
-                                           }
-
-                                       }
-                                   }
-                               }
-                           }
-
-                           bdata->_include.swap(bin);
-                           gdata->_include.swap(gin);
-                           esdata->_esi_include.swap(ein);
-                           printf("%ld SNPs are included after allele checking.\n ",bdata->_include.size());
-
-                           // only update _snp_name_map which would be used in read bed file.
-                           std::map<std::string, int> id_map_buf(bdata->_snp_name_map);
-                           for(int i=0; i<bdata->_include.size(); i++)
-                           id_map_buf.erase(bdata->_snp_name[bdata->_include[i]]); for(iter=id_map_buf.begin();
-                           iter!=id_map_buf.end(); iter++) bdata->_snp_name_map.erase(iter->first);
-                         */
-}
 void update_gwas(gwasData* gdata) {
   bool hasBP = false;
   if (gdata->snpBp.size() > 0) hasBP = true;

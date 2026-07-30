@@ -29,79 +29,6 @@ using namespace StatFunc;
 using namespace StrFunc;
 
 namespace SMRDATA {
-void get_top_sets(eqtlInfo* eqtlinfo, std::vector<std::string>& prbIds, std::vector<float>& beta,
-                  std::vector<float>& se, std::vector<std::string>& rs, float thres) {
-  if (eqtlinfo->_rowid.empty()) {
-    for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-      std::string probeId = eqtlinfo->_epi_prbID[eqtlinfo->_include[i]];
-      int probechr = eqtlinfo->_epi_chr[eqtlinfo->_include[i]];
-      double top_zsqr = 0, top_beta = 0, top_se = 0;
-      std::string snprs = "";
-      for (int j = 0; j < eqtlinfo->_esi_include.size(); j++) {
-        if (fabs(eqtlinfo->_sexz[eqtlinfo->_include[i]][eqtlinfo->_esi_include[j]] + 9) > 1e-6) {
-          int snpchr = eqtlinfo->_esi_chr[eqtlinfo->_esi_include[j]];
-          std::string rstmp = eqtlinfo->_esi_rs[eqtlinfo->_esi_include[j]];
-          if (snpchr == probechr) {
-            float bxz = eqtlinfo->_bxz[eqtlinfo->_include[i]][eqtlinfo->_esi_include[j]];
-            float sexz = eqtlinfo->_sexz[eqtlinfo->_include[i]][eqtlinfo->_esi_include[j]];
-            float zxz = bxz / sexz;
-            zxz *= zxz;
-            if (zxz - top_zsqr > 1e-8) {
-              top_zsqr = zxz;
-              top_beta = bxz;
-              top_se = sexz;
-              snprs = rstmp;
-            }
-          }
-        }
-      }
-      double pval = pchisq(top_zsqr, 1);
-      if (pval < thres) {
-        prbIds.push_back(probeId);
-        beta.push_back(top_beta);
-        se.push_back(top_se);
-        rs.push_back(snprs);
-      }
-    }
-
-  } else {
-    for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-      std::string probeId = eqtlinfo->_epi_prbID[eqtlinfo->_include[i]];
-      int probechr = eqtlinfo->_epi_chr[eqtlinfo->_include[i]];
-      double top_zsqr = 0, top_beta = 0, top_se = 0;
-      std::string snprs = "";
-
-      std::uint64_t beta_start = eqtlinfo->_cols[eqtlinfo->_include[i] << 1];
-      std::uint64_t se_start = eqtlinfo->_cols[1 + (eqtlinfo->_include[i] << 1)];
-      std::uint64_t numsnps = se_start - beta_start;
-      for (int j = 0; j < numsnps; j++) {
-        int ge_rowid = eqtlinfo->_rowid[beta_start + j];
-        int snpchr = eqtlinfo->_esi_chr[ge_rowid];
-        std::string snptmp = eqtlinfo->_esi_rs[ge_rowid];
-        if (snpchr == probechr) {
-          float bxz = eqtlinfo->_val[beta_start + j];
-          float sexz = eqtlinfo->_val[se_start + j];
-          float zxz = bxz / sexz;
-          zxz *= zxz;
-          if (zxz - top_zsqr > 1e-8) {
-            top_zsqr = zxz;
-            top_beta = bxz;
-            top_se = sexz;
-            snprs = snptmp;
-          }
-        }
-      }
-
-      double pval = pchisq(top_zsqr, 1);
-      if (pval < thres) {
-        prbIds.push_back(probeId);
-        beta.push_back(top_beta);
-        se.push_back(top_se);
-        rs.push_back(snprs);
-      }
-    }
-  }
-}
 
 void get_thres_sets(eqtlInfo* eqtlinfo, std::vector<std::string>& prbIds, std::vector<float>& beta,
                     std::vector<float>& se, std::vector<std::string>& rs, float thres) {
@@ -1764,51 +1691,6 @@ void sbat_calcu_lambda(ldInfo* ldinfo, FILE* ldfptr, std::vector<std::uint32_t>&
   C = numerator.array() / denominator.array();
   SelfAdjointEigenSolver<MatrixXd> saesxy(C);
   eigenvalxy = saesxy.eigenvalues().cast<double>();
-}
-
-double heidi_test(bInfo* bdata, std::vector<double>& slct_zsxz, std::vector<std::uint32_t>& slctId, long slct_maxid,
-                  double ld_top, double threshold, int m_hetero, std::vector<double>& slct_byz,
-                  std::vector<double>& slct_seyz, std::vector<double>& slct_bxz, std::vector<double>& slct_sexz,
-                  long& nsnp) {
-  VectorXd ld_v;
-  MatrixXd _X;
-  std::vector<int> sn_ids;
-  VectorXd tmp_zsxz(slct_zsxz.size());
-  for (int j = 0; j < slct_zsxz.size(); j++) tmp_zsxz(j) = slct_zsxz[j];
-
-  make_XMat(bdata, slctId, _X);
-  ld_calc_o2m(ld_v, slct_maxid, _X);
-  if (fabs(ld_top - 1) < 1e-6) get_square_idxes(sn_ids, tmp_zsxz, threshold);
-  else get_square_ldpruning_idxes(sn_ids, tmp_zsxz, threshold, ld_v, slct_maxid, ld_top);
-  if (sn_ids.size() < m_hetero) return -9;
-
-  VectorXd _byz, _seyz, _bxz, _sexz, _zsxz;
-  MatrixXd _X_heidi, _LD_heidi;
-  _byz.resize(sn_ids.size());
-  _seyz.resize(sn_ids.size());
-  _bxz.resize(sn_ids.size());
-  _sexz.resize(sn_ids.size());
-  _zsxz.resize(sn_ids.size());
-  _X_heidi.resize(_X.rows(), sn_ids.size());
-
-  #pragma omp parallel for
-  for (int j = 0; j < sn_ids.size(); j++) {
-    _byz[j] = slct_byz[sn_ids[j]];
-    _seyz[j] = slct_seyz[sn_ids[j]];
-    _bxz[j] = slct_bxz[sn_ids[j]];
-    _sexz[j] = slct_sexz[sn_ids[j]];
-    _zsxz[j] = slct_zsxz[sn_ids[j]];
-    _X_heidi.col(j) = _X.col(sn_ids[j]);
-  }
-  _X.resize(0, 0);
-  cor_calc(_LD_heidi, _X_heidi);
-
-  _X_heidi.resize(0, 0);
-
-  nsnp = sn_ids.size();
-  double pdev = bxy_hetero3(_byz, _bxz, _seyz, _sexz, _zsxz, _LD_heidi, &nsnp);
-
-  return pdev;
 }
 
 int smr_setbased_test(bInfo* bdata, std::vector<std::uint32_t>& slctId, std::vector<double>& slct_bxz,

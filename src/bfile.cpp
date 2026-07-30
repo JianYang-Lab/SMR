@@ -1100,48 +1100,6 @@ void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, std::vector<std::uint32_t>& cu
   }
 }
 
-void fetch_ld_by_id(ldInfo* ldinfo, FILE* ldfprt, int sid,
-                    std::vector<float>& ld) {  // only the SNPs with bigger pb would be extracted!
-  std::uint64_t valSTART =
-      RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + ldinfo->_snpNum * sizeof(std::uint64_t);
-  std::uint64_t poss = ldinfo->_cols[sid];
-  std::uint64_t post = ldinfo->_cols[sid + 1];
-  long num = post - poss;
-  ld.resize(num);
-  if (fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET) != 0) {
-    printf("ERROR: File seek failed!\n");
-    exit(EXIT_FAILURE);
-  }
-  if (fread(&ld[0], sizeof(float), num, ldfprt) != num) {
-    printf("ERROR: File read failed!\n");
-    exit(EXIT_FAILURE);
-  }
-}
-
-void fetch_ld_by_snps(ldInfo* ldinfo, FILE* ldfprt, std::string rs, std::vector<float>& ld) {
-  std::map<std::string, int>::iterator iter;
-  iter = ldinfo->_snp_name_map.find(rs);
-  if (iter == ldinfo->_snp_name_map.end()) {
-    printf("ERROR: can't find SNP %s.\n", rs.c_str());
-    exit(EXIT_FAILURE);
-  }
-  int sid = iter->second;
-  std::uint64_t valSTART =
-      RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + ldinfo->_snpNum * sizeof(std::uint64_t);
-  std::uint64_t poss = ldinfo->_cols[sid];
-  std::uint64_t post = ldinfo->_cols[sid + 1];
-  long num = post - poss;
-  ld.resize(num);
-  if (fseek(ldfprt, poss * sizeof(float) + valSTART, SEEK_SET) != 0) {
-    printf("ERROR: File seek failed!\n");
-    exit(EXIT_FAILURE);
-  }
-  if (fread(&ld[0], sizeof(float), num, ldfprt) != num) {
-    printf("ERROR: File read failed!\n");
-    exit(EXIT_FAILURE);
-  }
-}
-
 void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst2exclde, int chr, char* snprs,
             char* snprs2exclde, char* fromsnprs, char* tosnprs, int snpWind, bool snpWindflg, int fromsnpkb,
             int tosnpkb, int ld_wind) {
@@ -1464,54 +1422,6 @@ void calcu_ld_blk(bInfo* bdata, std::vector<int>& brk_pnt, std::vector<int>& brk
     }
   }
   std::cout << ttlsize << std::endl;
-}
-
-void calcu_mean_rsq(char* outFileName, char* bFileName, char* indilstName, char* indilst2remove, char* snplstName,
-                    char* snplst2exclde, int chr, double maf, bool ldr, bool ldr2, int ldWind, double rsq_cutoff) {
-  bInfo bdata;
-  MatrixXd X;
-  std::vector<std::uint64_t> cols;
-  std::vector<float> lds;
-  read_famfile(&bdata, std::string(bFileName) + ".fam");
-  if (indilstName != nullptr) keep_indi(&bdata, indilstName);
-  if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
-  read_bimfile(&bdata, std::string(bFileName) + ".bim");
-  if (chr) extract_snp(&bdata, chr);
-  if (snplstName != nullptr) extract_snp(&bdata, snplstName);
-  if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
-  read_bedfile(&bdata, std::string(bFileName) + ".bed");
-  if (bdata._mu.empty()) calcu_mu(&bdata);
-  if (maf > 0) filter_snp_maf(&bdata, maf);
-  check_autosome(&bdata);
-
-  int i = 0, m = bdata._include.size();
-
-  std::cout << "\nCalculating LD score for SNPs (block size of " << ldWind / 1000 << "Kb with an overlap of "
-            << ldWind / 2000 << "Kb between blocks); LD rsq threshold = " << rsq_cutoff << ") ... " << std::endl;
-
-  std::vector<int> brk_pnt1, brk_pnt2, brk_pnt3;
-  get_ld_blk_pnt(&bdata, brk_pnt1, brk_pnt2, brk_pnt3, ldWind, 0);
-
-  VectorXf mean_rsq = VectorXf::Zero(m), snp_num = VectorXf::Zero(m), max_rsq = VectorXf::Zero(m);
-  clock_t begin_time = clock();
-  calcu_ld_blk(&bdata, brk_pnt1, brk_pnt3, mean_rsq, snp_num, max_rsq, false, rsq_cutoff);
-  if (brk_pnt2.size() > 1) calcu_ld_blk(&bdata, brk_pnt2, brk_pnt3, mean_rsq, snp_num, max_rsq, true, rsq_cutoff);
-  // printf(" cost2: %f ms.\n",float( clock () - begin_time ) /  1000);
-  /*
-  std::string mrsq_file = "";
-  mrsq_file = _out + ".score.ld";
-  std::ofstream o_mrsq(mrsq_file.data());
-  o_mrsq<<"SNP chr bp MAF mean_rsq snp_num max_rsq ldscore"<<std::endl;
-  double ldscore = 0.0;
-  for (i = 0; i < m; i++){
-      o_mrsq << bdata->_snp_name[bdata->_include[i]] << " " << bdata->_chr[bdata->_include[i]] << " " <<
-  bdata->_bp[bdata->_include[i]] << " "; double MAF = 0.5 * bdata->_mu[bdata->_include[i]]; if(MAF > 0.5) MAF = 1.0 -
-  MAF; ldscore = 1.0 + mean_rsq[i] * snp_num[i]; o_mrsq << MAF << " " << mean_rsq[i] << " " << snp_num[i] << " " <<
-  max_rsq[i] << " " << ldscore << "\n";
-  }
-  o_mrsq << std::endl;
-  std::cout << "LD score for " << m << " SNPs have been saved in the file [" + mrsq_file + "]." << std::endl;
-   */
 }
 
 }  // namespace SMRDATA

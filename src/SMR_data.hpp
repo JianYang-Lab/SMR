@@ -15,10 +15,6 @@
 #include "bfile.hpp"
 #include "mmap_read.hpp"
 
-#define MAX_LEN_PRBNAME 40
-#define MAX_LEN_GENENAME 40
-#define MAX_LEN_PATH 512
-
 extern int thread_num;
 extern bool mute;
 extern int xh;  // using when testing
@@ -300,31 +296,13 @@ void allele_check(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata);
 void allele_check(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, double maf, double& freqthresh,
                   double& percenthresh);
 
-void allele_check_opt(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata);
 void update_geIndx(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata);
 void allele_check(gwasData* gdata, eqtlInfo* esdata);
 void update_gwas(gwasData* gdata);
 
 bool make_XMat(bInfo* bdata, MatrixXd& X);
-// inline functions
-template <typename ElemType>
-void makex(bInfo* bdata, int j, std::vector<ElemType>& x, bool minus_2p = false) {
-  int i = 0;
-  x.resize(bdata->_keep.size());
-  for (i = 0; i < bdata->_keep.size(); i++) {
-    if (!bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] || bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]) {
-      if (bdata->_allele1[bdata->_include[j]] == bdata->_ref_A[bdata->_include[j]])
-        x[i] =
-            (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] + bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-      else
-        x[i] = 2.0 - (bdata->_snp_1[bdata->_include[j]][bdata->_keep[i]] +
-                      bdata->_snp_2[bdata->_include[j]][bdata->_keep[i]]);
-    } else x[i] = bdata->_mu[bdata->_include[j]];
-    if (minus_2p) x[i] -= bdata->_mu[bdata->_include[j]];
-  }
-}
 
-void makeptrx(bInfo* bdata, int bsnpid, int cursnpid, float* x, bool minus_2p = false);
+double heidi_test(bInfo* bdata, SMRWK* smrwk, long maxid, double ld_top, double threshold, int m_hetero, long& nsnp);
 void keep_indi(bInfo* bdata, const std::string& indi_list_file);
 void extract_snp(bInfo* bdata, const std::string& snplistfile);
 void extract_snp(bInfo* bdata, int chr);
@@ -344,7 +322,6 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
 long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, const char* refSNP, int cis_itvl,
                  bool heidioffFlag);
 
-double heidi_test(bInfo* bdata, SMRWK* smrwk, long maxid, double ld_top, double threshold, int m_hetero, long& nsnp);
 double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero, long& nsnp,
                       double ld_min, int opt_hetero, bool sampleoverlap, double theta);
 double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero,
@@ -460,7 +437,6 @@ void read_gene_anno_strand(char* geneAnnoName, std::vector<int>& chr, std::vecto
                            std::vector<int>& start, std::vector<int>& end, std::vector<std::string>& strand);
 void rm_unmatched_snp(gwasData* gdata, eqtlInfo* esdata);
 void rm_unmatched_snp(eqtlInfo* etrait, eqtlInfo* esdata);
-void filter_snp_null(eqtlInfo* eqtlinfo);
 int max_zsmr_id(SMRWK* smrwk, double p_smr);
 double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero, long& nsnp,
                           int refid, double ld_min, int opt_hetero, bool sampleoverlap, double theta);

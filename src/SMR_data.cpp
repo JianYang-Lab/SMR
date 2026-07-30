@@ -1241,6 +1241,10 @@ void get_square_ldpruning_idxes(std::vector<int>& sn_ids, VectorXd& zsxz, double
     }
   }
 }
+
+// HEIDI test (Zhu et al. 2016, Supplementary Note): covariance matrix of the
+// per-SNP ratio estimates b_i = b_iy/b_ix via the first-order delta method,
+// with LD between SNPs entering through _LD_heidi-scaled outer products.
 void est_cov_bxy(MatrixXd& covbxy, VectorXd& _zsxz, VectorXd& _bxy, VectorXd& _seyz, VectorXd& _bxz,
                  MatrixXd& _LD_heidi) {
   long nsnp = _zsxz.size();
@@ -1252,6 +1256,9 @@ void est_cov_bxy(MatrixXd& covbxy, VectorXd& _zsxz, VectorXd& _bxy, VectorXd& _s
              bxytbxy.array() / (zsxztzsxz.array() * zsxztzsxz.array());
   }
 }
+
+// est_cov_bxy with sample-overlap correction: theta is the correlation between
+// the outcome and exposure effect estimates induced by overlapping samples.
 void est_cov_bxy_so(MatrixXd& covbxy, VectorXd& _byz, VectorXd& _bxz, VectorXd& _seyz, VectorXd& _sexz,
                     MatrixXd& _LD_heidi, double theta) {
   long nsnp = _byz.size();
@@ -1271,6 +1278,11 @@ void est_cov_bxy_so(MatrixXd& covbxy, VectorXd& _byz, VectorXd& _bxz, VectorXd& 
   }
 }
 
+// HEIDI test statistic (Zhu et al. 2016, Supplementary Note): deviations
+// d_i = b_i - b_top of the per-SNP ratio estimates from the top SNP, then
+// T_HEIDI = d' Var(d)^-1 d ~ chi2(m-1). The tail probability of the resulting
+// weighted chi-square mixture is evaluated by saddlepoint approximation
+// (pchisqsum; Kuonen 1999, Biometrika 86:929-935).
 double bxy_hetero3(VectorXd& _byz, VectorXd& _bxz, VectorXd& _seyz, VectorXd& _sexz, VectorXd& _zsxz,
                    MatrixXd& _LD_heidi, long* snp_num) {
   VectorXd _bxy;
@@ -3763,6 +3775,10 @@ void update_smrwk_x(SMRWK* smrwk, std::vector<int>& sn_ids, MatrixXd& X) {
   smrwk->allele2.swap(allele2);
   X.swap(_X);
 }
+
+// New HEIDI procedure (default, --heidi-mtd 1): select SNPs by eQTL threshold,
+// prune by LD against the top SNP (ld_top / ld_min), and test heterogeneity on
+// the remaining top-m SNPs (Zhu et al. 2016; SMR documentation).
 double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double threshold, int m_hetero, long& nsnp,
                       double ld_min, int opt_hetero, bool sampleoverlap, double theta) {
   // the new method would calcualte maxid after each filtering
@@ -4069,6 +4085,10 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     /******/
 
     double byzt = smrwk.byz[maxid], bxzt = smrwk.bxz[maxid], seyzt = smrwk.seyz[maxid], sexzt = smrwk.sexz[maxid];
+
+    // SMR test (Zhu et al. 2016, Nat Genet 48:481-487, doi:10.1038/ng.3538):
+    // b_SMR = b_zy / b_zx (Wald ratio at the top cis-eQTL), se_SMR by the first-order
+    // delta method, and T_SMR = (b_SMR/se_SMR)^2 ~ chi2(1) below.
     double bxy_val = byzt / bxzt;
     double sexy_val = -9;
     if (sampleoverlap) {
@@ -4304,6 +4324,9 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
     }
 
     double byzt = smrwk.byz[maxid], bxzt = smrwk.bxz[maxid], seyzt = smrwk.seyz[maxid], sexzt = smrwk.sexz[maxid];
+    // SMR test (Zhu et al. 2016, Nat Genet 48:481-487, doi:10.1038/ng.3538):
+    // b_SMR = b_zy / b_zx (Wald ratio at the top cis-eQTL), se_SMR by the first-order
+    // delta method, and T_SMR = (b_SMR/se_SMR)^2 ~ chi2(1) below.
     double bxy_val = byzt / bxzt;
     double sexy_val = -9;
     if (sampleoverlap) {

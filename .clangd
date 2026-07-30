@@ -21,6 +21,8 @@ CompileFlags:
     - -fcf-protection     # Control-flow protection
     - -Wa,*               # Assembler flags
     - -Wp,*               # Preprocessor flags
+    - -DEIGEN_USE_MKL_ALL # Don't parse MKL headers (Eigen API unchanged)
+    - -fpermissive        # GCC-only flag, unknown to clang
 
 Diagnostics:
   # Clang-tidy integration (optional but recommended)

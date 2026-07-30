@@ -150,7 +150,7 @@ void CommFunc::getRank_norep(std::vector<int>& a, std::vector<int>& b) {
   b.resize(a.size());
   std::map<int, int> rep_chck;
   long mapsize = 0;
-  for (int i = (int)a.size() - 1; i >= 0; i--) {
+  for (int i = static_cast<int>(a.size()) - 1; i >= 0; i--) {
     int count = 0;
     for (int j = 0; j < a.size(); j++)
       if (a[j] < a[i]) count++;
@@ -193,28 +193,28 @@ void CommFunc::strcpy2(char** to, const std::string& from) {
 
 float CommFunc::readfloat(FILE* f) {
   float v;
-  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+  if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
     throw("ERROR: unexpected end of file or read error while reading float data.");
   return v;
 }
 
 std::uint64_t CommFunc::readuint64(FILE* f) {
   std::uint64_t v;
-  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+  if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
     throw("ERROR: unexpected end of file or read error while reading uint64 data.");
   return v;
 }
 
 std::uint32_t CommFunc::readuint32(FILE* f) {
   std::uint32_t v;
-  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+  if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
     throw("ERROR: unexpected end of file or read error while reading uint32 data.");
   return v;
 }
 
 int CommFunc::readint(FILE* f) {
   int v;
-  if (fread((void*)(&v), sizeof(v), 1, f) != 1)
+  if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
     throw("ERROR: unexpected end of file or read error while reading int data.");
   return v;
 }
@@ -232,18 +232,18 @@ double CommFunc::cor(std::vector<double>& y, std::vector<double>& x) {
     x_mu += x[i];
     y_mu += y[i];
   }
-  x_mu /= (double)N;
-  y_mu /= (double)N;
+  x_mu /= static_cast<double>(N);
+  y_mu /= static_cast<double>(N);
   for (i = 0; i < N; i++) {
     d_buf = (x[i] - x_mu);
     x_var += d_buf * d_buf;
     d_buf = (y[i] - y_mu);
     y_var += d_buf * d_buf;
   }
-  x_var /= (double)(N - 1.0);
-  y_var /= (double)(N - 1.0);
+  x_var /= (N - 1.0);
+  y_var /= (N - 1.0);
   for (i = 0; i < N; i++) cov += (x[i] - x_mu) * (y[i] - y_mu);
-  cov /= (double)(N - 1);
+  cov /= static_cast<double>(N - 1);
   double a = 0.0, b = 0.0, sse = 0.0, a_se = 0.0, b_se = 0.0, r = 0.0;
   if (x_var > 0.0) b = cov / x_var;
   a = y_mu - b * x_mu;

@@ -253,7 +253,7 @@ void read_bedfile(bInfo* bdata, const std::string& bedfile) {
   if (!BIT) throw("Error: can not open the file [" + bedfile + "] to read.");
   std::cout << "Reading PLINK BED file from [" + bedfile + "] in SNP-major format ..." << std::endl;
   unsigned char bed_magic[3] = {0, 0, 0};
-  for (i = 0; i < 3; i++) BIT.read((char*)&bed_magic[i], 1);
+  for (i = 0; i < 3; i++) BIT.read(reinterpret_cast<char*>(&bed_magic[i]), 1);
   if (!BIT || bed_magic[0] != 0x6C || bed_magic[1] != 0x1B || bed_magic[2] != 0x01)
     throw("Error: [" + bedfile + "] is not a valid PLINK BED file in SNP-major format.");
   int snp_indx = 0, indi_indx = 0;
@@ -432,7 +432,7 @@ bool make_XMat_subset(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, boo
   if (snp_indx.empty()) return false;
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
-  int i = 0, j = 0, k = 0, n = (int)bdata->_keep.size(), m = (int)snp_indx.size();
+  int i = 0, j = 0, k = 0, n = static_cast<int>(bdata->_keep.size()), m = static_cast<int>(snp_indx.size());
   std::vector<double> sd_SNP(m);
 
   X.resize(n, m);
@@ -631,7 +631,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     exit(EXIT_FAILURE);
   }
   if (m > bdata._include.size()) {
-    m = (int)bdata._include.size();
+    m = static_cast<int>(bdata._include.size());
     bitmod = false;
   }
 
@@ -649,8 +649,8 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   std::vector<int> reserved(RESERVEDUNITS);
   if (ldr) reserved[0] = 0;
   else if (ldr2) reserved[0] = 1;
-  reserved[1] = (int)bdata._keep.size();
-  reserved[2] = (int)bdata._include.size();
+  reserved[1] = static_cast<int>(bdata._keep.size());
+  reserved[2] = static_cast<int>(bdata._include.size());
   reserved[3] = ldWind;
   for (int i = 4; i < RESERVEDUNITS; i++) reserved[i] = -9;
   fwrite(&reserved[0], sizeof(int), RESERVEDUNITS, outfile);
@@ -660,7 +660,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   long window = ldWind * 1000, vc = 0;
   double cr = 0;
   for (int i = 0; i < bdata._include.size(); i++) {
-    progress(i, cr, (int)bdata._include.size());
+    progress(i, cr, static_cast<int>(bdata._include.size()));
 
     // X shape: individual size * (max snp size within ldwin)
     if (X.size() == 0) initX(&bdata, X, m);
@@ -885,7 +885,7 @@ void extract_ld_esi_single_snp(ldInfo* ldinfo, std::string snprs) {
   }
   long idx = iter->second;
   ldinfo->_esi_include.clear();
-  ldinfo->_esi_include.push_back((int)idx);
+  ldinfo->_esi_include.push_back(static_cast<int>(idx));
   ldinfo->_snp_name_map.clear();
   ldinfo->_snp_name_map.emplace(snprs, idx);
   printf("SNP %s is extracted.\n", snprs.c_str());
@@ -1114,7 +1114,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   fputs(tmpstr.c_str(), outfile);
   std::uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
   long wcount = 0;
-  float* buffer = (float*)malloc(sizeof(float) * maxnum);
+  float* buffer = static_cast<float*>(malloc(sizeof(float) * maxnum));
   if (buffer == nullptr) {
     printf("ERROR: memory allocation failed to read %s.\n", inputname);
     exit(EXIT_FAILURE);
@@ -1130,7 +1130,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
       int bpj = ldinfo._esi_bp[i];
       if (chri == chrj && bpi - bpj < ldwind * 1000) snplist.push_back(i);
     }
-    for (int i = (int)snplist.size() - 1; i >= 0; i--) {
+    for (int i = static_cast<int>(snplist.size()) - 1; i >= 0; i--) {
       int sidi = snplist[i];
       int chrj = ldinfo._esi_chr[sidi];
       int bpj = ldinfo._esi_bp[sidi];

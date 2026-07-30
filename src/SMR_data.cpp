@@ -45,7 +45,7 @@ void progress_print(float progress) {
     else if (i == pos) std::cout << ">";
     else std::cout << " ";
   }
-  std::cout << "] " << int(progress * 100.0) << " %\r";
+  std::cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
   std::cout.flush();
 }
 
@@ -643,7 +643,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
   if (prtscr) std::cout << "Reading eQTL summary data from [" + besdfile + "]." << std::endl;
 
   besd.read(SIGN, 4);
-  std::uint32_t gflag = *(std::uint32_t*)SIGN;
+  std::uint32_t gflag = *reinterpret_cast<std::uint32_t*>(SIGN);
   std::cout << "gflag:" << gflag << std::endl;
 
   if (gflag == 0x40000000) {
@@ -663,7 +663,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
     besd.seekg(4);  // same as besd.seekg(4, besd.beg);
     besd.read(SIGN, sizeof(std::uint64_t));
-    valNum = *(std::uint64_t*)SIGN;
+    valNum = *reinterpret_cast<std::uint64_t*>(SIGN);
     if (lSize - (sizeof(float) + sizeof(std::uint64_t) + (colNum + valNum) * sizeof(std::uint32_t) +
                  valNum * sizeof(float)) !=
         0) {
@@ -674,7 +674,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       exit(EXIT_FAILURE);
     }
 
-    buffer = (char*)malloc(sizeof(char) * (lSize));
+    buffer = static_cast<char*>(malloc(sizeof(char) * (lSize)));
     if (buffer == nullptr) {
       fputs("Memory error.\n", stderr);
       exit(1);
@@ -686,7 +686,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
     }
 
     std::uint32_t* ptr;
-    ptr = (std::uint32_t*)buffer;
+    ptr = reinterpret_cast<std::uint32_t*>(buffer);
 
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
@@ -695,7 +695,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       std::uint32_t* row_ptr;
       row_ptr = ptr + colNum;
       float* val_ptr;
-      val_ptr = (float*)(row_ptr + valNum);
+      val_ptr = reinterpret_cast<float*>(row_ptr + valNum);
 
       std::map<int, int> _incld_id_map;
       long size = 0;
@@ -741,7 +741,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
-      auto* val_ptr = (float*)ptr;
+      auto* val_ptr = reinterpret_cast<float*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -756,7 +756,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       besd.read(indicators, length);
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -790,7 +790,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_sexz[i].resize(eqtlinfo->_esi_include.size());
     }
     char* buffer;
-    buffer = (char*)malloc(sizeof(char) * eqtlinfo->_snpNum << 3);
+    buffer = static_cast<char*>(malloc(sizeof(char) * eqtlinfo->_snpNum << 3));
     if (buffer == nullptr) {
       fputs("Memory error", stderr);
       exit(1);
@@ -806,7 +806,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
         besd.seekg(((pid * eqtlinfo->_snpNum) << 3) + infoLen);
         memset(buffer, 0, sizeof(char) * eqtlinfo->_snpNum << 3);
         besd.read(buffer, eqtlinfo->_snpNum << 3);
-        ft = (float*)buffer;
+        ft = reinterpret_cast<float*>(buffer);
         for (int j = 0; j < eqtlinfo->_esi_include.size(); j++)
           eqtlinfo->_bxz[i][j] = *(ft + eqtlinfo->_esi_include[j]);
         se_ptr = ft + eqtlinfo->_snpNum;
@@ -824,7 +824,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
       char* buff;
       std::uint64_t buffszie = 0x40000000;
-      buff = (char*)malloc(sizeof(char) * buffszie);
+      buff = static_cast<char*>(malloc(sizeof(char) * buffszie));
       if (buff == nullptr) {
         fputs("Memory error when reading dense BESD file.", stderr);
         exit(1);
@@ -849,8 +849,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
           rptr += perbeta;
           Bread -= (perbeta << 1);
         }
-        int tmpint = (int)probcount;
-        progress(tmpint, disp, (int)eqtlinfo->_probNum);
+        int tmpint = static_cast<int>(probcount);
+        progress(tmpint, disp, static_cast<int>(eqtlinfo->_probNum));
       }
       if (prtscr)
         std::cout << "\neQTL summary data of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -875,8 +875,9 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
     besd.seekg(4);  // same as besd.seekg(4, besd.beg);
     besd.read(SIGN, 4);
-    valNum = (std::uint32_t)*(float*)
-        SIGN;  // int to float then float to int back can lose pricision. hence this clause and bellow are unbelievable
+    valNum = static_cast<std::uint32_t>(
+        *reinterpret_cast<float*>(SIGN));  // int to float then float to int back can lose pricision. hence this clause
+                                           // and bellow are unbelievable
     if (lSize - ((3 + colNum + (valNum << 1)) << 2) != 0) {
       printf("The file size is %zu", lSize);
       printf(" %zu + %zu + %zu + %zu + %zu\n", sizeof(float), sizeof(float), (1 + colNum) * sizeof(float),
@@ -887,7 +888,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
     valNum = ((lSize >> 2) - 3 - colNum) >> 1;
 
-    buffer = (char*)malloc(sizeof(char) * (lSize - 8));
+    buffer = static_cast<char*>(malloc(sizeof(char) * (lSize - 8)));
     if (buffer == nullptr) {
       fputs("Memory error", stderr);
       exit(1);
@@ -898,12 +899,12 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       exit(2);
     }
     float* ptr;
-    ptr = (float*)buffer;
+    ptr = reinterpret_cast<float*>(buffer);
 
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
-      eqtlinfo->_cols[0] = (std::uint32_t)*ptr;
+      eqtlinfo->_cols[0] = static_cast<std::uint32_t>(*ptr);
       float* row_ptr;
       row_ptr = ptr + colNum + 1;
       float* val_ptr;
@@ -920,12 +921,12 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
-        std::uint32_t pos = (std::uint32_t)*(ptr + (pid << 1));
-        std::uint32_t pos1 = (std::uint32_t)*(ptr + (pid << 1) + 1);
+        std::uint32_t pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
+        std::uint32_t pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
         std::uint32_t num = pos1 - pos;
         std::uint32_t real_num = 0;
         for (int j = 0; j < num << 1; j++) {
-          std::uint32_t rid = (std::uint32_t)*(row_ptr + pos + j);
+          std::uint32_t rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
 
           std::map<int, int>::iterator iter;
           iter = _incld_id_map.find(rid);
@@ -949,8 +950,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_cols.resize(colNum + 1);
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
-      for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = (std::uint32_t)*ptr++;
-      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
+      for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = static_cast<std::uint32_t>(*ptr++);
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = static_cast<std::uint32_t>(*ptr++);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -978,7 +979,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       besd.read(indicators, length);
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -997,7 +998,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
     }
 
     besd.read(SIGN, sizeof(std::uint64_t));
-    valNum = *(std::uint64_t*)SIGN;
+    valNum = *reinterpret_cast<std::uint64_t*>(SIGN);
 
     if (gflag == SPARSE_FILE_TYPE_3F) {
       if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
@@ -1024,14 +1025,14 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
       std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-      buffer = (char*)malloc(sizeof(char) * (colsize));
+      buffer = static_cast<char*>(malloc(sizeof(char) * (colsize)));
       if (buffer == nullptr) {
         fputs("Memory error when reading sparse BESD file.", stderr);
         exit(1);
       }
       besd.read(buffer, colsize);
 
-      std::uint64_t* ptr = (std::uint64_t*)buffer;
+      std::uint64_t* ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
       eqtlinfo->_cols[0] = *ptr;
@@ -1070,13 +1071,13 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
           continue;
         }
         char* row_char_ptr = nullptr;
-        row_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(std::uint32_t));
+        row_char_ptr = static_cast<char*>(malloc(sizeof(char) * 2 * num * sizeof(std::uint32_t)));
         if (row_char_ptr == nullptr) {
           fputs("Memory error", stderr);
           exit(1);
         }
         char* val_char_ptr;
-        val_char_ptr = (char*)malloc(sizeof(char) * 2 * num * sizeof(float));
+        val_char_ptr = static_cast<char*>(malloc(sizeof(char) * 2 * num * sizeof(float)));
         if (val_char_ptr == nullptr) {
           fputs("Memory error", stderr);
           exit(1);
@@ -1085,10 +1086,10 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
         memset(val_char_ptr, 0, sizeof(char) * 2 * num * sizeof(float));
         besd.seekg(rowSTART + pos * sizeof(std::uint32_t));
         besd.read(row_char_ptr, 2 * num * sizeof(std::uint32_t));
-        std::uint32_t* row_ptr = (std::uint32_t*)row_char_ptr;
+        std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
         besd.seekg(valSTART + pos * sizeof(float));
         besd.read(val_char_ptr, 2 * num * sizeof(float));
-        float* val_ptr = (float*)val_char_ptr;
+        float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
         for (int j = 0; j < num << 1; j++) {
           std::uint32_t rid = *(row_ptr + j);
 
@@ -1116,7 +1117,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       update_epi(eqtlinfo);
       update_esi(eqtlinfo);
     } else {
-      buffer = (char*)malloc(sizeof(char) * (lSize));
+      buffer = static_cast<char*>(malloc(sizeof(char) * (lSize)));
       if (buffer == nullptr) {
         fputs("Memory error", stderr);
         exit(1);
@@ -1135,16 +1136,16 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       }
 
       std::uint64_t* ptr;
-      ptr = (std::uint64_t*)buffer;
+      ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize(colNum);
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      std::uint32_t* ptr4B = (std::uint32_t*)ptr;
+      std::uint32_t* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
-      float* val_ptr = (float*)ptr4B;
+      float* val_ptr = reinterpret_cast<float*>(ptr4B);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       eqtlinfo->_valNum = valNum;
@@ -1620,7 +1621,7 @@ void extract_eqtl_single_snp(eqtlInfo* eqtlinfo, const std::string& snprs) {
     exit(1);
   }
   eqtlinfo->_esi_include.clear();
-  eqtlinfo->_esi_include.push_back((int)idx);
+  eqtlinfo->_esi_include.push_back(static_cast<int>(idx));
   std::cout << snprs << " is extracted. " << std::endl;
 }
 void extract_eqtl_snp(eqtlInfo* eqtlinfo, const std::string& fromsnprs, const std::string& tosnprs) {
@@ -2449,7 +2450,7 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
   esdata->_esi_include.clear();
   double disp = 0;
   for (int i = 0; i < edId.size(); i++) {
-    progress(i, disp, (int)edId.size());
+    progress(i, disp, static_cast<int>(edId.size()));
 
     std::string a1, a2, ta1, ta2, ea1, ea2;
     a1 = bdata->_allele1[bdId[i]];
@@ -3121,9 +3122,9 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           if (esdata->_epi_start.size() > 0 && esdata->_epi_end.size() > 0)  // technical eQTLs should be removed
           {
             if (esdata->_epi_end[i] == -9 || (snpbp > esdata->_epi_end[i] && snpbp < esdata->_epi_start[i])) {
-              smrwk->bxz.push_back((double)esdata->_bxz[i][j]);
-              smrwk->sexz.push_back((double)esdata->_sexz[i][j]);
-              smrwk->zxz.push_back((double)esdata->_bxz[i][j] / (double)esdata->_sexz[i][j]);
+              smrwk->bxz.push_back(static_cast<double>(esdata->_bxz[i][j]));
+              smrwk->sexz.push_back(static_cast<double>(esdata->_sexz[i][j]));
+              smrwk->zxz.push_back(static_cast<double>(esdata->_bxz[i][j]) / static_cast<double>(esdata->_sexz[i][j]));
               smrwk->byz.push_back(gdata->byz[j]);
               smrwk->seyz.push_back(gdata->seyz[j]);
               smrwk->pyz.push_back(gdata->pvalue[j]);
@@ -3154,9 +3155,9 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
             }
 
           } else {
-            smrwk->bxz.push_back((double)esdata->_bxz[i][j]);
-            smrwk->sexz.push_back((double)esdata->_sexz[i][j]);
-            smrwk->zxz.push_back((double)esdata->_bxz[i][j] / (double)esdata->_sexz[i][j]);
+            smrwk->bxz.push_back(static_cast<double>(esdata->_bxz[i][j]));
+            smrwk->sexz.push_back(static_cast<double>(esdata->_sexz[i][j]));
+            smrwk->zxz.push_back(static_cast<double>(esdata->_bxz[i][j]) / static_cast<double>(esdata->_sexz[i][j]));
             smrwk->byz.push_back(gdata->byz[j]);
             smrwk->seyz.push_back(gdata->seyz[j]);
             smrwk->pyz.push_back(gdata->pvalue[j]);
@@ -3188,9 +3189,10 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           gdata->seyz[ge_rowid] + 9 > 1e-6) {
         if (esdata->_epi_start.size() > 0 && esdata->_epi_end.size() > 0) {
           if (esdata->_epi_end[i] == -9 || (snpbp > esdata->_epi_end[i] && snpbp < esdata->_epi_start[i])) {
-            smrwk->bxz.push_back((double)esdata->_val[beta_start + j]);
-            smrwk->sexz.push_back((double)esdata->_val[se_start + j]);
-            smrwk->zxz.push_back((double)esdata->_val[beta_start + j] / (double)esdata->_val[se_start + j]);
+            smrwk->bxz.push_back(static_cast<double>(esdata->_val[beta_start + j]));
+            smrwk->sexz.push_back(static_cast<double>(esdata->_val[se_start + j]));
+            smrwk->zxz.push_back(static_cast<double>(esdata->_val[beta_start + j]) /
+                                 static_cast<double>(esdata->_val[se_start + j]));
             smrwk->byz.push_back(gdata->byz[ge_rowid]);
             smrwk->seyz.push_back(gdata->seyz[ge_rowid]);
             smrwk->pyz.push_back(gdata->pvalue[ge_rowid]);
@@ -3219,9 +3221,10 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           }
 
         } else {
-          smrwk->bxz.push_back((double)esdata->_val[beta_start + j]);
-          smrwk->sexz.push_back((double)esdata->_val[se_start + j]);
-          smrwk->zxz.push_back((double)esdata->_val[beta_start + j] / (double)esdata->_val[se_start + j]);
+          smrwk->bxz.push_back(static_cast<double>(esdata->_val[beta_start + j]));
+          smrwk->sexz.push_back(static_cast<double>(esdata->_val[se_start + j]));
+          smrwk->zxz.push_back(static_cast<double>(esdata->_val[beta_start + j]) /
+                               static_cast<double>(esdata->_val[se_start + j]));
           smrwk->byz.push_back(gdata->byz[ge_rowid]);
           smrwk->seyz.push_back(gdata->seyz[ge_rowid]);
           smrwk->pyz.push_back(gdata->pvalue[ge_rowid]);
@@ -3823,7 +3826,7 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
-  int m = (int)smrwk_heidi.bxz.size();
+  int m = static_cast<int>(smrwk_heidi.bxz.size());
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
@@ -3846,7 +3849,7 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   }
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
-  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
+  if (sn_ids.size() < static_cast<size_t>(C.rows())) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -3989,7 +3992,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
   cis_itvl = cis_itvl * 1000;
   double cr = 0;
   for (int ii = 0; ii < probNum; ii++) {
-    if (!mute) progress(ii, cr, (int)probNum);
+    if (!mute) progress(ii, cr, static_cast<int>(probNum));
     int i = esdata->_include[ii];
     int probebp = esdata->_epi_bp[i];
     int probechr = esdata->_epi_chr[i];
@@ -4155,8 +4158,8 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
       if (!heidioffFlag) {
         if (new_heidi_mth) {
           if (refSNP != nullptr)
-            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, (int)maxid, ld_min,
-                                      opt_hetero, sampleoverlap, theta);
+            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, static_cast<int>(maxid),
+                                      ld_min, opt_hetero, sampleoverlap, theta);
           else
             pdev = heidi_test_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, ld_min, opt_hetero,
                                   sampleoverlap, theta);
@@ -4171,7 +4174,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
         write_count++;
       } else {
         currlt.p_HET = pdev;
-        currlt.nsnp = (int)nsnp;
+        currlt.nsnp = static_cast<int>(nsnp);
         smrrlts.push_back(currlt);
       }
     }
@@ -4233,7 +4236,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
   cis_itvl = cis_itvl * 1000;
   double cr = 0;
   for (int ii = 0; ii < probNum; ii++) {
-    progress(ii, cr, (int)probNum);
+    progress(ii, cr, static_cast<int>(probNum));
 
     int i = esdata->_include[ii];
     int probebp = esdata->_epi_bp[i];
@@ -4388,8 +4391,8 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
       long nsnp = -9;
       double pdev = -9;
       if (!heidioffFlag) {
-        pdev = heidi_test_ref_new(ldinfo, ldfptr, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, (int)maxid, ld_min,
-                                  opt_hetero, sampleoverlap, theta);
+        pdev = heidi_test_ref_new(ldinfo, ldfptr, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, static_cast<int>(maxid),
+                                  ld_min, opt_hetero, sampleoverlap, theta);
       }
       if (smr) {
         outstr += (pdev >= 0 ? dtos(pdev) : "NA") + '\t' + (nsnp > 0 ? atos(nsnp + 1) : "NA") + '\n';
@@ -4400,7 +4403,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
         write_count++;
       } else {
         currlt.p_HET = pdev;
-        currlt.nsnp = (int)nsnp;
+        currlt.nsnp = static_cast<int>(nsnp);
         smrrlts.push_back(currlt);
       }
     }
@@ -4616,7 +4619,7 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
   }
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   refid_heidi = std::find(smrwk_heidi.rs.begin(), smrwk_heidi.rs.end(), refrs) - smrwk_heidi.rs.begin();
-  int m = (int)smrwk_heidi.bxz.size();
+  int m = static_cast<int>(smrwk_heidi.bxz.size());
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
@@ -4638,9 +4641,9 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
   if (std::find(sn_ids.begin(), sn_ids.end(), refid_heidi) == sn_ids.end()) {
-    sn_ids[sn_ids.size() - 1] = (int)refid_heidi;  // in case of target SNP is not in top 20
+    sn_ids[sn_ids.size() - 1] = static_cast<int>(refid_heidi);  // in case of target SNP is not in top 20
   }
-  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
+  if (sn_ids.size() < static_cast<size_t>(C.rows())) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -4694,7 +4697,7 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
   fseek(ldfptr, 0L, SEEK_SET);
   int indicator = readint(ldfptr);
   std::vector<float> ld;
-  fetch_ld_by_id(ldinfo, ldfptr, smrwk_heidi.curId, (int)refid_heidi, ld);
+  fetch_ld_by_id(ldinfo, ldfptr, smrwk_heidi.curId, static_cast<int>(refid_heidi), ld);
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
     sn_ids.clear();
     for (int i = 0; i < smrwk_heidi.zxz.size(); i++) {
@@ -4714,7 +4717,7 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
   update_smrwk(&smrwk_heidi, sn_ids);
   refid_heidi = std::find(smrwk_heidi.rs.begin(), smrwk_heidi.rs.end(), refrs) - smrwk_heidi.rs.begin();
 
-  int m = (int)smrwk_heidi.bxz.size();
+  int m = static_cast<int>(smrwk_heidi.bxz.size());
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
@@ -4735,9 +4738,9 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
   if (std::find(sn_ids.begin(), sn_ids.end(), refid_heidi) == sn_ids.end()) {
-    sn_ids[sn_ids.size() - 1] = (int)refid_heidi;  // in case that target SNP is not in top 20
+    sn_ids[sn_ids.size() - 1] = static_cast<int>(refid_heidi);  // in case that target SNP is not in top 20
   }
-  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
+  if (sn_ids.size() < static_cast<size_t>(C.rows())) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -4787,7 +4790,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   fseek(ldfptr, 0L, SEEK_SET);
   int indicator = readint(ldfptr);
   std::vector<float> ld;
-  fetch_ld_by_id(ldinfo, ldfptr, smrwk_heidi.curId, (int)maxid_heidi, ld);
+  fetch_ld_by_id(ldinfo, ldfptr, smrwk_heidi.curId, static_cast<int>(maxid_heidi), ld);
 
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
     sn_ids.clear();
@@ -4808,7 +4811,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   update_smrwk(&smrwk_heidi, sn_ids);
   maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
-  int m = (int)smrwk_heidi.bxz.size();
+  int m = static_cast<int>(smrwk_heidi.bxz.size());
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
@@ -4829,7 +4832,7 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   }
 
   update_snidx(&smrwk_heidi, sn_ids, opt_hetero, "HEIDI test");
-  if (sn_ids.size() < (size_t)C.rows()) {  // Build new matrix
+  if (sn_ids.size() < static_cast<size_t>(C.rows())) {  // Build new matrix
     MatrixXd D(sn_ids.size(), sn_ids.size());
     for (int i = 0; i < sn_ids.size(); i++) {
       for (int j = 0; j < sn_ids.size(); j++) {
@@ -5058,8 +5061,8 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
         double pdev = -9;
         if (!heidioffFlag) {
           if (new_heidi_mth)
-            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, (int)maxid, ld_min,
-                                      opt_hetero, sampleoverlap, theta);
+            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, static_cast<int>(maxid),
+                                      ld_min, opt_hetero, sampleoverlap, theta);
           else pdev = heidi_test(bdata, &smrwk, maxid, ld_top, thresh_heidi, m_hetero, nsnp);
         }
         if (smr) {
@@ -5071,7 +5074,7 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
           write_count++;
         } else {
           currlt.p_HET = pdev;
-          currlt.nsnp = (int)nsnp;
+          currlt.nsnp = static_cast<int>(nsnp);
           smrrlts.push_back(currlt);
         }
       }
@@ -5577,8 +5580,8 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
         double pdev = -9;
         if (!heidioffFlag) {
           if (new_heidi_mth)
-            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, (int)maxid, ld_min,
-                                      opt_hetero, sampleoverlap, theta);
+            pdev = heidi_test_ref_new(bdata, &smrwk, ld_top, thresh_heidi, m_hetero, nsnp, static_cast<int>(maxid),
+                                      ld_min, opt_hetero, sampleoverlap, theta);
           else pdev = heidi_test(bdata, &smrwk, maxid, ld_top, thresh_heidi, m_hetero, nsnp);
         }
         if (smr) {
@@ -5590,7 +5593,7 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
           write_count++;
         } else {
           currlt.p_HET = pdev;
-          currlt.nsnp = (int)nsnp;
+          currlt.nsnp = static_cast<int>(nsnp);
           smrrlts.push_back(currlt);
         }
       }
@@ -5761,13 +5764,13 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     } else {
       ten_ints[1] = -9;
     }
-    ten_ints[2] = (int)eqtlinfo._esi_include.size();
-    ten_ints[3] = (int)eqtlinfo._include.size();
+    ten_ints[2] = static_cast<int>(eqtlinfo._esi_include.size());
+    ten_ints[3] = static_cast<int>(eqtlinfo._include.size());
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
     std::uint64_t bsize = (eqtlinfo._include.size() * eqtlinfo._snpNum << 1);
-    float* buffer = (float*)malloc(sizeof(float) * bsize);
+    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     memset(buffer, 0, sizeof(float) * bsize);
     float* ptr = buffer;
     std::uint64_t pro_num = eqtlinfo._include.size();
@@ -5787,8 +5790,8 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     } else {
       ten_ints[1] = -9;
     }
-    ten_ints[2] = (int)eqtlinfo._esi_include.size();
-    ten_ints[3] = (int)eqtlinfo._include.size();
+    ten_ints[2] = static_cast<int>(eqtlinfo._esi_include.size());
+    ten_ints[3] = static_cast<int>(eqtlinfo._include.size());
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -5798,12 +5801,12 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     std::uint64_t valNum = eqtlinfo._valNum;
     std::uint64_t bufsize = sizeof(std::uint64_t) + colSize + rowSize + valSize;
 
-    char* buffer = (char*)malloc(sizeof(char) * bufsize);
+    char* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
     memset(buffer, 0, sizeof(char) * bufsize);
     char* wptr = buffer;
     memcpy(wptr, &valNum, sizeof(std::uint64_t));
     wptr += sizeof(std::uint64_t);
-    std::uint64_t* uptr = (std::uint64_t*)wptr;
+    std::uint64_t* uptr = reinterpret_cast<std::uint64_t*>(wptr);
     *uptr++ = 0;
     for (int i = 0; i < eqtlinfo._include.size(); i++) {
       *uptr++ = eqtlinfo._cols[(eqtlinfo._include[i] << 1) + 1];
@@ -6065,7 +6068,7 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
   int outcome_probe_wind = op_wind * 1000;
   double disp = 0.0;
   for (int ii = 0; ii < etrait._probNum; ii++) {
-    progress(ii, disp, (int)etrait._probNum);
+    progress(ii, disp, static_cast<int>(etrait._probNum));
     gwasData gdata;
     gdata.allele_1.resize(etrait._esi_include.size());
     gdata.allele_2.resize(etrait._esi_include.size());
@@ -6108,8 +6111,8 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
       std::uint64_t numsnps = se_start - beta_start;
       for (int j = 0; j < numsnps; j++) {
         int ge_rowid = etrait._rowid[beta_start + j];
-        int idx = (int)(std::find(etrait._esi_include.begin(), etrait._esi_include.end(), ge_rowid) -
-                        etrait._esi_include.begin());
+        int idx = static_cast<int>(std::find(etrait._esi_include.begin(), etrait._esi_include.end(), ge_rowid) -
+                                   etrait._esi_include.begin());
         if (idx < etrait._esi_include.size()) {
           gdata.byz[idx] = etrait._val[beta_start + j];
           gdata.seyz[idx] = etrait._val[se_start + j];
@@ -6301,7 +6304,7 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
   smrbesd = fopen(esdfile.c_str(), "wb");
   if (eqtlinfo->_valNum == 0) {
     std::uint64_t bsize = (eqtlinfo->_include.size() * eqtlinfo->_snpNum << 1) + 1;
-    float* buffer = (float*)malloc(sizeof(float) * bsize);
+    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     memset(buffer, 0, sizeof(float) * bsize);
     float* ptr = buffer;
     *ptr++ = 0.0;
@@ -6320,14 +6323,14 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
     std::uint64_t valNum = eqtlinfo->_valNum;
     std::uint64_t bufsize = sizeof(float) + sizeof(std::uint64_t) + colSize + rowSize + valSize;
 
-    char* buffer = (char*)malloc(sizeof(char) * bufsize);
+    char* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
     memset(buffer, 0, sizeof(char) * bufsize);
     std::uint32_t ftype = SPARSE_FILE_TYPE_3F;
     memcpy(buffer, &ftype, sizeof(std::uint32_t));
     char* wptr = buffer + sizeof(float);
     memcpy(wptr, &valNum, sizeof(std::uint64_t));
     wptr += sizeof(std::uint64_t);
-    std::uint64_t* uptr = (std::uint64_t*)wptr;
+    std::uint64_t* uptr = reinterpret_cast<std::uint64_t*>(wptr);
     *uptr++ = 0;
     for (int i = 0; i < eqtlinfo->_include.size(); i++) {
       *uptr++ = eqtlinfo->_cols[(eqtlinfo->_include[i] << 1) + 1];
@@ -6692,7 +6695,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     }
 
     std::uint32_t* ptr;
-    ptr = (std::uint32_t*)buffer;
+    ptr = reinterpret_cast<std::uint32_t*>(buffer);
 
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
@@ -6701,7 +6704,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       std::uint32_t* row_ptr;
       row_ptr = ptr + colNum;
       float* val_ptr;
-      val_ptr = (float*)(row_ptr + valNum);
+      val_ptr = reinterpret_cast<float*>(row_ptr + valNum);
 
       std::map<int, int> _incld_id_map;
       long size = 0;
@@ -6746,7 +6749,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
-      float* val_ptr = (float*)ptr;
+      float* val_ptr = reinterpret_cast<float*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -6759,7 +6762,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = mapped.offset<char*>(4);
 
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -6801,7 +6804,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
         buffer = mapped.offset<char*>(((pid * eqtlinfo->_snpNum) << 3) + infoLen);
-        ft = (float*)buffer;
+        ft = reinterpret_cast<float*>(buffer);
         for (int j = 0; j < eqtlinfo->_esi_include.size(); j++)
           eqtlinfo->_bxz[i][j] = *(ft + eqtlinfo->_esi_include[j]);
         se_ptr = ft + eqtlinfo->_snpNum;
@@ -6841,8 +6844,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
         read_offset += Bread;
 
-        int tmpint = (int)probcount;
-        progress(tmpint, disp, (int)eqtlinfo->_probNum);
+        int tmpint = static_cast<int>(probcount);
+        progress(tmpint, disp, static_cast<int>(eqtlinfo->_probNum));
       }
       if (prtscr)
         std::cout << "\neQTL summary data of " << eqtlinfo->_probNum << " Probes and " << eqtlinfo->_snpNum
@@ -6875,12 +6878,12 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
     buffer = mapped.offset<char*>(4);
     float* ptr;
-    ptr = (float*)buffer;
+    ptr = reinterpret_cast<float*>(buffer);
 
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
-      eqtlinfo->_cols[0] = (std::uint32_t)*ptr;
+      eqtlinfo->_cols[0] = static_cast<std::uint32_t>(*ptr);
       float* row_ptr;
       row_ptr = ptr + colNum + 1;
       float* val_ptr;
@@ -6897,12 +6900,12 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
-        std::uint32_t pos = (std::uint32_t)*(ptr + (pid << 1));
-        std::uint32_t pos1 = (std::uint32_t)*(ptr + (pid << 1) + 1);
+        std::uint32_t pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
+        std::uint32_t pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
         std::uint32_t num = pos1 - pos;
         std::uint32_t real_num = 0;
         for (int j = 0; j < num << 1; j++) {
-          std::uint32_t rid = (std::uint32_t)*(row_ptr + pos + j);
+          std::uint32_t rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
 
           std::map<int, int>::iterator iter;
           iter = _incld_id_map.find(rid);
@@ -6926,8 +6929,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_cols.resize(colNum + 1);
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
-      for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = (std::uint32_t)*ptr++;
-      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = (std::uint32_t)*ptr++;
+      for (int i = 0; i <= colNum; i++) eqtlinfo->_cols[i] = static_cast<std::uint32_t>(*ptr++);
+      for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = static_cast<std::uint32_t>(*ptr++);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -6954,7 +6957,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       char* indicators = mapped.offset<char*>(read_offset);
       read_offset += length;
 
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -7000,7 +7003,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
         !sorted) {
       buffer = mapped.offset<char*>(read_offset);
 
-      std::uint64_t* ptr = (std::uint64_t*)buffer;
+      std::uint64_t* ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
       eqtlinfo->_cols[0] = *ptr;
@@ -7041,9 +7044,9 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
         char* row_char_ptr = nullptr;
         char* val_char_ptr = nullptr;
         row_char_ptr = mapped.offset<char*>(rowSTART + pos * sizeof(std::uint32_t));
-        std::uint32_t* row_ptr = (std::uint32_t*)row_char_ptr;
+        std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
         val_char_ptr = mapped.offset<char*>(valSTART + pos * sizeof(float));
-        float* val_ptr = (float*)val_char_ptr;
+        float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
         for (int j = 0; j < num << 1; j++) {
           std::uint32_t rid = *(row_ptr + j);
 
@@ -7070,16 +7073,16 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     } else {
       buffer = mapped.offset<char*>(read_offset);
       std::uint64_t* ptr;
-      ptr = (std::uint64_t*)buffer;
+      ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize(colNum);
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      std::uint32_t* ptr4B = (std::uint32_t*)ptr;
+      std::uint32_t* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
-      float* val_ptr = (float*)ptr4B;
+      float* val_ptr = reinterpret_cast<float*>(ptr4B);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       eqtlinfo->_valNum = valNum;

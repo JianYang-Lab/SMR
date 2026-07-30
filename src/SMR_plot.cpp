@@ -135,7 +135,7 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
   }
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   maxid_heidi = max_abs_id(smrwk_heidi.zxz);
-  int m = (int)smrwk_heidi.bxz.size();
+  int m = static_cast<int>(smrwk_heidi.bxz.size());
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
@@ -199,7 +199,7 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
 
   if (pdev >= threshpheidiest) {
     // if after pairwise LD pruning, the SNP number > 20, id should be 0. otherwise id should also recalulated
-    ldnperprb.push_back((int)sn_ids.size() + ldnperprb[ldnperprb.size() - 1]);
+    ldnperprb.push_back(static_cast<int>(sn_ids.size()) + ldnperprb[ldnperprb.size() - 1]);
     for (int jj = 0; jj < sn_ids.size(); jj++) {
       ldrs.push_back(smrwk_heidi.rs[sn_ids[jj]]);
       outld.push_back(C(id, jj));
@@ -258,7 +258,7 @@ double heidi_test_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperprb, 
   if (pdev >= threshpheidiest) {
     // out ld
     long maxid_heidi = max_abs_id(smrwk->zxz);
-    ldnperprb.push_back((int)sn_ids.size() + ldnperprb[ldnperprb.size() - 1]);
+    ldnperprb.push_back(static_cast<int>(sn_ids.size()) + ldnperprb[ldnperprb.size() - 1]);
     for (int jj = 0; jj < sn_ids.size(); jj++) {
       ldrs.push_back(smrwk->rs[sn_ids[jj]]);
       outld.push_back(_LD_heidi(maxid_heidi, jj));
@@ -407,7 +407,7 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
       }
 
       currlt.p_HET = pdev;
-      currlt.nsnp = (int)nsnp;
+      currlt.nsnp = static_cast<int>(nsnp);
       smrrlts.push_back(currlt);
     }
   }
@@ -874,7 +874,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
       mapsize = snp_name_map.size();
     }
   }
-  stend_m.push_back((int)out_esi_id_m.size());
+  stend_m.push_back(static_cast<int>(out_esi_id_m.size()));
 
   for (std::uint32_t ii = 0; ii < ldprb.size(); ii++) {
     std::string curprb = ldprb[ii];
@@ -1026,7 +1026,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
       mapsize = snp_name_map.size();
     }
   }
-  stend.push_back((int)out_esi_id.size());
+  stend.push_back(static_cast<int>(out_esi_id.size()));
 
   std::vector<int> bprank;
   getRank_norep(out_bp, bprank);
@@ -1477,7 +1477,7 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
       mapsize = snp_name_map.size();
     }
   }
-  stend.push_back((int)out_esi_id.size());
+  stend.push_back(static_cast<int>(out_esi_id.size()));
 
   for (std::uint32_t ii = 0; ii < ldprbid.size(); ii++) {
     std::vector<std::string> outrs;

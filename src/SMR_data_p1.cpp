@@ -977,7 +977,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
       // out ld
       ldprbid.push_back(i);
       ldprb.push_back(probenm);
-      ldnperprb.push_back((int)curId.size() + ldnperprb[ldnperprb.size() - 1]);
+      ldnperprb.push_back(static_cast<int>(curId.size()) + ldnperprb[ldnperprb.size() - 1]);
       for (int jj = 0; jj < curId.size(); jj++) {
         ldrs.push_back(esdata._esi_rs[curId[jj]]);
         outld.push_back(ld_v(jj));
@@ -1199,7 +1199,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
       out_esi_rs.push_back(esdata_._esi_rs[out_esi_id[i]]);
       out_esi_ld.push_back(-9);
     }
-    stend.push_back((int)out_esi_id.size());
+    stend.push_back(static_cast<int>(out_esi_id.size()));
 
     for (std::uint32_t ii = 0; ii < ldprbid.size(); ii++) {
       std::vector<std::string> outrs;
@@ -1425,7 +1425,7 @@ void sbat_calcu_lambda(MatrixXd& X, VectorXd& eigenval, VectorXd& eigenvalxy, in
       else sub_indx.push_back(i);
     }
   }
-  snp_count = (int)sub_indx.size();
+  snp_count = static_cast<int>(sub_indx.size());
   if (sub_indx.size() < C.size()) {  // Build new matrix
     MatrixXd D(sub_indx.size(), sub_indx.size());
     for (int i = 0; i < sub_indx.size(); i++) {
@@ -1483,7 +1483,7 @@ void sbat_calcu_lambda(ldInfo* ldinfo, FILE* ldfptr, std::vector<std::uint32_t>&
     }
   }
 
-  snp_count = (int)sub_indx.size();
+  snp_count = static_cast<int>(sub_indx.size());
   if (sub_indx.size() < C.size()) {  // Build new matrix
     MatrixXd D(sub_indx.size(), sub_indx.size());
     for (int i = 0; i < sub_indx.size(); i++) {
@@ -1539,7 +1539,7 @@ int smr_setbased_test(bInfo* bdata, std::vector<std::uint32_t>& slctId, std::vec
       zyz4smr.push_back(slct_byz[j] / slct_seyz[j]);
     }
   }
-  int snp_count = (int)Id4smr.size();
+  int snp_count = static_cast<int>(Id4smr.size());
   printf("%ld SNPs passed the p-value threshold %6.2e and %ld SNPs are excluded.\n", Id4smr.size(), p_smr,
          slctId.size() - Id4smr.size());
   if (snp_count == 0) return -9;
@@ -1608,7 +1608,7 @@ int smr_setbased_test(ldInfo* ldinfo, FILE* ldfptr, eqtlInfo* esdata, std::vecto
       zyz4smr.push_back(slct_byz[j] / slct_seyz[j]);
     }
   }
-  int snp_count = (int)Id4smr.size();
+  int snp_count = static_cast<int>(Id4smr.size());
   if (snp_count == 0) return -9;
   /* step5: multiple-SNP SMR test */
 
@@ -1955,7 +1955,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
       currlt.p_SMR = pxy_max;
       currlt.p_SSMR = set_pval_smr;
       currlt.p_HET = pdev;
-      currlt.nsnp = (int)nsnp;
+      currlt.nsnp = static_cast<int>(nsnp);
       smrrlts.push_back(currlt);
     }
   }
@@ -2902,7 +2902,7 @@ void extract_prb_sparse(FILE* fptr, std::uint64_t pid, std::uint64_t probnum, st
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       fread(indicators, sizeof(int), (RESERVEDUNITS - 1), fptr);
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -2946,7 +2946,7 @@ void extract_prb_dense(FILE* fptr, std::uint64_t pid, std::uint64_t epinum, std:
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       fread(indicators, sizeof(int), (RESERVEDUNITS - 1), fptr);
-      int* tmp = (int*)indicators;
+      int* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -3268,7 +3268,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
         "We exclude the significant common SNPs with a p-value threshold %6.2e to estimate the correlation matrix.\n",
         pthresh);
   }
-  FILE** fptrs = (FILE**)malloc(sizeof(FILE*) * besds.size());
+  FILE** fptrs = static_cast<FILE**>(malloc(sizeof(FILE*) * besds.size()));
   for (int i = 0; i < besdNum; i++) {
     std::string besdFileName = besds[i] + ".besd";
     fptrs[i] = fopen(besdFileName.c_str(), "rb");
@@ -3292,18 +3292,18 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::vector<int> ten_ints(nresv);
   ten_ints[0] = filetype;
   ten_ints[1] = -9;
-  ten_ints[2] = (int)snpinfo.size();
-  ten_ints[3] = (int)probeinfo.size();
+  ten_ints[2] = static_cast<int>(snpinfo.size());
+  ten_ints[3] = static_cast<int>(probeinfo.size());
   for (int i = 4; i < nresv; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), nresv, efile);
 
-  float* buffer_beta = (float*)malloc(sizeof(float) * besdNum * metaSNPnum);
+  float* buffer_beta = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
   if (buffer_beta == nullptr) {
     printf("ERROR: memory allocation failed for beta values.\n");
     exit(EXIT_FAILURE);
   }  // probe major
 
-  float* buffer_se = (float*)malloc(sizeof(float) * besdNum * metaSNPnum);
+  float* buffer_se = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
   if (buffer_se == nullptr) {
     printf("ERROR: memory allocation failed for SEs.\n");
     exit(EXIT_FAILURE);
@@ -3317,7 +3317,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::vector<std::string> snpdeficent;
   double cr = 0.0;
   for (int i = 0; i < metaPrbNum; i++) {
-    progress(i, cr, (int)metaPrbNum);
+    progress(i, cr, static_cast<int>(metaPrbNum));
 
     std::vector<float> betases;
     std::vector<std::uint32_t> row_ids;
@@ -3330,7 +3330,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
       row_ids.clear();
       if (pid >= 0) {
         if (format[j] == SPARSE_FILE_TYPE_3 || format[j] == SPARSE_FILE_TYPE_3F) {
-          extract_prb_sparse(fptrs[j], (std::uint64_t)pid, nprb[j], row_ids, betases);
+          extract_prb_sparse(fptrs[j], static_cast<std::uint64_t>(pid), nprb[j], row_ids, betases);
           long num = row_ids.size();
           if (num == 0) {
             continue;
@@ -3361,7 +3361,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
             }
           }
         } else if (format[j] == DENSE_FILE_TYPE_1 || format[j] == DENSE_FILE_TYPE_3) {
-          extract_prb_dense(fptrs[j], (std::uint64_t)pid, nprb[j], nsnp[j], betases);
+          extract_prb_dense(fptrs[j], static_cast<std::uint64_t>(pid), nprb[j], nsnp[j], betases);
           long alignnum = 0;
           for (int k = 0; k < nsnp[j]; k++) {
             int idx = lookup[j][k];

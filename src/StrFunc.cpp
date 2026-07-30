@@ -45,7 +45,7 @@ int StrFunc::split_string(const std::string& str, std::vector<std::string>& out_
   }
   if (look) out_vec.push_back(str_buf);
 
-  return (int)out_vec.size();
+  return static_cast<int>(out_vec.size());
 }
 
 /// Both `str` and `separators` are consist of ASCII characters.

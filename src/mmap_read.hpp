@@ -18,7 +18,7 @@ class MappedFile {
 
   bool valid() { return addr_ != nullptr && size_ != 0; }
 
-  void* memory_bound() { return (unsigned char*)addr_ + size_; }
+  void* memory_bound() { return static_cast<unsigned char*>(addr_) + size_; }
 
   void* addr() { return addr_; }
 

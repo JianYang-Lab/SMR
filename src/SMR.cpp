@@ -968,7 +968,7 @@ void option(int option_num, char* option_str[]) {
         exit(EXIT_FAILURE);
       }
 
-      MAX_NUM_LD = (int)val;
+      MAX_NUM_LD = static_cast<int>(val);
       printf("--max_num_ld %d\n", MAX_NUM_LD);
     } else if (0 == strcmp(option_str[i], "--enable-gwas-comments")) {
       enableGwasComments = true;

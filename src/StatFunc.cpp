@@ -230,7 +230,7 @@ double StatFunc::psadd(double x, VectorXd lambda) {
   double m = lambda.minCoeff();
   if (m < 0.0) lmin = 0.499995 / m;
   else if (x > lambda.sum()) lmin = -0.01;
-  else lmin = -0.5 * (double)lambda.size() / x;
+  else lmin = -0.5 * static_cast<double>(lambda.size()) / x;
   double lmax = 0.499995 / lambda.maxCoeff();
 
   double hatzeta = Brents_Kp_min_x(lambda, x, lmin, lmax, 1e-08);

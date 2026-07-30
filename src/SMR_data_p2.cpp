@@ -1092,7 +1092,7 @@ void read_mapfile(bInfo* bdata, std::string bimfile) {
     bdata->_bp.push_back(ibuf);
   }
   Bim.close();
-  bdata->_snp_num = (int)bdata->_chr.size();
+  bdata->_snp_num = static_cast<int>(bdata->_chr.size());
   std::cout << bdata->_snp_num << " SNPs to be included from [" + bimfile + "]." << std::endl;
 
   // Initialize _include
@@ -1121,7 +1121,7 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
   char buf[MAX_LINE_SIZE];
   double disp = 0;
   for (int j = 0; j < prb_num; j++) {
-    progress(j, disp, (int)prb_num);
+    progress(j, disp, prb_num);
 
     std::string esdfilename = (locinfolst + j)->esdpath;
     gzFile gzfile = nullptr;
@@ -1459,13 +1459,13 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<in
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
-  ten_ints[2] = (int)esiNum;
-  ten_ints[3] = (int)epiNum;
+  ten_ints[2] = static_cast<int>(esiNum);
+  ten_ints[3] = static_cast<int>(epiNum);
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-  std::uint64_t bsize = (std::uint64_t)esiNum << 1;
-  float* buffer = (float*)malloc(sizeof(float) * bsize);
+  std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
+  float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
   if (nullptr == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
@@ -1478,7 +1478,7 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<in
   std::map<std::string, int>::iterator iter;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
-    progress(j, disp, (int)epiNum);
+    progress(j, disp, static_cast<int>(epiNum));
     int esdnumcurprb = epi2esd[j + 1] - epi2esd[j];
     printf("Reading the probe %s from %d text file(s).\n", prbiflst[epi2esd[j]].probeId, esdnumcurprb);
     for (int k = 0; k < bsize; k++) buffer[k] = -9;  // init
@@ -1576,8 +1576,8 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
-  ten_ints[2] = (int)esiNum;
-  ten_ints[3] = (int)epiNum;
+  ten_ints[2] = static_cast<int>(esiNum);
+  ten_ints[3] = static_cast<int>(epiNum);
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -1590,7 +1590,7 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
   std::map<std::string, int>::iterator iter;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
-    progress(j, disp, (int)epiNum);
+    progress(j, disp, static_cast<int>(epiNum));
     int esdnumcurprb = epi2esd[j + 1] - epi2esd[j];
     printf("\nReading %d text file(s) of probe %s.\n", esdnumcurprb, prbiflst[epi2esd[j]].probeId);
 
@@ -1926,8 +1926,8 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
   ten_ints[0] = filetype;
   if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
   ten_ints[1] = addn;
-  ten_ints[2] = (int)esiNum;
-  ten_ints[3] = (int)epiNum;
+  ten_ints[2] = static_cast<int>(esiNum);
+  ten_ints[3] = static_cast<int>(epiNum);
   for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -1964,7 +1964,7 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
   std::vector<snpinfolst> snpinfo;
   double disp = 0;
   for (int j = 0; j < epiNum; j++) {
-    progress(j, disp, (int)epiNum);
+    progress(j, disp, static_cast<int>(epiNum));
     std::vector<std::uint32_t> tmprid;
     std::vector<float> tmpse;
     int esdnumcurprb = epi2esd[j + 1] - epi2esd[j];
@@ -2131,7 +2131,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
       epiNum++;
     }
   }
-  epi2esd.push_back((int)esdfileNum);
+  epi2esd.push_back(esdfileNum);
   epi.close();
   printf("%ld probes have been saved in the file \"%s\".\n", epiNum, epifile.c_str());
 
@@ -2359,7 +2359,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
         if (rsbppos >= 0 && (qtltoolsnflag || qtltoolspflag))
           rsbp.push_back((atoi(vs_buf[rsbppos].c_str()) + atoi(vs_buf[rsbppos + 1].c_str())) / 2);
         else rsbp.push_back(-9);
-        rsid = (int)esiNum++;
+        rsid = static_cast<int>(esiNum++);
       } else {
         rsid = iter->second;
       }
@@ -2482,20 +2482,20 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving the sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
-    ten_ints[2] = (int)esiNum;
-    ten_ints[3] = (int)epiNum;
+    ten_ints[2] = static_cast<int>(esiNum);
+    ten_ints[3] = static_cast<int>(epiNum);
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-    std::uint64_t bsize = (std::uint64_t)esiNum << 1;
-    float* buffer = (float*)malloc(sizeof(float) * bsize);
+    std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
+    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     if (nullptr == buffer) {
       fprintf(stderr, "Malloc failed\n");
       exit(-1);
     }
     double disp = 0;
     for (int j = 0; j < epiNum; j++) {
-      progress(j, disp, (int)epiNum);
+      progress(j, disp, static_cast<int>(epiNum));
 
       for (int k = 0; k < bsize; k++) buffer[k] = -9;  // init
       for (int l = 0; l < _ttl_rsid[j].size(); l++) {
@@ -2526,8 +2526,8 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
-    ten_ints[2] = (int)esiNum;
-    ten_ints[3] = (int)epiNum;
+    ten_ints[2] = static_cast<int>(esiNum);
+    ten_ints[3] = static_cast<int>(epiNum);
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -2547,14 +2547,14 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     fwrite(&cols[0], sizeof(std::uint64_t), cols.size(), smr1);
     double disp = 0;
     for (int j = 0; j < epiNum; j++) {
-      progress(j, disp, (int)epiNum);
+      progress(j, disp, static_cast<int>(epiNum));
 
       fwrite(&_ttl_rsid[j][0], sizeof(std::uint32_t), _ttl_rsid[j].size(), smr1);
       fwrite(&_ttl_rsid[j][0], sizeof(std::uint32_t), _ttl_rsid[j].size(), smr1);
     }
     disp = 0;
     for (int j = 0; j < epiNum; j++) {
-      progress(j, disp, (int)epiNum);
+      progress(j, disp, static_cast<int>(epiNum));
       fwrite(&_ttl_beta[j][0], sizeof(float), _ttl_beta[j].size(), smr1);
       fwrite(&_ttl_se[j][0], sizeof(float), _ttl_se[j].size(), smr1);
     }
@@ -2935,13 +2935,13 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       ten_ints[0] = filetype;
       if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
       ten_ints[1] = addn;
-      ten_ints[2] = (int)esiNum;
-      ten_ints[3] = (int)epiNum;
+      ten_ints[2] = static_cast<int>(esiNum);
+      ten_ints[3] = static_cast<int>(epiNum);
       for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
       fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
-      std::uint64_t bsize = (std::uint64_t)esiNum << 1;
-      float* buffer = (float*)malloc(sizeof(float) * bsize);
+      std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
+      float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
       if (nullptr == buffer) {
         fprintf(stderr, "Malloc failed\n");
         exit(-1);
@@ -2949,7 +2949,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       std::map<std::string, int>::iterator iter;
       double disp = 0;
       for (int j = 0; j < epiNum; j++) {
-        progress(j, disp, (int)epiNum);  // show program progress, don't mind.
+        progress(j, disp, static_cast<int>(epiNum));  // show program progress, don't mind.
 
         int pkey = prbiflst[j].gd;
 
@@ -3006,8 +3006,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       ten_ints[0] = filetype;
       if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
       ten_ints[1] = addn;
-      ten_ints[2] = (int)esiNum;
-      ten_ints[3] = (int)epiNum;
+      ten_ints[2] = static_cast<int>(esiNum);
+      ten_ints[3] = static_cast<int>(epiNum);
       for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
       fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -3032,7 +3032,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       // for consistent with Beta and SE value
       double disp = 0;
       for (int j = 0; j < epiNum; j++) {
-        progress(j, disp, (int)epiNum);
+        progress(j, disp, static_cast<int>(epiNum));
 
         int pkey = prbiflst[j].gd;
         unsigned int snp_num_this_prob = _ttl_rs[pkey].size();
@@ -3052,7 +3052,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       // Write Beta and SE value.
       disp = 0;
       for (int j = 0; j < epiNum; j++) {
-        progress(j, disp, (int)epiNum);
+        progress(j, disp, static_cast<int>(epiNum));
 
         int pkey = prbiflst[j].gd;
         fwrite(&_ttl_beta[pkey][0], sizeof(float), _ttl_beta[pkey].size(), smr1);
@@ -3079,8 +3079,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     ten_ints[0] = filetype;
     if (addn != -9) printf("Saving sample size %d to the file %s.\n", addn, esdfile.c_str());
     ten_ints[1] = addn;
-    ten_ints[2] = (int)esiNum;
-    ten_ints[3] = (int)epiNum;
+    ten_ints[2] = static_cast<int>(esiNum);
+    ten_ints[3] = static_cast<int>(epiNum);
     for (int i = 4; i < RESERVEDUNITS; i++) ten_ints[i] = -9;
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
@@ -3119,7 +3119,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
     double disp = 0;
     for (int j = 0; j < epiNum; j++) {
       // print totall progress, don't matter to data process.
-      progress(j, disp, (int)epiNum);
+      progress(j, disp, static_cast<int>(epiNum));
 
       int pkey = prbiflst[j].gd;
       std::vector<std::uint32_t> tmprid;

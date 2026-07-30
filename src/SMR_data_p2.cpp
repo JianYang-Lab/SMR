@@ -1116,8 +1116,6 @@ void read_mapfile(bInfo* bdata, std::string bimfile) {
 std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbiflst, int prb_num, int fformat) {
   probeinfolst* locinfolst = *prbiflst;
   std::map<std::string, int> rs_map;
-  // std::map<std::string, int> rsbp_map;
-  // std::map<std::string, int> rsaa_map;
   long size = 0;
   std::uint64_t ttl_value_num = 0;
   char buf[MAX_LINE_SIZE];
@@ -1125,8 +1123,6 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
   for (int j = 0; j < prb_num; j++) {
     progress(j, disp, (int)prb_num);
 
-    // std::map<std::string, int> currs_map;
-    // long currssize=0;
     std::string esdfilename = (locinfolst + j)->esdpath;
     gzFile gzfile = nullptr;
     std::ifstream flptr;
@@ -1181,15 +1177,6 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
                    lineNum + 2, esdfilename.c_str());
             exit(EXIT_FAILURE);
           }
-          /*
-          currs_map.insert(std::pair<std::string, int>(vs_buf[1].c_str(), lineNum));
-          if(currs_map.size()==currssize)
-          {
-              printf("WARING: duplicate SNP %s found in file %s.\n", vs_buf[1].c_str(),esdfilename.c_str());
-          } else {
-              currssize=currs_map.size();
-          }
-           */
           to_upper(vs_buf[3]);
           to_upper(vs_buf[4]);
           if (vs_buf[3] == "NA" || vs_buf[4] == "NA") {
@@ -1199,41 +1186,12 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
                 lineNum + 2, esdfilename.c_str());
           }
           std::string crsstr = vs_buf[0] + ":" + vs_buf[1];
-          // std::string crsbpstr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2];
-          // std::string crsbpaastr=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[3]+":"+vs_buf[4];
-          // std::string crsbpaastr_iv=vs_buf[0]+":"+vs_buf[1]+":"+vs_buf[2]+":"+vs_buf[4]+":"+vs_buf[3];
           rs_map.insert(std::pair<std::string, int>(crsstr.c_str(), lineNum));
-          // rsbp_map.insert(std::pair<std::string, int>(crsbpstr.c_str(), lineNum));
-          // rsaa_map.insert(std::pair<std::string, int>(crsbpaastr.c_str(), lineNum));
-          // if(rs_map.size() != rsbp_map.size())
-          //{
-          //     printf("ERROR: SNP %s on Chromosome %s has multiple BPs, please check.\n", vs_buf[1].c_str(),
-          //     vs_buf[0].c_str()); exit(EXIT_FAILURE);
-          // }
           bool newsnp = false;
           if (size < rs_map.size()) {
             newsnp = true;
             size = rs_map.size();
-          } /*else {
-               //check multi-allelic SNPs
-               if(rs_map.size() != rsaa_map.size())
-               {
-                   long tmpsize=rsaa_map.size();
-                   rsaa_map.insert(std::pair<std::string, int>(crsbpaastr_iv.c_str(), lineNum));
-                   if(tmpsize==rsaa_map.size())
-                   {
-                       printf("WARING: switched ref allele with alt allele of SNP %s found.\n", vs_buf[1].c_str());
-                   } else {
-                       newsnp=true;
-                       printf("WARING: multi-allelic SNPs with duplicate SNP ID %s found.\n", vs_buf[1].c_str());
-                       rs_map.insert(std::pair<std::string, int>((crsbpaastr+"_m").c_str(), lineNum));
-                       rsbp_map.insert(std::pair<std::string, int>((crsbpaastr+"_m").c_str(), lineNum));
-                   }
-                   rs_map.insert(std::pair<std::string, int>((crsbpaastr+"_").c_str(), lineNum));
-                   rsbp_map.insert(std::pair<std::string, int>((crsbpaastr+"_").c_str(), lineNum));
-                   size = rs_map.size();
-               }
-           }*/
+          }
           if (newsnp) {
             snpinfolst snptmp;
             int tmpchr;
@@ -1580,37 +1538,6 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<in
             printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(), esi_a2[rsid[l]].c_str(),
                    _a1[l].c_str(), _a2[l].c_str());
             exit(EXIT_FAILURE);
-
-            // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should disable
-            // it.
-            /*
-            int did=-9;
-            float sig=1.0;
-            for(int m=0;m<esi_rs.size();m++)
-            {
-                if(esi_rs[m]==_rs[l])
-                {
-                    if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                    {
-                        did=m;
-                        break;
-                    }
-                    if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                    {
-                        did=m;
-                        sig=-1.0;
-                        break;
-                    }
-                }
-            }
-            if(did==-9)
-            {
-                printf("ERROR: This would not go to happen. Please report this bug.");
-                exit(EXIT_FAILURE);
-            }
-            buffer[did]=sig*_beta[l];
-            buffer[esiNum+did]=_se[l];
-             */
           }
         } else {
           buffer[rsid[l]] = _beta[l];
@@ -1735,39 +1662,6 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
                 printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(),
                        esi_a2[rsid[l]].c_str(), _a1[l].c_str(), _a2[l].c_str());
                 exit(EXIT_FAILURE);
-
-                // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should
-                // disable it.
-                /*
-                    int did=-9;
-                    float sig=1.0;
-                    for(int m=0;m<esi_rs.size();m++)
-                    {
-                        if(esi_rs[m]==_rs[l])
-                        {
-                            if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                            {
-                                did=m;
-                                break;
-                            }
-                            if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                            {
-                                did=m;
-                                sig=-1.0;
-                                break;
-                            }
-                        }
-                    }
-                    if(did==-9)
-                    {
-                        printf("ERROR: This would not go to happen. Please report this bug.");
-                        exit(EXIT_FAILURE);
-                    }
-                    val.push_back(sig*_beta[l]);
-                    rowids.push_back(did);
-                    tmpse.push_back(_se[l]);
-                    tmprid.push_back(did);
-                 */
               }
             } else {
               val.push_back(_beta[l]);
@@ -1830,7 +1724,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
   long cisuperBounder = probbp + cis_itvl;
   long cislowerBounder = ((probbp - cis_itvl > 0) ? (probbp - cis_itvl) : 0);
 
-  // printf("Extracting information of the probe %s...\n", probid.c_str());
   for (int l = 0; l < snpinfo.size(); l++) {
     if (fabs(snpinfo[l].se + 9) > 1e-6) {
       double zsxz = snpinfo[l].beta / snpinfo[l].se;
@@ -1838,7 +1731,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
 
       if (snpinfo[l].snpchr == probchr && snpinfo[l].bp <= cisuperBounder && snpinfo[l].bp >= cislowerBounder) {
         if (techHit) {
-          // printf("The following SNP in the cis-region is excluded due to the technical eQTL.\n");
           double z = (snpinfo[l].beta / snpinfo[l].se);
           double p = pchisq(z * z, 1);
           std::string tmp = atos(snpinfo[l].snprs) + "\t" + atos(snpinfo[l].snpchr) + "\t" + atos(snpinfo[l].bp) +
@@ -1855,8 +1747,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
 
         } else {
           std::string chckstr = std::string(snpinfo[l].snprs);
-          // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr +=
-          // ":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
           rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
           if (rsNum < rsa_map.size()) {
             slct_idx.push_back(l);
@@ -1869,7 +1759,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
         std::uint64_t transNum = 0;
         int curChr = snpinfo[l].snpchr;
         std::string chckstr = std::string(snpinfo[l].snprs);
-        // if(snpinfo[l].a1 && snpinfo[l].a2) chckstr += ":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
         rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
         if (rsNum < rsa_map.size()) {
           slct_idx.push_back(l);
@@ -1900,8 +1789,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
               break;
             }
             std::string chckstr = std::string(snpinfo[startptr].snprs);
-            // if(snpinfo[startptr].a1 && snpinfo[startptr].a2) chckstr +=
-            // ":"+std::string(snpinfo[startptr].a1)+":"+std::string(snpinfo[startptr].a2);
             iter = other_idx.find(chckstr);
             if (iter != other_idx.end())  // trans merges other eqtl
             {
@@ -1931,8 +1818,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
 
             } else {
               std::string chckstr = std::string(snpinfo[startptr].snprs);
-              // if(snpinfo[startptr].a1 && snpinfo[startptr].a2) chckstr +=
-              // ":"+std::string(snpinfo[startptr].a1)+":"+std::string(snpinfo[startptr].a2);
               rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
               if (rsNum < rsa_map.size()) {
                 slct_idx.push_back(startptr);
@@ -1967,7 +1852,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
 
       } else if (!extract_cis_only && pxz < restThres) {
         std::string chckstr = std::string(snpinfo[l].snprs);
-        //+":"+std::string(snpinfo[l].a1)+":"+std::string(snpinfo[l].a2);
         rsa_map.insert(std::pair<std::string, int>(chckstr, rsNum));
         if (rsNum < rsa_map.size()) {
           slct_idx.push_back(l);
@@ -1977,7 +1861,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
       }
     } else {
       // I don't think this can happen. because when reading NA value is not saved.
-      // printf("WARNING: SNP %s  with \"NA\" value found and skipped.\n",snpinfo[l].snprs);
     }
   }
 
@@ -1990,8 +1873,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
     printf("Something is wrong with this selection methold. Please report this bug.\n");
     exit(EXIT_FAILURE);
   }
-  // printf("%ld SNPs in the cis-region, %ld SNPs in total %ld trans-region(s), %ld other SNPs have been
-  // extracted.\n",cissnpnum,transsnpnum,transnum,othersnpnum);
   // log
 
   if (cis_idx.size() || nsnp.size() || other_idx.size()) {
@@ -2008,8 +1889,6 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
     } else logstr += "<>\t";
 
     if (other_idx.size() > 0) {
-      // for(iter=other_idx.begin();iter!=other_idx.end();iter++) logstr+="("+atos(snpinfo[iter->second].bp)+"), ";
-      // logstr+="\n";
       logstr += "(" + atos(other_idx.size()) + ")\n";
     } else logstr += "()\n";
 
@@ -2141,16 +2020,7 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
         exit(EXIT_FAILURE);
       }
     }
-    //  std::map<std::string, int> rsa_map;
-    //  long rsNum=0;
     for (int l = 0; l < rsid.size(); l++) {
-      // if(fabs(_se[l]+9)>1e-6) // can move this. the NA is controled in slct_sparse_per_prb
-      //{
-      //   std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-      //   rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
-      //   selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here.
-      //  if(rsNum<rsa_map.size())
-      //  {
       if (fformat != 1)  // not for plink format
       {
         if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
@@ -2168,39 +2038,6 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
           printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(), esi_a2[rsid[l]].c_str(),
                  _a1[l].c_str(), _a2[l].c_str());
           exit(EXIT_FAILURE);
-
-          // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should disable
-          // it.
-          /*
-          int did=-9;
-          float sig=1.0;
-          for(int m=0;m<esi_rs.size();m++)
-          {
-              if(esi_rs[m]==_rs[l])
-              {
-                  if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                  {
-                      did=m;
-                      break;
-                  }
-                  if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                  {
-                      did=m;
-                      sig=-1.0;
-                      break;
-                  }
-              }
-          }
-          if(did==-9)
-          {
-              printf("ERROR: This would not go to happen. Please report this bug.");
-              exit(EXIT_FAILURE);
-          }
-          val.push_back(sig*_beta[l]);
-          rowids.push_back(did);
-          tmpse.push_back(_se[l]);
-          tmprid.push_back(did);
-           */
         }
       } else {
         val.push_back(_beta[l]);
@@ -2208,14 +2045,6 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
         tmpse.push_back(_se[l]);
         tmprid.push_back(rsid[l]);
       }
-      //       rsNum=rsa_map.size();
-      //    } else {
-      //       printf("WARNING: duplicate SNP %s with the same alleles belonging to the same probe %s.
-      //       \n",_rs[l].c_str(),prbiflst[epi2esd[j]].probeId.c_str());
-      //   }
-      //} else {
-      //    printf("WARNING: SNP %s  with \"NA\" value found and skipped.\n",_rs[l].c_str());
-      // }
     }
     for (int k = 0; k < tmpse.size(); k++) {
       val.push_back(tmpse[k]);
@@ -2337,10 +2166,8 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
   if (save_dense_flag) {
     double sparsity = 1.0 * ttlv / (esiNum * epiNum);
     if (sparsity >= 0.4) {
-      // printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
       save_txts_dbesd(outFileName, esiNum, epiNum, epi2esd, prbiflst, fformat, esi_rs, esi_a1, esi_a2, addn);
     } else {
-      // printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
       save_full_txts_sbesd(outFileName, esiNum, epiNum, epi2esd, prbiflst, fformat, esi_rs, esi_a1, esi_a2, addn);
     }
 
@@ -2495,8 +2322,6 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
       }
 
       if (vs_buf[betapos] == "NA" || vs_buf[betapos] == "na") {
-        // printf("WARNING: this row is omitted because the effect size of the SNP is missing (\"NA\").\n");
-        // printf("%s\n",buf);
         continue;
       }
       if (vs_buf[t_statpos] == "NA" || vs_buf[t_statpos] == "na") {
@@ -2505,8 +2330,6 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
         continue;
       }
       if (vs_buf[ppos] == "NA" || vs_buf[ppos] == "na") {
-        // printf("WARNING: the p-value of the SNP is missing (\"NA\"), this row is omitted.\n");
-        // printf("%s\n",buf);
         continue;
       }
       if (atof(vs_buf[ppos].c_str()) < 0) {
@@ -2647,8 +2470,6 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
 
   // quanlity control and correctness are done above.
   if (sparsity > 0.4) {
-    // printf("The density of your data is %f. The data will be saved in dense format.\n", sparsity);
-
     std::string esdfile = std::string(outFileName) + std::string(".besd");
     FILE* smr1;
     smr1 = fopen(esdfile.c_str(), "wb");
@@ -2689,8 +2510,6 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
               << " SNPs have been saved in a binary file [" + esdfile + "]." << std::endl;
 
   } else {
-    // printf("The density of your data is %f. The data will be saved in sparse format.\n", sparsity);
-
     std::string esdfile = std::string(outFileName) + std::string(".besd");
     FILE* smr1;
     smr1 = fopen(esdfile.c_str(), "wb");

@@ -104,16 +104,12 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
   MatrixXd _X;
   std::vector<int> sn_ids;
   double pthres = pchisq(threshold, 1);
-  // printf("Filtering SNPs (%ld in total) at eQTL p-value < %e for the HEIDI test.\n",smrwk->zxz.size(), pthres);
   for (int i = 0; i < smrwk->zxz.size(); i++) {
     if (smrwk->zxz[i] * smrwk->zxz[i] - threshold > 1e-6) sn_ids.push_back(i);
   }
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: the HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
-  // printf("%ld SNPs left after filtering.\n",sn_ids.size());
   update_snidx(smrwk, sn_ids, MAX_NUM_LD, "LD pruning");
 
   SMRWK smrwk_heidi;
@@ -121,8 +117,6 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
   long maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
   make_XMat(bdata, smrwk_heidi.curId, _X);
-  // printf("Removing SNPs with LD r-squared between top-SNP %s > %f or <
-  // %f...\n",smrwk_heidi.rs[maxid_heidi].c_str(),ldr2_top,ld_min);
   ld_calc_o2m(ld_v, maxid_heidi, _X);
 
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
@@ -136,26 +130,18 @@ double heidi_test_new_plot(bInfo* bdata, SMRWK* smrwk, std::vector<int>& ldnperp
       }
     }
   }
-  // printf("%ld SNPs are removed and %ld SNPs are retained.\n",smrwk_heidi.zxz.size()-sn_ids.size(),sn_ids.size());
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   maxid_heidi = max_abs_id(smrwk_heidi.zxz);
-  // printf("Removing one of each std::pair of remaining SNPs with LD r-squared > %f...\n",ldr2_top);
   int m = (int)smrwk_heidi.bxz.size();
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
   double ld_top = sqrt(ldr2_top);
   if (ld_top < 1) rm_cor_sbat(C, ld_top, m, rm_ID1);
-  // printf("%ld SNPs are removed and %ld SNPs (including the top SNP %s) are
-  // retained.\n",rm_ID1.size(),m-rm_ID1.size(),smrwk_heidi.rs[maxid_heidi].c_str());
   if (m - rm_ID1.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", m-rm_ID1.size(),
-    // m_hetero);
     return -9;
   }
   // Create new index
@@ -321,11 +307,9 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
     long maxid = fill_smr_wk(bdata, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
     if (refSNP != nullptr && maxid == -9) {
-      // printf("WARNING: can't find target SNP %s for probe %s.\n",refSNP, probename.c_str());
       continue;
     }
     if (smrwk.bxz.size() == 0) {
-      // printf("WARNING: no SNP fetched for probe %s.\n", probename.c_str());
       continue;
     }
 
@@ -337,14 +321,10 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
     if (refSNP == nullptr && pxz_val > p_smr) {
-      // printf("WARNING: no SNP passed the p-value threshold %e for the SMR analysis for probe %s.\n", p_smr,
-      // probename.c_str());
       continue;
     } else {
-      // printf("Analysing probe %s...\n", probename.c_str());
     }
     if (sampleoverlap) {
-      // printf("Estimating the correlation ...\n");
       double z2mecs = qchisq(pmecs, 1);
       double zmecs = sqrt(z2mecs);
       std::vector<double> zxz, zyz;
@@ -357,8 +337,6 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
         }
       }
       if (zxz.size() < minCor) {
-        // printf("WARNING: less than %d common SNPs obtained from the cis-region of probe %s at a p-value threshold
-        // %5.2e.\n ", minCor,probename.c_str(), pmecs); printf("probe %s is skipped.\n ", probename.c_str());
         continue;
       } else {
         theta = cor(zxz, zyz);
@@ -1898,7 +1876,6 @@ void count_trans(char* outFileName, char* eqtlFileName, double transThres, long 
     slct_trans_per_prb(slct_idx, regionChr, snpNumPerRegion, leftbound, rightbound, &prbifo, snpinfo, cis_itvl,
                        trans_itvl, transThres);
     if (snpNumPerRegion.size() == 0) {
-      // printf("WARNING: no trans-eQTL for probe %s at the p-value threshold %e.\n",prbifo.probeId,transThres);
     }
 
     int statidx = 0;

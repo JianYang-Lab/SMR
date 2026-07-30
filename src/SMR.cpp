@@ -91,14 +91,6 @@ int main(int argc, char** argv) {
   time_used = time(nullptr) - start;
   printf("\nAnalysis finished: %s \nComputational time: %ld:%ld:%ld\n", ctime(&curr), time_used / 3600,
          (time_used % 3600) / 60, time_used % 60);
-  // t = time(0);q
-  // now = localtime(&t);
-  // std::cout << "\nAnalysis completed: " << now -> tm_hour << ":" << now -> tm_min << ":" \
-  //     << now -> tm_sec << "," << weeks[now -> tm_wday] << " " << months[(now -> tm_mon)] \
-  //     << " " << now -> tm_mday << "," << (now -> tm_year + 1900) << std::endl;
-  // time_used = time(nullptr) - start;
-  // std::cout << "Computational time: " << time_used / 3600 << ":" << (time_used % 3600) / 60 << ":" << time_used % 60
-  // << std::endl;
   return 0;
 }
 

@@ -35,47 +35,6 @@ void combine_esi(std::vector<snpinfolst>& snpinfo, std::vector<std::string>& sma
   if (genouni) f2r = 1;
 
   for (int i = 0; i < f2r; i++) {
-    //        typedef struct{
-    //            std::vector<int> _esi_chr;
-    //            std::vector<std::string> _esi_rs;
-    //            std::vector<int> _esi_gd;
-    //            std::vector<int> _esi_bp;
-    //            std::vector<std::string> _esi_allele1;
-    //            std::vector<std::string> _esi_allele2;
-    //            std::vector<int> _esi_include; // initialized in the readesi
-    //            std::map<std::string,int> _snp_name_map;
-    //            std::vector<float> _esi_freq;
-    //
-    //            std::vector<int> _epi_chr;
-    //            std::vector<std::string> _epi_prbID;
-    //            std::vector<int> _epi_gd;
-    //            std::vector<int> _epi_bp;
-    //            std::vector<std::string> _epi_gene;
-    //            std::vector<char> _epi_orien;
-    //            std::vector<int> _include; // initialized in the readepi
-    //            std::map<std::string,int> _probe_name_map;
-    //            std::vector<double> _epi_var;
-    //            /* if no probe sequence region input, its size should be 0.
-    //               for the probe not for probe sequence file, the value should be
-    //               set as -9, no technical eQTL would be removed from this probe.
-    //             */
-    //            std::vector<int> _epi_start;
-    //            std::vector<int> _epi_end;
-    //
-    //            //for sparse
-    //            std::vector<std::uint64_t> _cols;
-    //            std::vector<std::uint32_t> _rowid;
-    //            std::vector<float> _val;
-    //            // for dense
-    //            std::vector< std::vector<float> > _bxz; // first dimension is probe, second is snp
-    //            std::vector< std::vector<float> > _sexz;
-    //
-    //            std::uint64_t _probNum;
-    //            std::uint64_t _snpNum;
-    //            std::uint64_t _valNum;
-    //
-    //        } eqtlInfo;
-
     eqtlInfo etmp;
     std::string esifile = smasNames[i] + ".esi";
     // the eqtlInfo structure contain esi and epi date, and for this momment only esi date was filled.
@@ -282,7 +241,6 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
-        // printf("No data included of probe %s from %s.\n",prbname.c_str(),probeinfo[j].besdpath[k].c_str());
         continue;
       }
       if (eqtlinfo._valNum == 0) {
@@ -350,37 +308,6 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
           printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(), esi_a2[rsid[l]].c_str(),
                  _a1[l].c_str(), _a2[l].c_str());
           exit(EXIT_FAILURE);
-
-          // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should disable
-          // it.
-          /*
-          int did=-9;
-          float sig=1.0;
-          for(int m=0;m<esi_rs.size();m++)
-          {
-              if(esi_rs[m]==_rs[l])
-              {
-                  if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                  {
-                      did=m;
-                      break;
-                  }
-                  if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                  {
-                      did=m;
-                      sig=-1.0;
-                      break;
-                  }
-              }
-          }
-          if(did==-9)
-          {
-              printf("ERROR: This would not go to happen. Please report this bug.");
-              exit(EXIT_FAILURE);
-          }
-          buffer[did]=sig*_beta[l];
-          buffer[esiNum+did]=_se[l];
-           */
         }
       }
     }
@@ -684,22 +611,6 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
                       std::vector<std::string>& esi_rs, std::vector<std::string>& esi_a1,
                       std::vector<std::string>& esi_a2, std::vector<std::string>& smasNames, int addn) {
   // double init
-  /*
-  for(int j=0;j<probeinfo.size();j++)
-  {
-      probeinfo[j].vnum=0;
-      if(probeinfo[j].rowid!=nullptr)
-      {
-          free(probeinfo[j].rowid);
-          probeinfo[j].rowid=nullptr;
-      }
-      if(probeinfo[j].beta_se!=nullptr)
-      {
-          free(probeinfo[j].beta_se);
-          probeinfo[j].beta_se=nullptr;
-      }
-  }
-   */
   //
   std::map<std::string, int> esi_map;
   for (int j = 0; j < esi_rs.size(); j++) {
@@ -887,8 +798,6 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
               ridbuff[l] = iter->second;
               if (esi_a1[esiidx] == _a1[l] && esi_a2[esiidx] == _a2[l]) {
               } else if (esi_a1[esiidx] == _a2[l] && esi_a2[esiidx] == _a1[l]) {
-                // printf("WARING: switched the effect allele with the other allele of SNP %s found.\n",
-                // _rs[l].c_str());
                 betasebuff[l] = -1.0 * betasebuff[l];
               } else {
                 printf("ERROR: SNP %s with multiple alleles <%s,%s> and <%s,%s> does not pass the allele check.\n",
@@ -1085,8 +994,6 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
               ridbuff[l] = iter->second;
               if (esi_a1[esiidx] == _a1[l] && esi_a2[esiidx] == _a2[l]) {
               } else if (esi_a1[esiidx] == _a2[l] && esi_a2[esiidx] == _a1[l]) {
-                // printf("WARING: switched the effect allele with the other allele of SNP %s found.\n",
-                // _rs[l].c_str());
                 betasebuff[l] = -1.0 * betasebuff[l];
               } else {
                 printf("ERROR: SNP %s with multiple alleles <%s,%s> and <%s,%s> does not pass the allele check.\n",
@@ -1396,7 +1303,6 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
 
           // no memory free here. later.
         } else {
-          // printf("Probe %s has no values.\n",curprb.c_str());
         }
       }
 
@@ -1618,47 +1524,6 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
   eqtlInfo eqtlinfo;
 
   for (int j = 0; j < epiNum; j++) {
-    //        typedef struct{
-    //            c std::vector<int> _esi_chr;
-    //            c std::vector<std::string> _esi_rs;
-    //            c std::vector<int> _esi_gd;
-    //            c std::vector<int> _esi_bp;
-    //            c std::vector<std::string> _esi_allele1;
-    //            c std::vector<std::string> _esi_allele2;
-    //            c std::vector<int> _esi_include; // initialized in the readesi
-    //            c std::map<std::string,int> _snp_name_map;
-    //            c std::vector<float> _esi_freq;
-    //
-    //            c std::vector<int> _epi_chr;
-    //            c std::vector<std::string> _epi_prbID;
-    //            c std::vector<int> _epi_gd;
-    //            c std::vector<int> _epi_bp;
-    //            c std::vector<std::string> _epi_gene;
-    //            c std::vector<char> _epi_orien;
-    //            c std::vector<int> _include; // initialized in the readepi
-    //            c std::map<std::string,int> _probe_name_map;
-    //            std::vector<double> _epi_var;
-    //            /* if no probe sequence region input, its size should be 0.
-    //               for the probe not for probe sequence file, the value should be
-    //               set as -9, no technical eQTL would be removed from this probe.
-    //             */
-    //            std::vector<int> _epi_start;
-    //            std::vector<int> _epi_end;
-    //
-    //            //for sparse
-    //            c std::vector<std::uint64_t> _cols;
-    //            c std::vector<std::uint32_t> _rowid;
-    //            c std::vector<float> _val;
-    //            // for dense
-    //            c std::vector< std::vector<float> > _bxz; // first dimension is probe, second is snp
-    //            c std::vector< std::vector<float> > _sexz;
-    //
-    //            std::uint64_t _probNum;
-    //            std::uint64_t _snpNum;
-    //            std::uint64_t _valNum;
-    //
-    //        } eqtlInfo;
-
     std::cout << eqtlinfo._esi_rs.size() << std::endl;
     std::cout << eqtlinfo._epi_prbID.size() << std::endl;
     std::cout << val.size() << std::endl;
@@ -1693,7 +1558,6 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
       read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
-        // No data included of this file of the current probe does not mean no data in other files of the current probe;
         continue;
       }
       if (eqtlinfo._valNum == 0) {
@@ -1792,17 +1656,8 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
           exit(EXIT_FAILURE);
         }
       }
-      // std::map<std::string, int> rsa_map;
-      //  long rsNum=0;
       for (int l = 0; l < rsid.size(); l++)  // here rsid is not in order, so the rowids in the file is not in order
       {
-        // if(fabs(_se[l]+9)>1e-6) // can move this. the NA is controled in slct_sparse_per_prb
-        // {
-        //    std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-        //   rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
-        //   selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
-        //  {
-
         if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
           val.push_back(_beta[l]);
           rowids.push_back(rsid[l]);
@@ -1818,49 +1673,7 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
           printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(), esi_a2[rsid[l]].c_str(),
                  _a1[l].c_str(), _a2[l].c_str());
           exit(EXIT_FAILURE);
-
-          // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should disable
-          // it.
-          /*
-          int did=-9;
-          float sig=1.0;
-          for(int m=0;m<esi_rs.size();m++)
-          {
-              if(esi_rs[m]==_rs[l])
-              {
-                  if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                  {
-                      did=m;
-                      break;
-                  }
-                  if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                  {
-                      did=m;
-                      sig=-1.0;
-                      break;
-                  }
-              }
-          }
-          if(did==-9)
-          {
-              printf("ERROR: This would not go to happen. Please report this bug.");
-              exit(EXIT_FAILURE);
-          }
-          val.push_back(sig*_beta[l]);
-          rowids.push_back(did);
-          tmpse.push_back(_se[l]);
-          tmprid.push_back(did);
-           */
         }
-
-        //     rsNum=rsa_map.size();
-        //  } else {
-        //     printf("WARNING: duplicate SNP %s with the same alleles belonging to the same probe %s.
-        //     \n",_rs[l].c_str(),prbname.c_str());
-        // }
-        //  } else {
-        //      printf("WARNING: SNP %s  with \"NA\" value found and skipped.\n",_rs[l].c_str());
-        //  }
       }
       for (int k = 0; k < tmpse.size(); k++) {
         val.push_back(tmpse[k]);
@@ -2100,7 +1913,6 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
           free(betasebuff);
 
         } else {
-          // printf("Probe %s has no values.\n",curprb.c_str());
         }
 
         if (snpinfo.size() > 0) {
@@ -2133,29 +1945,13 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
             exit(EXIT_FAILURE);
           }
           memset(betasebuff, 0, slct_idx.size() * 2 * sizeof(float));
-          /*
-           // have relaced this with rowidx
-          std::vector<std::string> _rs(slct_idx.size());
-          for(int l=0;l<slct_idx.size();l++) _rs[l]=snpinfo[slct_idx[l]].snprs;
-          std::vector<std::uint32_t> rsid(_rs.size());
-          for (int l = 0; l<_rs.size(); l++){
-              iter = esi_map.find(_rs[l]);
-              if (iter != esi_map.end()) rsid[l]=iter->second;
-              else {
-                  printf("ERROR: SNP is not in SNP map. if you are using --geno-uni, please disable it then try again.
-          Otherwise please report this bug."); exit(EXIT_FAILURE);
-              }
-          }
-           */
 
           for (int l = 0; l < slct_idx.size(); l++) {
-            // ridbuff[l]=rsid[l];
             ridbuff[l] = rowidx[slct_idx[l]];
             betasebuff[l] = snpinfo[slct_idx[l]].beta;
           }
 
           for (int l = 0; l < slct_idx.size(); l++) {
-            // ridbuff[l+slct_idx.size()]=rsid[l];
             ridbuff[l + slct_idx.size()] = rowidx[slct_idx[l]];
             betasebuff[l + slct_idx.size()] = snpinfo[slct_idx[l]].se;
           }
@@ -2272,13 +2068,11 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
           memset(betasebuff, 0, slct_idx.size() * 2 * sizeof(float));
 
           for (int l = 0; l < slct_idx.size(); l++) {
-            // ridbuff[l]=rsid[l];
             ridbuff[l] = rowidx[slct_idx[l]];
             betasebuff[l] = snpinfo[slct_idx[l]].beta;
           }
 
           for (int l = 0; l < slct_idx.size(); l++) {
-            // ridbuff[l+slct_idx.size()]=rsid[l];
             ridbuff[l + slct_idx.size()] = rowidx[slct_idx[l]];
             betasebuff[l + slct_idx.size()] = snpinfo[slct_idx[l]].se;
           }
@@ -2352,38 +2146,9 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
                  float transThres, float restThres, bool genouni, int addn) {
   std::vector<std::string> smasNames;
 
-  /*typedef struct{
-      char* snprs;
-      char* a1;
-      char* a2;
-      int snpchr;
-      int gd;
-      int bp;
-      float beta;
-      float se;
-      float freq;
-      float estn;
-  } snpinfolst;*/
   std::vector<snpinfolst> snpinfo;
 
-  /*typedef struct{
-      // string vector used to contain samp probed id but differenct file file name information.
-      std::vector<std::string> besdpath;
-      char* probeId;
-      char* genename;
-      int probechr;
-      int gd;
-      int bp;
-      char orien;
-      std::uint64_t vnum;
-      std::uint32_t* rowid;
-      float* beta_se;
-      snpinfolst* sinfo;
-
-  } probeinfolst2;*/
   std::vector<probeinfolst2> probeinfo;
-
-  // std::cout << "in the combineBesd function..." << std::endl;
 
   if (genouni) {
     printf(
@@ -2504,8 +2269,6 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
     else {
       if (sparsefnum == smasNames.size())
         save_besds_sbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, smasNames, addn);
-      // save_slct_sparses_sbesd(outFileName, probeinfo,esi_rs,esi_a1,esi_a2, cis_itvl,  trans_itvl,  transThres,
-      // restThres,smasNames,addn);
       else printf("hererheher\n");
       save_slct_besds_sbesd(outFileName, probeinfo, esi_rs, esi_a1, esi_a2, cis_itvl, trans_itvl, transThres, restThres,
                             smasNames, addn);
@@ -2607,8 +2370,6 @@ void get_snpinfo_cur_prb_sparse(std::vector<snpinfolst>& snpinfo, FILE* fptr, st
         snpinfo.push_back(snpinfotmp);
       }
 
-      // int sid=iter->second;
-      // std::cout<<rid<<":"<<etmp._esi_include[sid]<<std::endl; // test passed
       real_num++;
     }
   }
@@ -2975,7 +2736,6 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       get_snpinfo_cur_prb_sparse(snpinfo, fptr, pid, ptr, rowSTART, valSTART, &etmp, _incld_id_map, qcflag,
                                  rmTechnicaleQTL, techHit, ptech, pinsnp, pexsnp);
     else {
-      // get_snpinfo_cur_prb_dense(snpinfo,fptr, pid, &buffer ,&etmp);
       int probechr = etmp._epi_chr[pid];
       int hybridstart = -9;
       int hybridend = -9;
@@ -3099,11 +2859,6 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     for (int l = 0; l < rsid.size(); l++) {
       if (fabs(_se[l] + 9) > 1e-6)  // can move this. the NA is controled in slct_sparse_per_prb
       {
-        // std::string chckstr=_rs[l]+":"+_a1[l]+":"+_a2[l];
-        //  rsa_map.insert(std::pair<std::string,int>(chckstr,l)); // in slct_sparse_per_prb, ras_map can privent
-        //  selecting duplicate SNPs and double-slelecting SNPs. so we can move rsa_map here. if(rsNum<rsa_map.size())
-        //  {
-
         if (esi_a1[rsid[l]] == _a1[l] && esi_a2[rsid[l]] == _a2[l]) {
           val.push_back(_beta[l]);
           rowids.push_back(rsid[l]);
@@ -3119,46 +2874,9 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
           printf("Discrepant Allele pairs: (%s,%s) with (%s,%s).\n", esi_a1[rsid[l]].c_str(), esi_a2[rsid[l]].c_str(),
                  _a1[l].c_str(), _a2[l].c_str());
           exit(EXIT_FAILURE);
-
-          // this part is for multi-allelic SNPs. since we don't save multi-allelic SNPs anymore, so we should disable
-          // it.
-          /*
-          int did=-9;
-          float sig=1.0;
-          for(int m=0;m<esi_rs.size();m++)
-          {
-              if(esi_rs[m]==_rs[l])
-              {
-                  if(esi_a1[m]==_a1[l] && esi_a2[m]==_a2[l])
-                  {
-                      did=m;
-                      break;
-                  }
-                  if(esi_a1[m]==_a2[l] && esi_a2[m]==_a1[l])
-                  {
-                      did=m;
-                      sig=-1.0;
-                      break;
-                  }
-              }
-          }
-          if(did==-9)
-          {
-              printf("ERROR: This would not go to happen. Please report this bug.");
-              exit(EXIT_FAILURE);
-          }
-          val.push_back(sig*_beta[l]);
-          rowids.push_back(did);
-          tmpse.push_back(_se[l]);
-          tmprid.push_back(did);
-           */
         }
 
         rsNum = rsa_map.size();
-        //   } else {
-        //      printf("WARNING: duplicate SNP %s with the same alleles belonging to the same probe %s.
-        //      \n",_rs[l].c_str(),prbname.c_str());
-        //   }
       } else {
         printf("WARNING: SNP %s  with \"NA\" value found and skipped.\n", _rs[l].c_str());
       }

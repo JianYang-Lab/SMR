@@ -37,7 +37,6 @@ struct bInfo {
   std::vector<int> _chr;
   std::vector<std::string> _snp_name;
   std::unordered_map<std::string, int> _snp_name_map;  // snp name to snp index
-  // std::unordered_map<std::string,int> _snp_name_map;
 
   std::vector<double> _genet_dst;
   std::vector<int> _bp;
@@ -82,7 +81,6 @@ struct ldInfo {
   std::vector<std::string> _esi_allele2;
   std::vector<int> _esi_include;
   std::map<std::string, int> _snp_name_map;
-  // std::unordered_map<std::string,int> _snp_name_map;
 
   std::vector<float> _esi_freq;
 

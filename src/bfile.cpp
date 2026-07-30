@@ -458,19 +458,6 @@ bool make_XMat_subset(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, boo
     for (j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
   }
 
-  /*
-   // alternative method. a little different
-  if(divid_by_std){
-      std::vector<double> sd_SNP(m);
-      for (j = 0; j < m; j++){
-          k = bdata->_include[snp_indx[j]];
-          sd_SNP[j] = bdata->_mu[k]*(1.0 - 0.5 * bdata->_mu[k]);
-          if (fabs(sd_SNP[j]) < 1.0e-50) sd_SNP[j] = 0.0;
-          else sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
-      }
-      for (j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
-  }
-  */
   return true;
 }
 
@@ -494,21 +481,11 @@ void makex_xVec_subset(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid
     else sd_SNP = sqrt(1.0 / sd_SNP);
     x *= sd_SNP;
   }
-  /*
-  if(divid_by_std)
-  {
-      double sd_SNP = bdata->_mu[k]*(1.0 - 0.5 * bdata->_mu[k]);
-      if (fabs(sd_SNP) < 1.0e-50) sd_SNP = 0.0;
-      else sd_SNP = sqrt(1.0 / sd_SNP);
-      x*=sd_SNP;
-  }
-   */
 }
 
 void initX(bInfo* bdata, MatrixXf& X, long snpnum) {
   std::vector<int> snpids(snpnum);
   for (int i = 0; i < snpnum; i++) snpids[i] = i;
-  // make_XMat(bdata, snpids,X,true); //centered
   make_XMat_subset(bdata, X, snpids, true);
 }
 
@@ -645,15 +622,6 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   if (snplstName != nullptr) extract_snp(&bdata, snplstName);
   if (snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
 
-  // int mym=getMaxNum(&bdata,ldWind, cols);
-
-  // std::uint64_t myValnum=cols[bdata._include.size()];
-
-  // std::cout << "myValnum:" << myValnum << std::endl;
-  // std::cout << "return....." << std::endl;
-
-  // return;
-
   read_bedfile(&bdata, std::string(bFileName) + ".bed");
   if (bdata._mu.empty()) calcu_mu(&bdata);
   if (maf > 0) filter_snp_maf(&bdata, maf);
@@ -666,14 +634,6 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     m = (int)bdata._include.size();
     bitmod = false;
   }
-
-  // for(int i=0;i<bdata._include.size();i++)
-  //  {
-  //      if(cols[i] < 0)
-  //      {
-  //          std::cout << "i:" << i << " cols[i]:" << cols[i] << std::endl;
-  //      }
-  //  }
 
   write_smr_esi(outFileName, &bdata);
   std::string bldname = std::string(outFileName) + ".bld";
@@ -713,7 +673,6 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     int chri = bdata._chr[bdata._include[i]];
     int bpi = bdata._bp[bdata._include[i]];
 
-    // clock_t begin_time = clock();
     VectorXf ldv = X.col(start) / (X.rows() - 1);
     ldv = X.transpose() * ldv;
     // ldv是一个snp个数*1的矩阵，表示各个snp和start snp的关系
@@ -741,21 +700,16 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     }
     if (ed >= 0 && st >= 0) fwrite(&ldv(st), sizeof(float), ed - st + 1, outfile);
 
-    // printf(" cost2: %f ms.\n",float( clock () - begin_time ) /  1000);
-    // begin_time = clock();
     if (i + m < bdata._include.size()) {
       makex_xVec_subset(&bdata, i + m, x, false, true);
       X.col(start) = x;
     }
-    // printf(" cost3: %f ms.\n",float( clock () - begin_time ) /  1000);
   }
   if (vc != valnum) {
     printf("Error: predicted number vs observed number: %ld, %llu.\n", vc, valnum);
     printf("Please repot this bug.\n");
     exit(EXIT_FAILURE);
   }
-  // std::cout << "vc:" << vc << std::endl;
-  // std::cout << "valnum:" << valnum << std::endl;
   fclose(outfile);
   printf("LD information is saved in the binary file %s.\n", bldname.c_str());
 }
@@ -799,8 +753,6 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
         feqwarning = true;
       }
     } else if (strlist.size() > colnum) {
-      // printf("WARNING: Line %u has more than %d items. The first %d columns would be used. \n",
-      // line_idx,colnum,colnum);
     }
 
     ldinfo->_snp_name_map.emplace(strlist[1], line_idx);
@@ -817,12 +769,8 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
         chrwarning = true;
       }
     } else if (atoi(strlist[0].c_str()) == 0) {
-      // printf("WARNING: unrecongized chromosome found. This chromosome is set to 0:\n");
-      // printf("%s\n",Tbuf);
       ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
     } else if (atoi(strlist[0].c_str()) > 24 || atoi(strlist[0].c_str()) < 0) {
-      // printf("WARNING: abmormal chromosome found:\n");
-      // printf("%s\n",Tbuf);
       ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
     } else ldinfo->_esi_chr.push_back(atoi(strlist[0].c_str()));
 
@@ -837,7 +785,6 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
     else ldinfo->_esi_bp.push_back(atoi(strlist[3].c_str()));
     if (strlist[4] == "NA" || strlist[4] == "na") {
       if (!allele1warning) {
-        // printf("WARNING: At least one reference allele is missing.\n");
         allele1warning = true;
       }
     }
@@ -845,7 +792,6 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
     ldinfo->_esi_allele1.push_back(strlist[4].c_str());
     if (strlist[5] == "NA" || strlist[5] == "na") {
       if (!allele2warning) {
-        // printf("WARNING: At least one alternative allele is missing.\n");
         allele2warning = true;
       }
     }
@@ -854,7 +800,6 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
     if (strlist.size() == colnum) {
       if (strlist[6] == "NA" || strlist[6] == "na") {
         if (!orienwarning) {
-          // printf("WARNING: frequency is \"NA\" in one or more rows.\n");
           orienwarning = true;
         }
         ldinfo->_esi_freq.push_back(-9);

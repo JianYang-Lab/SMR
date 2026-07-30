@@ -95,7 +95,6 @@ void CommFunc::read_msglist(const std::string& msglistfile, std::vector<std::str
 std::string CommFunc::dtos(double value) {
   std::stringstream ss;
   ss << std::scientific << value;
-  // ss << std::fixed << std::setprecision(400) << __value;
   return (ss.str());
 }
 

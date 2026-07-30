@@ -64,7 +64,6 @@ struct eqtlInfo {
   std::vector<std::string> _esi_allele1;
   std::vector<std::string> _esi_allele2;
   std::vector<int> _esi_include;  // snp indices (lineNum in *.esi file), initialized in the readesi
-  // std::map<std::string,int> _snp_name_map;
   std::unordered_map<std::string, int> _snp_name_map;
 
   std::vector<float> _esi_freq;

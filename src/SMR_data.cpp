@@ -372,7 +372,6 @@ void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr) {
         eqtlinfo->_esi_freq.push_back(atof(cols[6].c_str()));
       }
     } else {
-      // printf("WARNING: frequency column missing.\n");
       eqtlinfo->_esi_freq.push_back(-9);
     }
 
@@ -495,11 +494,9 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snp
         eqtlinfo->_esi_freq.push_back(atof(cols[6].c_str()));
       }
     } else {
-      // printf("WARNING: frequency column missing.\n");
       eqtlinfo->_esi_freq.push_back(-9);
     }
 
-    // eqtlinfo->_esi_include.push_back(chrSnpNum);
     eqtlinfo->_esi_include.push_back(lineNum);
     lineNum++;
     chrSnpNum++;
@@ -647,49 +644,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
   besd.read(SIGN, 4);
   std::uint32_t gflag = *(std::uint32_t*)SIGN;
-  /*
-  if(gflag==4){
-      // clear datastruct for sparse befor read dense
-      eqtlinfo->_cols.clear();
-      eqtlinfo->_rowid.clear();
-      eqtlinfo->_val.clear();
-      eqtlinfo->_valNum = 0;
-      std::uint64_t memsize2use=eqtlinfo->_include.size()*eqtlinfo->_esi_include.size()*2*sizeof(float);
-      if(memsize2use>0x200000000) printf("WARNING: %llu GB should be allocated for your besd file.\n",memsize2use>>30);
-      eqtlinfo->_bxz.resize(eqtlinfo->_include.size());
-      eqtlinfo->_sexz.resize(eqtlinfo->_include.size());
-      for(unsigned int i=0;i<eqtlinfo->_include.size();i++)
-      {
-          eqtlinfo->_bxz[i].resize(eqtlinfo->_esi_include.size());
-          eqtlinfo->_sexz[i].resize(eqtlinfo->_esi_include.size());
-      }
-      char* buffer;
-      buffer = (char*) malloc (sizeof(char)*eqtlinfo->_snpNum<<3);
-      if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
-      float* ft;
-      float* se_ptr;
-
-          for(int j=0;j<eqtlinfo->_esi_include.size();j++)
-          {
-              unsigned long sid=eqtlinfo->_esi_include[j];
-              besd.seekg(((sid<<1)*eqtlinfo->_probNum+1)<<2);
-              memset(buffer,0,sizeof(char)*eqtlinfo->_probNum<<3);
-              besd.read(buffer,eqtlinfo->_probNum<<3);
-              ft=(float *)buffer;
-              for (int i = 0; i<eqtlinfo->_include.size(); i++) eqtlinfo->_bxz[i][j] = *(ft + eqtlinfo->_include[i]);
-              se_ptr = ft + eqtlinfo->_probNum;
-              for (int i = 0; i<eqtlinfo->_include.size(); i++) eqtlinfo->_sexz[i][j] = *(se_ptr +
-  eqtlinfo->_include[i]);
-          }
-          if(prtscr)  std::cout << "eQTL summary-level statistics of " << eqtlinfo->_include.size() << " Probes and " <<
-  eqtlinfo->_esi_include.size() << " SNPs to be included from [" + besdfile + "]." << std::endl;
-          if(eqtlinfo->_include.size()<eqtlinfo->_probNum ) update_epi(eqtlinfo);
-          if(eqtlinfo->_esi_include.size()<eqtlinfo->_snpNum) update_esi(eqtlinfo);
-
-          free(buffer);
-
-  }
-   */
   std::cout << "gflag:" << gflag << std::endl;
 
   if (gflag == 0x40000000) {
@@ -766,11 +720,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
           if (iter != _incld_id_map.end()) {
             int sid = iter->second;
 
-            // long
-            // sid=std::find(eqtlinfo->_esi_include.begin(),eqtlinfo->_esi_include.end(),rid)-eqtlinfo->_esi_include.begin();
-            // //slow
-            //  if(sid<eqtlinfo->_esi_include.size())
-            //  {
             eqtlinfo->_rowid.push_back(sid);
             eqtlinfo->_val.push_back(*(val_ptr + pos + j));
             real_num++;
@@ -872,97 +821,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
     } else {
       // without --extract-probe, read with less I/O. and need not to update epi.
       // read with static buffer. If dynamic buffer, 2GB per I/O can be more efficient.
-      /*
-       unsigned long long count=0;
-       while(!besd.eof())
-       {
-       besd.read(buf,MAX_LINE_NUM);
-       unsigned long Bread=besd.gcount();
-       buf[Bread]='\0';
-       char* ptr=buf;
-       //while(*ptr != '\0') //can not use this, too many 0x00 in buf
-       while(Bread)
-       {
-       unsigned long pid=count/eqtlinfo->_snpNum;
-       unsigned long sid=count++%eqtlinfo->_snpNum;
-       ft=(float *)ptr;
-       if(pid&1) eqtlinfo->_sexz[pid>>1][sid]=*ft;
-       else eqtlinfo->_bxz[pid>>1][sid]=*ft;
-       ptr+=4;
-       Bread-=4;
-       }
-       }
-       std::cout<<"eQTL summary-level statistics of "<<eqtlinfo->_probNum<<" Probes and "<<eqtlinfo->_snpNum<<" SNPs to
-       be included from [" + besdfile + "]." <<std::endl;
-       */
-
-      /*
-
-       // besd.seekg(0,besd.end);
-       // std::uint64_t lSize = besd.tellg();
-       //  lSize-=4;
-       //  besd.seekg(4); // same as besd.seekg(4, besd.beg);
-       std::uint64_t alread=0;
-
-       char* buff;
-       std::uint64_t buffszie=0x40000000;
-       buff = (char*) malloc (sizeof(char)*buffszie);
-       if (buff == nullptr) {fputs ("Memory error",stderr); exit (1);}
-       memset(buff,0,sizeof(char)*buffszie);
-       std::uint64_t count=0;
-       while(!besd.eof())
-       {
-       besd.read(buff,buffszie);
-       unsigned long Bread=besd.gcount();
-       alread+=Bread;
-       char* ptr=buff;
-       while(Bread)
-       {
-       unsigned long pid=count/eqtlinfo->_snpNum;
-       unsigned long sid=count++%eqtlinfo->_snpNum;
-       ft=(float *)ptr;
-       if(pid&1) eqtlinfo->_sexz[pid>>1][sid]=*ft;
-       else eqtlinfo->_bxz[pid>>1][sid]=*ft;
-       ptr+=4;
-       Bread-=4;
-       }
-       std::cout<<alread<<":"<<(alread>>30)<<"GB "<<std::endl;
-       }
-       std::cout<<"eQTL summary-level statistics of "<<eqtlinfo->_probNum<<" Probes and "<<eqtlinfo->_snpNum<<" SNPs to
-       be included from [" + besd file + "]." <<std::endl; free(buff);
-       */
-
-      /*
-      char* buff;
-      std::uint64_t buffszie=0x40000000;
-      buff = (char*) malloc (sizeof(char)*buffszie);
-      if (buff == nullptr) {fputs ("Memory error",stderr); exit (1);}
-      memset(buff,0,sizeof(char)*buffszie);
-
-      std::uint64_t perbeta=(eqtlinfo->_snpNum<<2);
-      std::uint64_t probonce=sizeof(char)*buffszie/perbeta;  //should be even number
-      probonce>>=1;
-      probonce<<=1;
-      std::uint64_t readsize=perbeta*probonce;
-      std::uint64_t probcount=0;
-      while(!besd.eof())
-      {
-          besd.read(buff,readsize);
-          unsigned long Bread=besd.gcount();
-          float* rptr=(float *)buff;
-          while(Bread)
-          {
-              memcpy(&eqtlinfo->_bxz[probcount][0],rptr,perbeta);
-              rptr+=eqtlinfo->_snpNum;
-              memcpy(&eqtlinfo->_sexz[probcount++][0],rptr,perbeta);
-              rptr+=eqtlinfo->_snpNum;
-              Bread-=(perbeta<<1);
-          }
-           std::cout<<probcount<<" done! "<<std::endl;
-      }
-      std::cout<<"eQTL summary-level statistics of "<<eqtlinfo->_probNum<<" Probes and "<<eqtlinfo->_snpNum<<" SNPs to
-      be included from [" + besdfile + "]." <<std::endl; free(buff);
-       */
 
       char* buff;
       std::uint64_t buffszie = 0x40000000;
@@ -1141,8 +999,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
     besd.read(SIGN, sizeof(std::uint64_t));
     valNum = *(std::uint64_t*)SIGN;
 
-    // std::cout << "valNum: " << valNum << std::endl;
-
     if (gflag == SPARSE_FILE_TYPE_3F) {
       if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
                    valNum * sizeof(std::uint32_t) + valNum * sizeof(float)) !=
@@ -1190,8 +1046,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
         size = _incld_id_map.size();
       }
 
-      // std::cout << "_incld_id_map.size():" << _incld_id_map.size() << std::endl;
-
       std::uint64_t rowSTART = 0;
       std::uint64_t valSTART = 0;
       if (gflag == SPARSE_FILE_TYPE_3F) {
@@ -1204,21 +1058,15 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
                    valNum * sizeof(std::uint32_t);
       }
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-        // std::cout << "eqtlinfo->_include[i]: " << eqtlinfo->_include[i] << std::endl;
         std::uint32_t pid = eqtlinfo->_include[i];
         std::uint64_t pos = *(ptr + (pid << 1));       // BETA START
         std::uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
         std::uint64_t num = pos1 - pos;
 
-        // std::cout << "pid: " << pid << std::endl;
-        // std::cout << "pos: " << pos << std::endl;
-        // std::cout << "pos1: " << pos1 << std::endl;
-
         std::uint64_t real_num = 0;
         if (num == 0) {
           eqtlinfo->_cols[(i << 1) + 1] = eqtlinfo->_cols[i << 1];
           eqtlinfo->_cols[(i + 1) << 1] = eqtlinfo->_cols[i << 1];
-          // printf("WARNING: Probe %s with no eQTL found.\n",eqtlinfo->_epi_prbID[pid].c_str());
           continue;
         }
         char* row_char_ptr = nullptr;
@@ -1247,17 +1095,10 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
           std::map<int, int>::iterator iter;
           iter = _incld_id_map.find(rid);
           if (iter != _incld_id_map.end()) {
-            // std::cout << "_incld_id_map found, j: " << j << std::endl;
-            // std::cout << "_incld_id_map found, rid: " << rid << std::endl;
-
             int sid = iter->second;
 
             eqtlinfo->_rowid.push_back(sid);
             eqtlinfo->_val.push_back(*(val_ptr + j));
-
-            // std::cout << "*(val_ptr+j):" << *(val_ptr+j) << std::endl;
-
-            // printf("%d %s ", sid, *(val_ptr+j)); //注意：这一行会导致segment fault，还不确定是为什么
 
             real_num++;
           }
@@ -1269,15 +1110,12 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       }
       eqtlinfo->_valNum = eqtlinfo->_val.size();
 
-      // std::cout << "eqtlinfo->_valNum: " << eqtlinfo->_valNum << std::endl;
-
       if (prtscr)
         std::cout << "eQTL summary data of " << eqtlinfo->_include.size()
                   << " Probes to be included from [" + besdfile + "]." << std::endl;
       update_epi(eqtlinfo);
       update_esi(eqtlinfo);
     } else {
-      // std::cout << "lSize: " << lSize << std::endl;
       buffer = (char*)malloc(sizeof(char) * (lSize));
       if (buffer == nullptr) {
         fputs("Memory error", stderr);
@@ -1303,18 +1141,11 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
-      // std::cout << "colNum: " << colNum << std::endl;
-      // std::cout << "valNum: " << valNum << std::endl;
-
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       std::uint32_t* ptr4B = (std::uint32_t*)ptr;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
       float* val_ptr = (float*)ptr4B;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
-
-      // std::cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << std::endl;
-      // std::cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << std::endl;
-      // std::cout << "eqtlinfo->_val[0]: " << eqtlinfo->_val[0] << std::endl;
 
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -1330,12 +1161,6 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
         << std::endl;
   }
   besd.close();
-  /*
-  if(eqtlinfo->_rowid.empty() && eqtlinfo->_bxz.empty())
-  {
-      printf("NO data included from eQTL summary data %s, please check.\n",besdfile.c_str()); exit (EXIT_FAILURE);
-  }
-   */
 }
 
 void filter_probe_null(eqtlInfo* eqtlinfo) {
@@ -1513,17 +1338,6 @@ double bxy_hetero3(VectorXd& _byz, VectorXd& _bxz, VectorXd& _seyz, VectorXd& _s
     VectorXd lambda;
     lambda = es.eigenvalues();
 
-    /*
-     EigenSolver<MatrixXd> es(A);
-     std::cout << "The eigenvalues of A are:" << std::endl << es.eigenvalues() << std::endl;
-     std::cout<< es.eigenvalues().transpose()<<std::endl;
-     */
-
-    /*
-     MatrixXd D = es.pseudoEigenvalueMatrix();
-     std::cout << "The pseudo-eigenvalue matrix D is:" << std::endl << D << std::endl;
-    */
-
     pdev = pchisqsum(sumChisq_dev, lambda);
     *snp_num = lambda.size();
 
@@ -1598,17 +1412,6 @@ float bxy_mltheter_so(VectorXd& _byz, VectorXd& _bxz, VectorXd& _seyz, VectorXd&
     SelfAdjointEigenSolver<MatrixXd> es(covbxy);
     VectorXd lambda;
     lambda = es.eigenvalues();
-
-    /*
-     EigenSolver<MatrixXd> es(A);
-     std::cout << "The eigenvalues of A are:" << std::endl << es.eigenvalues() << std::endl;
-     std::cout<< es.eigenvalues().transpose()<<std::endl;
-     */
-
-    /*
-     MatrixXd D = es.pseudoEigenvalueMatrix();
-     std::cout << "The pseudo-eigenvalue matrix D is:" << std::endl << D << std::endl;
-     */
 
     pdev = pchisqsum(sumChisq_dev, lambda);
     *snp_num = lambda.size();
@@ -2669,23 +2472,6 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
             }
           }
 
-          /*
-          for(int j=0;j<etrait->_probNum;j++)
-          {
-              std::uint64_t beta_start=etrait->_cols[j<<1];
-              std::uint64_t se_start=etrait->_cols[1+(j<<1)];
-              std::uint64_t numsnps=se_start-beta_start;
-              for(int k=0;k<numsnps;k++)
-              {
-                  std::uint32_t ge_rowid=etrait->_rowid[beta_start+k];
-                  if(ge_rowid==gdId[i])
-                  {
-                      etrait->_val[beta_start+k]=-1*etrait->_val[beta_start+k];
-                      break; //the rowid in a probe is unique.
-                  }
-              }
-          }
-           */
         } else {
           int gid = gdId[i];
           for (int j = 0; j < etrait->_include.size(); j++)
@@ -2719,24 +2505,6 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
               if (count & 1) etrait->_val[j] = -etrait->_val[j];
             }
           }
-
-          /*
-          for(int j=0;j<etrait->_probNum;j++)
-          {
-              std::uint64_t beta_start=etrait->_cols[j<<1];
-              std::uint64_t se_start=etrait->_cols[1+(j<<1)];
-              std::uint64_t numsnps=se_start-beta_start;
-              for(int k=0;k<numsnps;k++)
-              {
-                  std::uint32_t ge_rowid=etrait->_rowid[beta_start+k];
-                  if(ge_rowid==gdId[i])
-                  {
-                      etrait->_val[beta_start+k]=-1*etrait->_val[beta_start+k];
-                      break; //the rowid in a probe is unique.
-                  }
-              }
-          }
-          */
 
         } else {
           int gid = gdId[i];
@@ -3387,8 +3155,6 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
             smrwk->allele2.push_back(esdata->_esi_allele2[j]);
             if (refSNP != nullptr && esdata->_esi_rs[j] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[j]);
-            // std::cout << "bdata->_include[j], snp rowid:" << bdata->_include[j] << std::endl;
-            // std::cout << "bdata->_mu:" << bdata->_mu[bdata->_include[j]] << std::endl;
             if (!heidioffFlag)
               smrwk->freq.push_back(bdata->_mu[bdata->_include[j]] /
                                     2);  // for bdata, _include should be used with j, for others, fine.
@@ -3441,9 +3207,6 @@ long fill_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk, 
           }
 
         } else {
-          // if (esdata->_esi_rs[ge_rowid] == "rs1539790") {
-          //         std::cout << "rs1539790 es ge_rowid:" << ge_rowid << std::endl;
-          // }
           smrwk->bxz.push_back((double)esdata->_val[beta_start + j]);
           smrwk->sexz.push_back((double)esdata->_val[se_start + j]);
           smrwk->zxz.push_back((double)esdata->_val[beta_start + j] / (double)esdata->_val[se_start + j]);
@@ -3540,11 +3303,6 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
     std::uint64_t beta_start = esdata->_cols[i << 1];
     std::uint64_t se_start = esdata->_cols[1 + (i << 1)];
     std::uint64_t numsnps = se_start - beta_start;
-    // std::cout << "numsnps: " << numsnps << std::endl;
-    // std::cout << "gdata.seyz.size(): " << gdata->seyz.size() << std::endl;
-    // for (int mj=0;mj<10;mj++) {
-    //     std::cout << "common snps top 10:" << esdata->_esi_rs[mj] << std::endl;
-    // }
     for (int j = 0; j < numsnps; j++) {
       int ge_rowid = esdata->_rowid[beta_start + j];
       int snpbp = esdata->_esi_bp[ge_rowid];
@@ -3566,12 +3324,6 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
             smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
             if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
             smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
-            // std::cout << "es ge_rowid:" << ge_rowid << std::endl;
-            // std::cout << "snp name:" << esdata->_esi_rs[ge_rowid] << " freq:" <<
-            // ldinfo->_esi_freq[ldinfo->_esi_include[j]] << std::endl; std::cout << "snp name:" <<
-            // esdata->_esi_rs[ge_rowid] << " ge_rowid freq:" << ldinfo->_esi_freq[ldinfo->_esi_include[ge_rowid]] <<
-            // std::endl; if(!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]); else
-            // smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
             if (!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[ge_rowid]]);
             else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
           } else {
@@ -3590,16 +3342,6 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
           }
 
         } else {
-          /*if (esdata->_esi_rs[ge_rowid] == "rs1539790") {
-              std::cout << "rs1539790 es ge_rowid:" << ge_rowid << std::endl;
-          }
-
-          if (smrwk->freq.size()==836) {
-
-              std::cout << "freq size== 836, es ge_rowid:" << ge_rowid << std::endl;
-
-          }*/
-
           smrwk->bxz.push_back(esdata->_val[beta_start + j]);
           smrwk->sexz.push_back(esdata->_val[se_start + j]);
           smrwk->zxz.push_back(esdata->_val[beta_start + j] / esdata->_val[se_start + j]);
@@ -3611,15 +3353,8 @@ long fill_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK* smrwk
           smrwk->snpchrom.push_back(esdata->_esi_chr[ge_rowid]);
           smrwk->allele1.push_back(esdata->_esi_allele1[ge_rowid]);
           smrwk->allele2.push_back(esdata->_esi_allele2[ge_rowid]);
-          // std::cout << "es ge_rowid:" << ge_rowid << std::endl;
-          // std::cout << "snp name:" << esdata->_esi_rs[ge_rowid] << " freq:" <<
-          // ldinfo->_esi_freq[ldinfo->_esi_include[j]]
-          // << std::endl; std::cout << "snp name:" << esdata->_esi_rs[ge_rowid] << " ge_rowid freq:" <<
-          // ldinfo->_esi_freq[ldinfo->_esi_include[ge_rowid]] << std::endl;
           if (refSNP != nullptr && esdata->_esi_rs[ge_rowid] == std::string(refSNP)) maxid = (smrwk->rs.size() - 1);
           smrwk->bpsnp.push_back(esdata->_esi_bp[ge_rowid]);
-          // if(!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[j]]);
-          // else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
           if (!heidioffFlag) smrwk->freq.push_back(ldinfo->_esi_freq[ldinfo->_esi_include[ge_rowid]]);
           else smrwk->freq.push_back(esdata->_esi_freq[ge_rowid]);
         }
@@ -3699,7 +3434,6 @@ long fill_trans_smr_wk(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata, SMRWK* s
       int snpchr = esdata->_esi_chr[ge_rowid];
       if (snpchr == topTransChr[tridx] && abs(topTransBP[tridx] - snpbp) <= trans_itvl &&
           gdata->seyz[ge_rowid] + 9 > 1e-6) {
-        // topTransBP[jj]==esdata._esi_bp[esdata._rowid[esdata._cols[i<<1]+topTransRowid[jj]]];
         smrwk->bxz.push_back(esdata->_val[beta_start + j]);
         smrwk->sexz.push_back(esdata->_val[se_start + j]);
         smrwk->zxz.push_back(esdata->_val[beta_start + j] / esdata->_val[se_start + j]);
@@ -3791,7 +3525,6 @@ long fill_trans_smr_wk(ldInfo* ldinfo, gwasData* gdata, eqtlInfo* esdata, SMRWK*
       int snpchr = esdata->_esi_chr[ge_rowid];
       if (snpchr == topTransChr[tridx] && abs(topTransBP[tridx] - snpbp) <= trans_itvl &&
           gdata->seyz[ge_rowid] + 9 > 1e-6) {
-        // topTransBP[jj]==esdata._esi_bp[esdata._rowid[esdata._cols[i<<1]+topTransRowid[jj]]];
         smrwk->bxz.push_back(esdata->_val[beta_start + j]);
         smrwk->sexz.push_back(esdata->_val[se_start + j]);
         smrwk->zxz.push_back(esdata->_val[beta_start + j] / esdata->_val[se_start + j]);
@@ -4037,16 +3770,12 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   MatrixXd _X;
   std::vector<int> sn_ids;
   double pthres = pchisq(threshold, 1);
-  // printf("Filtering SNPs (%ld in total) at eQTL p-value < %e for the HEIDI test.\n",smrwk->zxz.size(), pthres);
   for (int i = 0; i < smrwk->zxz.size(); i++) {
     if (smrwk->zxz[i] * smrwk->zxz[i] - threshold > 1e-6) sn_ids.push_back(i);
   }
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: the HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
-  // printf("%ld SNPs left after filtering.\n",sn_ids.size());
   update_snidx(smrwk, sn_ids, MAX_NUM_LD, "LD pruning");
 
   SMRWK smrwk_heidi;
@@ -4057,13 +3786,6 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   spdlog::debug("Removing SNPs with LD r-squared between top-SNP {:<11} > {} or < {}...",
                 smrwk_heidi.rs[maxid_heidi].c_str(), ldr2_top, ld_min);
   ld_calc_o2m(ld_v, maxid_heidi, _X);
-
-  /*for (int i=0;i<ld_v.size();i++) {
-      std::cout << "ld_v(i): " << i << " , " << ld_v(i) << std::endl;
-      std::cout << "xxx" << std::endl;
-      std::cout << "xxx" << std::endl;
-      std::cout << "xxx" << std::endl;
-  }*/
 
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
     sn_ids.clear();
@@ -4079,34 +3801,20 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   spdlog::debug("{:3d} SNPs are removed and {:3d} SNPs are retained.", smrwk_heidi.zxz.size() - sn_ids.size(),
                 sn_ids.size());
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
 
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   maxid_heidi = max_abs_id(smrwk_heidi.zxz);
 
-  // printf("Removing one of each pair of remaining SNPs with LD r-squared > %f...\n",ldr2_top);
   int m = (int)smrwk_heidi.bxz.size();
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
 
-  /*long crows = C.rows();
-  long ccols = C.cols();
-  std::cout << "heidi test new before rm_cor_sbat crows: " << crows << " ccols: " << ccols << std::endl;
-  for (int i=0;i<ccols;i++) {
-      std::cout << "heidi test new C(0,i):" << i << "  " << C(0,i) << std::endl;
-  }*/
-
   double ld_top = sqrt(ldr2_top);
   if (ld_top < 1) rm_cor_sbat(C, ld_top, m, rm_ID1);
-  // printf("%ld SNPs are removed and %ld SNPs (including the top SNP %s) are
-  // retained.\n",rm_ID1.size(),m-rm_ID1.size(),smrwk_heidi.rs[maxid_heidi].c_str());
   if (m - rm_ID1.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", m-rm_ID1.size(),
-    // m_hetero);
     return -9;
   }
 
@@ -4151,7 +3859,6 @@ double heidi_test_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double thresh
   if (sampleoverlap) pdev = bxy_mltheter_so(_byz, _bxz, _seyz, _sexz, _zsxz, C, &nsnp, theta);
   else pdev = bxy_hetero3(_byz, _bxz, _seyz, _sexz, _zsxz, C, &nsnp);
 
-  // printf("pHeidi is %e with %ld SNPs including in the HEIDI test.\n",pdev,nsnp);
   return pdev;
 }
 
@@ -4263,9 +3970,6 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
         ld_top, ld_min, ld_top);
   }
 
-  // float progr0=0.0 , progr1;
-  // progress_print(progr0);
-
   cis_itvl = cis_itvl * 1000;
   double cr = 0;
   for (int ii = 0; ii < probNum; ii++) {
@@ -4283,10 +3987,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
         specifiedsnp = iter->second;
         if (targetLstFlg) {
           refSNP = specifiedsnp.c_str();
-          // printf("The target SNP %s of probe %s extracted from the target SNP - probe
-          // list.\n",refSNP,probename.c_str());
         }  // else printf("The SNP %s of probe %s extracted from the SNP - probe
-           // list.\n",specifiedsnp.c_str(),probename.c_str());
       } else {
         printf("Can't happen. Please report.\n");
         continue;
@@ -4311,26 +4012,22 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
         maxid = fill_trans_smr_wk(bdata, gdata, esdata, &smrwk, topTransRowid, topTransBP, topTransChr, refSNP,
                                   cis_itvl, cis_itvl, heidioffFlag, 0);
       } else {
-        // printf("WARNING: can't find target SNP %s for probe %s from .epi file.\n",refSNP, probename.c_str());
         continue;
       }
 
     } else maxid = fill_smr_wk(bdata, gdata, esdata, &smrwk, refSNP, cis_itvl, heidioffFlag);
 
     if (refSNP != nullptr && maxid == -9) {
-      // printf("WARNING: can't find target SNP %s for probe %s.\n",refSNP, probename.c_str());
       continue;
     }
     if (smrwk.bxz.size() == 0) {
       noSNPprb++;
-      // printf("WARNING: no SNP fetched for probe %s.\n", probename.c_str());
       continue;
     }
 
     Map<VectorXd> ei_bxz(&smrwk.bxz[0], smrwk.bxz.size());
     Map<VectorXd> ei_sexz(&smrwk.sexz[0], smrwk.sexz.size());
     if (sampleoverlap) {
-      // printf("Estimating the correlation ...\n");
       double z2mecs = qchisq(pmecs, 1);
       double zmecs = sqrt(z2mecs);
       std::vector<double> zxz, zyz;
@@ -4343,12 +4040,9 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
         }
       }
       if (zxz.size() < minCor) {
-        // printf("WARNING: less than %d common SNPs obtained from the cis-region of probe %s at a p-value threshold
-        // %5.2e.\n ", minCor,probename.c_str(), pmecs); printf("probe %s is skipped.\n ", probename.c_str());
         continue;
       } else {
         theta = cor(zxz, zyz);
-        // printf("The estimated correlation is %f.\n",theta);
       }
     }
     zsxz = ei_bxz.array() / ei_sexz.array();
@@ -4359,57 +4053,18 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     }
     if (maxid == -9) {
       noSNPprbPassthresh++;
-      // printf("WARNING: no SNP passed the p-value threshold %e for the SMR analysis for probe %s.\n", p_smr,
-      // probename.c_str());
       continue;
     }
     double pxz_val = pchisq(zsxz[maxid] * zsxz[maxid], 1);
 
     if (refSNP == nullptr && pxz_val > p_smr) {
       noSNPprbPassthresh++;
-      // printf("WARNING: no SNP passed the p-value threshold %e for the SMR analysis for probe %s.\n", p_smr,
-      // probename.c_str());
       continue;
     } else {
-      // printf("Analysing probe %s...\n", probename.c_str());
     }
 
     /*****test***/
-    //            std::string failName= probename+".expo";
-    //            FILE* failfptr=fopen(failName.c_str(),"w");
-    //            if(failfptr==nullptr)
-    //            {
-    //                printf("ERROR: failed in open file %s.\n",failName.c_str()) ;
-    //                exit(EXIT_FAILURE);
-    //            }
-    //            for(int k=0; k<smrwk.bxz.size();k++)
-    //            {
-    //                std::string snpstr=smrwk.rs[k] + '\t' + atos(smrwk.bxz[k]) + '\t' + atos(smrwk.sexz[k]) + '\n';
-    //                if(fputs_checked(snpstr.c_str(),failfptr))
-    //                {
-    //                    printf("ERROR: in writing file %s .\n", failName.c_str());
-    //                    exit(EXIT_FAILURE);
-    //                }
     //
-    //            }
-    //            fclose(failfptr);
-    //            failName= probename+".outo";
-    //            failfptr=fopen(failName.c_str(),"w");
-    //            if(failfptr==nullptr)
-    //            {
-    //                printf("ERROR: failed in open file %s.\n",failName.c_str()) ;
-    //                exit(EXIT_FAILURE);
-    //            }
-    //            for(int k=0; k<smrwk.byz.size();k++)
-    //            {
-    //                std::string snpstr=smrwk.rs[k] + '\t' + atos(smrwk.byz[k]) + '\t' + atos(smrwk.seyz[k]) + '\n';
-    //                if(fputs_checked(snpstr.c_str(),failfptr))
-    //                {
-    //                    printf("ERROR: in writing file %s .\n", failName.c_str());
-    //                    exit(EXIT_FAILURE);
-    //                }
-    //            }
-    //            fclose(failfptr);
 
     /******/
 
@@ -4458,8 +4113,6 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
     }
 
     if (heidioffFlag || pxy_val > heidiskipthresh) {
-      //  printf("INFO: the HEIDI test for probe %s is skipped because HEIDI test is turned off by the --heidi-off
-      //  option or p_SMR does not pass the %e threshold.\n", probename.c_str(),threshpsmrest);
       if (smr) {
         outstr += std::string("NA") + '\t' + std::string("NA") + '\n';
         if (fputs_checked(outstr.c_str(), smr)) {
@@ -4475,54 +4128,6 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
 
     } else {
       /****Generate the test data***/
-      /*
-       MatrixXd _X;
-       make_XMat(bdata,smrwk.curId, _X);
-       std::string xfilename =std::string(outFileName)+".mat";
-       FILE* xfile = fopen(xfilename.c_str(), "w");
-       if (!(xfile)) {
-       printf("Open error %s\n", xfilename.c_str());
-       exit(1);
-       }
-       std::string str=smrwk.rs[0];
-       for( int j=1;j<smrwk.rs.size();j++) str+='\t'+smrwk.rs[j];
-       str+='\n';
-       fputs_checked(str.c_str(), xfile);
-       for(int i=0;i<_X.rows();i++)
-       {
-       std::string str=atos(_X(i,0));
-       for( int j=1;j<_X.cols();j++) str+='\t'+atos(_X(i,j));
-       str+='\n';
-       fputs_checked(str.c_str(), xfile);
-       }
-       fclose(xfile);
-
-      std::string gwasfname =std::string(outFileName)+".gwas";
-      FILE* gfile = fopen(gwasfname.c_str(), "w");
-      if (!(gfile)) {
-          printf("Open error %s\n", gwasfname.c_str());
-          exit(1);
-      }
-      for( int j=0;j<smrwk.rs.size();j++)
-      {
-          std::string str=smrwk.rs[j]+'\t'+atos(smrwk.byz[j])+'\t'+atos(smrwk.seyz[j])+'\n';
-          fputs_checked(str.c_str(), gfile);
-      }
-      fclose(gfile);
-
-      std::string eqtlfname =std::string(outFileName)+".eqtl";
-      FILE* efile = fopen(eqtlfname.c_str(), "w");
-      if (!(efile)) {
-          printf("Open error %s\n", eqtlfname.c_str());
-          exit(1);
-      }
-      for( int j=0;j<smrwk.rs.size();j++)
-      {
-          std::string str=smrwk.rs[j]+'\t'+atos(smrwk.bxz[j])+'\t'+atos(smrwk.sexz[j])+'\n';
-          fputs_checked(str.c_str(), efile);
-      }
-      fclose(efile);
-       */
       /*****/
 
       long nsnp = -9;
@@ -4551,9 +4156,6 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
       }
     }
   }
-  // printf("%ld probes has no SNPs in common.\n", noSNPprb);
-  // printf("%ld probes has no SNPs passed the p-value threshold %e for the SMR analysis.\n", noSNPprbPassthresh,
-  // p_smr);
   if (smr) {
     printf("Results of %ld probes have been saved in file %s.\n", write_count, smrfile.c_str());
     fclose(smr);
@@ -4959,16 +4561,12 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
   std::vector<int> sn_ids;
   std::string refrs = smrwk->rs[refid];
   double pthres = pchisq(threshold, 1);
-  // printf("Filtering SNPs (%ld in total) at eQTL p-value < %e for the HEIDI test.\n",smrwk->zxz.size(), pthres);
   for (int i = 0; i < smrwk->zxz.size(); i++) {
     if (i == refid || smrwk->zxz[i] * smrwk->zxz[i] - threshold > 1e-6) sn_ids.push_back(i);
   }
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: the HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
-  // printf("%ld SNPs left after filtering.\n",sn_ids.size());
   update_snidx(smrwk, sn_ids, MAX_NUM_LD, "LD pruning");
 
   if (std::find(sn_ids.begin(), sn_ids.end(), refid) == sn_ids.end()) sn_ids.push_back(refid);
@@ -4977,8 +4575,6 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
   long refid_heidi = std::find(smrwk_heidi.rs.begin(), smrwk_heidi.rs.end(), refrs) - smrwk_heidi.rs.begin();
 
   make_XMat(bdata, smrwk_heidi.curId, _X);
-  // printf("Removing SNPs with LD r-squared between target-SNP %s > %f or <
-  // %f...\n",smrwk_heidi.rs[refid_heidi].c_str(),ldr2_top,ld_min);
   ld_calc_o2m(ld_v, refid_heidi, _X);
 
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
@@ -4992,26 +4588,18 @@ double heidi_test_ref_new(bInfo* bdata, SMRWK* smrwk, double ldr2_top, double th
       }
     }
   }
-  // printf("%ld SNPs are removed and %ld SNPs are retained.\n",smrwk_heidi.zxz.size()-sn_ids.size(),sn_ids.size());
   if (sn_ids.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", sn_ids.size(),
-    // m_hetero);
     return -9;
   }
   update_smrwk_x(&smrwk_heidi, sn_ids, _X);
   refid_heidi = std::find(smrwk_heidi.rs.begin(), smrwk_heidi.rs.end(), refrs) - smrwk_heidi.rs.begin();
-  // printf("Removing one of each pair of remaining SNPs with LD r-squared > %f...\n",ldr2_top);
   int m = (int)smrwk_heidi.bxz.size();
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, _X);
   double ld_top = sqrt(ldr2_top);
   if (ld_top < 1) rm_cor_sbat(C, ld_top, m, rm_ID1);
-  // printf("%ld SNPs are removed and %ld SNPs (including the target SNP %s) are
-  // retained.\n",rm_ID1.size(),m-rm_ID1.size(),smrwk_heidi.rs[refid_heidi].c_str());
   if (m - rm_ID1.size() < m_hetero) {
-    // printf("INFO: HEIDI test is skipped because the number of SNPs (%ld) is smaller than %d.\n", m-rm_ID1.size(),
-    // m_hetero);
     return -9;
   }
   // Create new index
@@ -5065,7 +4653,6 @@ double heidi_test_ref_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr
                           long& nsnp, int refid, double ld_min, int opt_hetero, bool sampleoverlap, double theta) {
   std::vector<int> sn_ids;
   std::string refrs = smrwk->rs[refid];
-  // std::cout << "heidi_test_ref_new refrs: " << refrs << std::endl;
 
   double pthres = pchisq(threshold, 1);
   for (int i = 0; i < smrwk->zxz.size(); i++) {
@@ -5179,15 +4766,6 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   std::vector<float> ld;
   fetch_ld_by_id(ldinfo, ldfptr, smrwk_heidi.curId, (int)maxid_heidi, ld);
 
-  /* for (int i=0;i<ld.size();i++) {
-      std::cout << "ld[i]: " <<  i << ", " << ld[i] << std::endl;
-      //todo:在这里打印出ldinfo->_gd的符号
-      std::cout << "smrwk_heidi.curId[i]: " << smrwk_heidi.curId[i] << std::endl;
-      long tempesirowid = ldinfo->_esi_include[smrwk_heidi.curId[i]];
-      std::cout << "esi snp rowid:  " << tempesirowid << std::endl;
-      std::cout << "snp gd: " << ldinfo->_esi_gd[tempesirowid] << std::endl;
-  }*/
-
   if (fabs(ldr2_top - 1) > 1e-6 || ld_min > 0) {
     sn_ids.clear();
     for (int i = 0; i < smrwk_heidi.zxz.size(); i++) {
@@ -5211,13 +4789,6 @@ double heidi_test_new(ldInfo* ldinfo, FILE* ldfptr, SMRWK* smrwk, double ldr2_to
   std::vector<int> rm_ID1;
   MatrixXd C;
   cor_calc(C, ldinfo, ldfptr, smrwk_heidi.curId, indicator);
-
-  /*long crows = C.rows();
-  long ccols = C.cols();
-  std::cout << "heidi test new before rm_cor_sbat crows: " << crows << " ccols: " << ccols << std::endl;
-  for (int i=0;i<ccols;i++) {
-      std::cout << "heidi test new C(0,i):" << i << "  " << C(0,i) << std::endl;
-  }*/
 
   double ld_top = sqrt(ldr2_top);
   if (ld_top < 1) rm_cor_sbat(C, ld_top, m, rm_ID1);
@@ -5571,7 +5142,6 @@ void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr,
   long cisuperBounder = probbp + cis_itvl;
   long cislowerBounder = ((probbp - cis_itvl > 0) ? (probbp - cis_itvl) : 0);
 
-  // printf("Extracting trans information of the probe %s...\n", probid.c_str());
   for (int l = 0; l < snpinfo.size(); l++) {
     if (fabs(snpinfo[l].se + 9) > 1e-6) {
       double zsxz = snpinfo[l].beta / snpinfo[l].se;
@@ -5676,7 +5246,6 @@ void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr,
   long transsnpnum = 0;
   for (int l = 0; l < snpNumPerRegion.size(); l++) transsnpnum += snpNumPerRegion[l];
 
-  // printf(" %ld SNPs in total %ld trans-region(s) have been extracted.\n",transsnpnum,transnum);
   // log
   if (snpNumPerRegion.size()) {
     std::string logstr = "{" + probid + "," + atos(probchr) + "," + atos(probbp) + "}\t";
@@ -5686,8 +5255,6 @@ void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr,
                   atos(snpNumPerRegion[h]) + ">\t";
       }
     } else logstr += "<>\t";
-
-    // printf("%s.\n",logstr.c_str());
   }
 }
 int max_zsmr_id(SMRWK* smrwk, double p_smr) {
@@ -6135,8 +5702,6 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 
   filter_probe_null(&eqtlinfo);  // at the same time, reset the vector _include // checked 20171120, filterring
                                  // probe here is right.
-  // filter_snp_null(&eqtlinfo);
-  // update_besd();
   std::cout << "\nsaving eQTL data..." << std::endl;
   std::string esdfile = std::string(outFileName) + ".esi";
   std::ofstream smr(esdfile.c_str());
@@ -6161,8 +5726,6 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
   smr.close();
   std::cout << eqtlinfo._include.size() << " probes have been saved in the file [" + esdfile + "]." << std::endl;
 
-  // if(make_besd_flag)
-  // {
   esdfile = std::string(outFileName) + ".besd";
   FILE* smr1;
   smr1 = fopen(esdfile.c_str(), "wb");
@@ -6234,7 +5797,6 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 
   std::cout << "Effect sizes (beta) and SEfor " << eqtlinfo._include.size() << " Probes and " << eqtlinfo._snpNum
             << " SNPs have been saved in the binary file [" + esdfile + "]." << std::endl;
-  // }
 }
 
 // sort in ascend order
@@ -6392,15 +5954,11 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
     exit(EXIT_FAILURE);
   }
   read_esifile(&esdata, std::string(eqtlFileName2) + ".esi");
-  // if (snplstName != nullptr) extract_eqtl_snp(&esdata, snplstName); //no need here, already extracted in etrait
-  // if(snplst2exclde != nullptr) exclude_eqtl_snp(&esdata, snplst2exclde);
   if (!heidioffFlag) {
     read_famfile(&bdata, std::string(bFileName) + ".fam");
     if (indilstName != nullptr) keep_indi(&bdata, indilstName);
     if (indilst2remove != nullptr) remove_indi(&bdata, indilst2remove);
     read_bimfile(&bdata, std::string(bFileName) + ".bim");
-    // if(snplstName != nullptr) extract_snp(&bdata, snplstName);
-    // if(snplst2exclde != nullptr) exclude_snp(&bdata, snplst2exclde);
     allele_check(&bdata, &etrait, &esdata);
     // if no snp left after check
     read_bedfile(&bdata, std::string(bFileName) + ".bed");
@@ -6505,7 +6063,6 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
     int traitchr = etrait._epi_chr[ii];
     std::string traitgene = etrait._epi_gene[ii];
     int traitbp = etrait._epi_bp[ii];
-    // std::cout<<"\nPerforming analysis of eTrait [ "+traitname+" ]..."<<std::endl;
     int count = 0;
     if (etrait._rowid.empty()) {
       for (int j = 0; j < etrait._esi_include.size(); j++) {
@@ -6545,16 +6102,10 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
       }
     }
     if (gdata.snpName.size() < m_hetero) {
-      // std::cout<<gdata.snpNum<<" common SNPs (less than parameter m_hetero: "+atos(m_hetero)+" ) are included from
-      // eTrait [ "+traitname+" ] summary."<<std::endl;
       continue;
     }
     gdata.snpNum = gdata.snpName.size();
-    // std::cout<<gdata.snpNum<<" common SNPs are included from eTrait [ "+traitname+" ] summary."<<std::endl;
     if (cis2all) {
-      // printf("\n%ld exposure probes are inclued in the analysis with the outcome probe %s.\n",
-      // esdata._include.size(),traitname.c_str());
-
     } else {
       int lowerbounder = (traitbp - outcome_probe_wind) > 0 ? (traitbp - outcome_probe_wind) : 0;
       int upperbounder = traitbp + outcome_probe_wind;
@@ -6564,8 +6115,6 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
         if (esdata._epi_chr[includebk[j]] == traitchr && bptmp >= lowerbounder && bptmp <= upperbounder)
           esdata._include.push_back(includebk[j]);
       }
-      // printf("\n%ld exposure probes in the cis region [%d, %d] of outcome probe %s are inclued in the analysis.\n",
-      // esdata._include.size(),lowerbounder,upperbounder,traitname.c_str());
       if (esdata._include.size() == 0) continue;
     }
     std::vector<SMRRLT> smrrlts;
@@ -6631,7 +6180,6 @@ void update_freq(char* eqtlFileName, char* frqfile) {
   }
 
   std::vector<std::string> vs_buf;
-  // std::map<std::string, int>::iterator iter;
   std::unordered_map<std::string, int>::iterator iter;
   char buf[MAX_LINE_SIZE];
   int lineNum(0);
@@ -6702,8 +6250,6 @@ void update_freq(char* eqtlFileName, char* frqfile) {
 
 void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
   filter_probe_null(eqtlinfo);  // at the same time, reset the vector _include
-  // filter_snp_null(eqtlinfo);
-  // update_besd();
   std::cout << "\nsaving eQTL data..." << std::endl;
   std::string esdfile = std::string(outFileName) + ".esi";
   std::ofstream smr(esdfile.c_str());
@@ -7223,8 +6769,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_sexz[i].resize(eqtlinfo->_esi_include.size());
     }
     char* buffer;
-    // buffer = (char*) malloc (sizeof(char) * eqtlinfo->_snpNum << 3);
-    // if (buffer == nullptr) {fputs ("Memory error", stderr); exit (1);}
     float* ft;
     float* se_ptr;
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
@@ -7233,9 +6777,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     {
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
-        // besd.seekg(((pid*eqtlinfo->_snpNum)<<3)+infoLen);
-        // memset(buffer,0,sizeof(char)*eqtlinfo->_snpNum<<3);
-        // besd.read(buffer,eqtlinfo->_snpNum<<3);
         buffer = mapped.offset<char*>(((pid * eqtlinfo->_snpNum) << 3) + infoLen);
         ft = (float*)buffer;
         for (int j = 0; j < eqtlinfo->_esi_include.size(); j++)
@@ -7252,9 +6793,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     } else {
       char* buff = mapped.offset<char*>(4);
       std::uint64_t buffszie = 0x40000000;
-      // buff = (char*) malloc (sizeof(char)*buffszie);
-      // if (buff == nullptr) { fputs ("Memory error when reading dense BESD file.",stderr); exit (1); }
-      // memset(buff, 0, sizeof(char) * buffszie);
 
       std::uint64_t perbeta = (eqtlinfo->_snpNum << 2);
       std::uint64_t probonce = sizeof(char) * buffszie / perbeta;  // should be even number
@@ -7265,7 +6803,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       double disp = 0;
       size_t read_offset = 4;  // has read a gflag(std::uint32_t)
       while (!mapped.is_end(read_offset)) {
-        // besd.read(buff,readsize);
         std::uint64_t Bread = readsize;
         if (mapped.remain_size(read_offset + readsize) == 0) {
           std::uint64_t Bread = mapped.size() - read_offset;
@@ -7300,14 +6837,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     std::uint64_t valNum;
     std::uint64_t lSize;
     char* buffer;
-    // besd.seekg(0,besd.end);
-    // lSize = besd.tellg();
     lSize = mapped.size();
 
-    // besd.seekg(4); // same as besd.seekg(4, besd.beg);
-    // besd.read(SIGN, 4);
-    // valNum = (std::uint32_t)*(float *)SIGN; // int to float then float to int back can lose pricision. hence this
-    // clause and bellow are unbelievable
     valNum = mapped.read_from<std::uint32_t>(4);
     if (lSize - ((3 + colNum + (valNum << 1)) << 2) != 0) {
       printf("The file size is %zu", lSize);
@@ -7319,10 +6850,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
     valNum = ((lSize >> 2) - 3 - colNum) >> 1;
 
-    // buffer = (char*) malloc (sizeof(char)*(lSize-8));
-    // if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
-    // besd.read(buffer,(lSize-8));
-    // if (besd.gcount()+8 != lSize) {fputs ("Reading error",stderr); exit (2);}
     buffer = mapped.offset<char*>(4);
     float* ptr;
     ptr = (float*)buffer;
@@ -7385,7 +6912,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
                   << " SNPs to be included from [" + besdfile + "]." << std::endl;
     }
     // terminate
-    // free (buffer);
   }
 
   else if (gflag == SPARSE_FILE_TYPE_3F || gflag == SPARSE_FILE_TYPE_3) {
@@ -7397,17 +6923,10 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
     std::uint64_t valNum;
     std::uint64_t lSize;
 
-    // besd.seekg(0, besd.end);
-    // lSize = besd.tellg();
     lSize = mapped.size();
 
     size_t read_offset = 4;
-    // besd.seekg(4); // same as besd.seekg(4, besd.beg);
     if (gflag == SPARSE_FILE_TYPE_3) {
-      // int length = (RESERVEDUNITS - 1) * sizeof(int);
-      // char* indicators = new char[length];
-      // besd.read(indicators, length);
-
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = mapped.offset<char*>(read_offset);
       read_offset += length;
@@ -7427,15 +6946,10 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
                besdfile.c_str());
         exit(EXIT_FAILURE);
       }
-      // delete[] indicators;
     }
 
-    // besd.read(SIGN, sizeof(std::uint64_t));
-    // valNum=*(std::uint64_t *)SIGN;
     valNum = mapped.read_from<std::uint64_t>(read_offset);
     read_offset += sizeof(std::uint64_t);
-
-    // std::cout << "valNum: " << valNum << std::endl;
 
     if (gflag == SPARSE_FILE_TYPE_3F) {
       if (lSize - (sizeof(std::uint32_t) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
@@ -7461,11 +6975,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
     if (eqtlinfo->_include.size() < eqtlinfo->_probNum || eqtlinfo->_esi_include.size() < eqtlinfo->_snpNum ||
         !sorted) {
-      // std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-      // buffer = (char*) malloc (sizeof(char) * (colsize));
-      // if (buffer == nullptr) { fputs ("Memory error when reading sparse BESD file.", stderr); exit (1); }
-      // besd.read(buffer, colsize);
-
       buffer = mapped.offset<char*>(read_offset);
 
       std::uint64_t* ptr = (std::uint64_t*)buffer;
@@ -7495,7 +7004,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
                    valNum * sizeof(std::uint32_t);
       }
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
-        // std::cout << "eqtlinfo->_include[i]: " << eqtlinfo->_include[i] << std::endl;
         std::uint32_t pid = eqtlinfo->_include[i];
         std::uint64_t pos = *(ptr + (pid << 1));       // BETA START
         std::uint64_t pos1 = *(ptr + (pid << 1) + 1);  // SE START
@@ -7508,19 +7016,9 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
           continue;
         }
         char* row_char_ptr = nullptr;
-        // row_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(std::uint32_t));
-        // if (row_char_ptr == nullptr) {fputs ("Memory error",stderr); exit (1);}
         char* val_char_ptr = nullptr;
-        // val_char_ptr = (char*) malloc (sizeof(char)*2*num*sizeof(float));
-        // if (val_char_ptr == nullptr) {fputs ("Memory error",stderr); exit (1);}
-        // memset(row_char_ptr,0,sizeof(char)*2*num*sizeof(std::uint32_t));
-        // memset(val_char_ptr,0,sizeof(char)*2*num*sizeof(float));
-        // besd.seekg(rowSTART+pos*sizeof(std::uint32_t));
-        // besd.read(row_char_ptr, 2*num*sizeof(std::uint32_t));
         row_char_ptr = mapped.offset<char*>(rowSTART + pos * sizeof(std::uint32_t));
         std::uint32_t* row_ptr = (std::uint32_t*)row_char_ptr;
-        // besd.seekg(valSTART+pos*sizeof(float));
-        // besd.read(val_char_ptr, 2*num*sizeof(float));
         val_char_ptr = mapped.offset<char*>(valSTART + pos * sizeof(float));
         float* val_ptr = (float*)val_char_ptr;
         for (int j = 0; j < num << 1; j++) {
@@ -7528,29 +7026,18 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
           auto iter = _incld_id_map.find(rid);
           if (iter != _incld_id_map.end()) {
-            // std::cout << "_incld_id_map found, j: " << j << std::endl;
-            // std::cout << "_incld_id_map found, rid: " << rid << std::endl;
-
             int sid = iter->second;
 
             eqtlinfo->_rowid.push_back(sid);
             eqtlinfo->_val.push_back(*(val_ptr + j));
-
-            // std::cout << "*(val_ptr+j):" << *(val_ptr+j) << std::endl;
-
-            // printf("%d %s ", sid, *(val_ptr+j)); //注意：这一行会导致segment fault，还不确定是为什么
 
             real_num++;
           }
         }
         eqtlinfo->_cols[(i << 1) + 1] = (real_num >> 1) + eqtlinfo->_cols[i << 1];
         eqtlinfo->_cols[(i + 1) << 1] = real_num + eqtlinfo->_cols[i << 1];
-        // free(row_char_ptr);
-        // free(val_char_ptr);
       }
       eqtlinfo->_valNum = eqtlinfo->_val.size();
-
-      // std::cout << "eqtlinfo->_valNum: " << eqtlinfo->_valNum << std::endl;
 
       if (prtscr)
         std::cout << "eQTL summary data of " << eqtlinfo->_include.size()
@@ -7558,25 +7045,6 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       update_epi(eqtlinfo);
       update_esi(eqtlinfo);
     } else {
-      // std::cout << "lSize: " << lSize << std::endl;
-      //  buffer = (char*) malloc (sizeof(char)*(lSize));
-      //  if (buffer == nullptr) {fputs ("Memory error",stderr); exit (1);}
-      //  besd.read(buffer,lSize);
-      //  if(gflag==SPARSE_FILE_TYPE_3F)
-      //  {
-      //      if (besd.gcount()+sizeof(std::uint32_t) + sizeof(std::uint64_t) != lSize)
-      //      {
-      //          printf("ERROR: reading file %s error.\n", besdfile.c_str());
-      //          exit (EXIT_FAILURE);
-      //      }
-      //  }else {
-      //      if (besd.gcount()+RESERVEDUNITS*sizeof(int) + sizeof(std::uint64_t) != lSize)
-      //      {
-      //          printf("ERROR: reading file %s error.\n", besdfile.c_str());
-      //          exit (EXIT_FAILURE);
-      //      }
-      //  }
-
       buffer = mapped.offset<char*>(read_offset);
       std::uint64_t* ptr;
       ptr = (std::uint64_t*)buffer;
@@ -7585,18 +7053,11 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_rowid.resize(valNum);
       eqtlinfo->_val.resize(valNum);
 
-      // std::cout << "colNum: " << colNum << std::endl;
-      // std::cout << "valNum: " << valNum << std::endl;
-
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       std::uint32_t* ptr4B = (std::uint32_t*)ptr;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
       float* val_ptr = (float*)ptr4B;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
-
-      // std::cout << "eqtlinfo->_cols[0]: " << eqtlinfo->_cols[0] << std::endl;
-      // std::cout << "eqtlinfo->_rowid[0]: " << eqtlinfo->_rowid[0] << std::endl;
-      // std::cout << "eqtlinfo->_val[0]: " << eqtlinfo->_val[0] << std::endl;
 
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -7604,20 +7065,12 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
                   << std::endl;
     }
     // terminate
-    // free (buffer);
   } else {
     std::cout
         << "SMR doesn't support this format. Please use OSCA (http://cnsgenomics.com/software/osca) to transform it "
            "to SMR format."
         << std::endl;
   }
-  // besd.close();
-  /*
-  if(eqtlinfo->_rowid.empty() && eqtlinfo->_bxz.empty())
-  {
-      printf("NO data included from eQTL summary data %s, please check.\n",besdfile.c_str()); exit (EXIT_FAILURE);
-  }
-   */
 }
 
 }  // namespace SMRDATA

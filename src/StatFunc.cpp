@@ -240,9 +240,6 @@ double StatFunc::psadd(double x, VectorXd lambda) {
   double v = hatzeta * sqrt(Kpp(hatzeta, lambda));
 
   // debug
-  // std::cout<<"hatzeta = "<<hatzeta<<std::endl;
-  // std::cout<<"w = "<<w<<std::endl;
-  // std::cout<<"v = "<<v<<std::endl;
 
   if (fabs(hatzeta) < 1e-04) return 2.0;
   else return pnorm(w + log(v / w) / w);

@@ -17,7 +17,6 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
                         char* snplst2exclde, char* problst2exclde, float thres);
 void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* snplst2exclde, char* problstName,
                char* problst2exclde, char* genelistName, bool bFlag);
-// void standardization(char* outFileName, char* eqtlFileName,bool bFlag,char* freqName, char* vpFileName);
 
 void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* problstName, char* genelistName,
             double plookup, bool bFlag, int chr, int prbchr, int snpchr, char* snprs, char* fromsnprs, char* tosnprs,

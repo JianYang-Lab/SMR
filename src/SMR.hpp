@@ -9,6 +9,8 @@
 #define SMR_CPP_SMR_h
 
 #include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>

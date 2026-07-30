@@ -10,9 +10,9 @@
 
 #include <string>
 
+namespace SMRDATA {
 struct eqtlInfo;
 
-namespace SMRDATA {
 void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkflag, bool gemmaflag, bool merlinflag,
                bool boltflag, bool save_dense_flag, int cis_itvl, int trans_itvl, float transThres, float restThres,
                bool samegeno, int addn);

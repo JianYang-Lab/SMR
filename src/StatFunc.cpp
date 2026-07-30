@@ -10,11 +10,13 @@
 
 #include "StatFunc.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 #include "CommFunc.hpp"
 
 extern "C" {
 #include "cdflib.h"
-#include "dcdflib.h"
 }
 
 ////////// P-value Calculatiion Functions Start ////////////////

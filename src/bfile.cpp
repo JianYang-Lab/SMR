@@ -8,7 +8,11 @@
 
 #include "bfile.hpp"
 
+#include <algorithm>
 #include <bitset>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 

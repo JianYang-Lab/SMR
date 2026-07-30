@@ -7,6 +7,9 @@
 
 #include "SMR.hpp"
 
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <iostream>
 
 #include <spdlog/spdlog.h>

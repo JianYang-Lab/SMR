@@ -8,9 +8,17 @@
 
 #include "SMR_plot.hpp"
 
-#include <Eigen/Core>
-#include <Eigen/Eigen>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <string>
 #include <vector>
+
+#include <Eigen/Eigen>
 
 #include "CommFunc.hpp"
 #include "SMR_data.hpp"

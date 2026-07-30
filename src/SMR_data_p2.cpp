@@ -7,6 +7,14 @@
 
 #include "SMR_data_p2.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+
 #include <zlib.h>
 
 #include "CommFunc.hpp"

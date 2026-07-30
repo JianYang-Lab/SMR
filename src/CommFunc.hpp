@@ -55,8 +55,6 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include <Eigen/Sparse>
-#include <unsupported/Eigen/SparseExtra>
 
 using namespace Eigen;
 

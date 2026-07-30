@@ -1,5 +1,10 @@
 #include "perf_timer.hpp"
 
+#include <cmath>
+#include <cstddef>
+#include <utility>
+
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <sys/resource.h>
 

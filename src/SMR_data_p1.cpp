@@ -10,8 +10,12 @@
 
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <iostream>
-#include <istream>
 
 #include "CommFunc.hpp"
 #include "StatFunc.hpp"

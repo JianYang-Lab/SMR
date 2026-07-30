@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <sys/stat.h>
-#include <sys/types.h>
-
+#include <cstdint>
+#include <cstdio>
 #include <map>
 #include <string>
 #include <unordered_map>

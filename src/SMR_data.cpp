@@ -8,10 +8,12 @@
 
 #include "SMR_data.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <istream>
-#include <queue>
 #include <string>
 #include <unordered_set>
 #include <vector>

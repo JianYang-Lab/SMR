@@ -11,7 +11,6 @@
 #include "StrFunc.hpp"
 
 #include <algorithm>
-#include <cstdio>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>

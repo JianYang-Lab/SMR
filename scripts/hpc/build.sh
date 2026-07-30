@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 CWD=$(pwd)
 APP_NAME=smr
 
 BUILD_TYPE=${BUILD_TYPE:-Release}
+# MKL shared libraries to bundle into the AppImage; defaults to the module's
+# MKLROOT, falling back to the site oneAPI path.
+MKL_LIBDIR=${MKL_LIBDIR:-${MKLROOT:-/soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0}/lib/intel64}
 
 fresh_build=""
 install_app=0
@@ -18,6 +21,8 @@ function usage {
     echo "  -g | --generate          : Build with cmake generation";
     echo "  -i | --install           : Install";
     echo "  -h | --help              : This message";
+    echo "   ";
+    echo "  Environment: BUILD_TYPE (Release), MKL_LIBDIR (from MKLROOT or site default)";
 }
 
 function parse_args {
@@ -25,7 +30,7 @@ function parse_args {
     args=()
 
     # named args
-    while [ "$1" != "" ]; do
+    while [ $# -gt 0 ]; do
         case "$1" in
             -f | --fresh )     fresh_build="--fresh";;
             -g | --generate )  cmake_gen=1;;
@@ -36,7 +41,7 @@ function parse_args {
         shift # move to next kv pair
     done
 
-    set -- "${args[@]}"
+    set -- ${args[@]+"${args[@]}"}
 
     if [ ${#args[@]} -ne 0 ]; then
         echo "not support args: ${args[@]}"
@@ -50,7 +55,10 @@ function run {
 
     echo "Current working directory: ${CWD}"
 
+    # Some modulefiles are not 'set -u' clean; relax strict mode around module
+    set +u
     module load gcc/11.2.0 cmake intelmkl
+    set -u
 
     if [[ $cmake_gen == 1 ]]; then
         # Generate cmake
@@ -72,9 +80,9 @@ function run {
             mkdir -p ${installed_lib}
         fi
 
-        cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_avx512.so.2 ${installed_lib}/
-        cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_avx2.so.2 ${installed_lib}/
-        cp /soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0/lib/intel64/libmkl_def.so.2 ${installed_lib}/
+        cp ${MKL_LIBDIR}/libmkl_avx512.so.2 ${installed_lib}/
+        cp ${MKL_LIBDIR}/libmkl_avx2.so.2 ${installed_lib}/
+        cp ${MKL_LIBDIR}/libmkl_def.so.2 ${installed_lib}/
         strip ${installed_lib}/libmkl_avx512.so.2
         strip ${installed_lib}/libmkl_avx2.so.2
         strip ${installed_lib}/libmkl_def.so.2

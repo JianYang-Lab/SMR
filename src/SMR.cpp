@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
   spdlog::set_pattern("%v");
 
   long int time_used = 0, start = time(nullptr);
-  time_t curr = time(0);
+  time_t curr = time(nullptr);
   char timeStr[100];  // 根据需要调整缓冲区大小
   // 自定义时间格式
   strftime(timeStr, sizeof(timeStr), "%H:%M:%S %Z on %a %b %d %Y", localtime(&curr));
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  curr = time(0);
+  curr = time(nullptr);
   time_used = time(nullptr) - start;
   printf("\nAnalysis finished: %s \nComputational time: %ld:%ld:%ld\n", ctime(&curr), time_used / 3600,
          (time_used % 3600) / 60, time_used % 60);

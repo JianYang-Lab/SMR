@@ -116,17 +116,17 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
     read_smaslist(smasNames, std::string(eqtlsmaslstName));
     if (smasNames.size() == 0)
       throw std::runtime_error("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
-    for (int ii = 0; ii < smasNames.size(); ii++) {
+    for (const auto& smasName : smasNames) {
       eqtlInfo eqtlinfo;
-      read_esifile(&eqtlinfo, smasNames[ii] + ".esi");
+      read_esifile(&eqtlinfo, smasName + ".esi");
       if (snplstName != nullptr) extract_eqtl_snp(&eqtlinfo, snplstName);
       if (snplst2exclde != nullptr) exclude_eqtl_snp(&eqtlinfo, snplst2exclde);
-      read_epifile(&eqtlinfo, smasNames[ii] + ".epi");
+      read_epifile(&eqtlinfo, smasName + ".epi");
       if (problstName != nullptr) extract_prob(&eqtlinfo, problstName);
       if (problst2exclde != nullptr) exclude_prob(&eqtlinfo, problst2exclde);
-      read_besdfile(&eqtlinfo, smasNames[ii] + ".besd");
+      read_besdfile(&eqtlinfo, smasName + ".besd");
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
-        printf("No data included from %s in the analysis.\n", smasNames[ii].c_str());
+        printf("No data included from %s in the analysis.\n", smasName.c_str());
         exit(EXIT_FAILURE);
       }
       get_thres_sets(&eqtlinfo, prbIds, beta, se, rs, thres);
@@ -485,11 +485,11 @@ void rm_unmatched_snp(gwasData* gdata, eqtlInfo* esdata) {
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     StrFunc::match_only(essnp, gdata->snpName, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no common SNPs found.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata->snpName[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(gdata->snpName[i]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, gdata->snpName, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no common SNPs found.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata->snpName[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(gdata->snpName[i]);
   }
 
   // alleles check
@@ -548,11 +548,11 @@ void rm_unmatched_snp(eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp.push_back(etrait->_esi_rs[etrait->_esi_include[i]]);
     match_only(essnp, etsnp, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etsnp[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(etsnp[i]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, etrait->_esi_rs, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etrait->_esi_rs[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(etrait->_esi_rs[i]);
   }
 
   // alleles check
@@ -1150,8 +1150,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
     std::vector<float> out_se;
     std::vector<double> out_pval;
     if (esdata_._valNum == 0) {
-      for (std::uint32_t ii = 0; ii < ldprbid.size(); ii++) {
-        int i = ldprbid[ii];
+      for (int i : ldprbid) {
         for (std::uint32_t j = 0; j < esdata_._snpNum; j++) {
           double beta = esdata_._bxz[i][j];
           double se = esdata_._sexz[i][j];
@@ -1173,8 +1172,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
         throw std::runtime_error("Error: No data extracted from the input, please check.\n");
       }
 
-      for (std::uint32_t ii = 0; ii < ldprbid.size(); ii++) {
-        int i = ldprbid[ii];
+      for (int i : ldprbid) {
         std::uint64_t proid = esdata_._include[i];
         std::uint64_t pos = esdata_._cols[proid << 1];
         std::uint64_t pos1 = esdata_._cols[(proid << 1) + 1];
@@ -1401,12 +1399,12 @@ void rm_cor_sbat(MatrixXd& R, double R_cutoff, int m, std::vector<int>& rm_ID1, 
     int maxid = maxabsid(zxz4smr, remain);
     select.push_back(maxid);
     std::vector<int> new_remain;
-    for (int i = 0; i < remain.size(); i++) {
-      if (remain[i] != maxid) {
-        if (fabs(R(maxid, remain[i])) > R_cutoff) {
-          rm_ID1.push_back(remain[i]);
+    for (int i : remain) {
+      if (i != maxid) {
+        if (fabs(R(maxid, i)) > R_cutoff) {
+          rm_ID1.push_back(i);
         } else {
-          new_remain.push_back(remain[i]);
+          new_remain.push_back(i);
         }
       }
     }
@@ -1576,7 +1574,7 @@ int smr_setbased_test(bInfo* bdata, std::vector<std::uint32_t>& slctId, std::vec
   }
   double chisq_o = 0;
   for (int j = 0; j < sub_indx.size(); j++) chisq_o += zsxysq_slct[j];
-  for (int j = 0; j < sub_indx.size(); j++) snp4msmr.push_back(bdata->_snp_name[bdata->_include[Id4smr[sub_indx[j]]]]);
+  for (int j : sub_indx) snp4msmr.push_back(bdata->_snp_name[bdata->_include[Id4smr[j]]]);
 
   printf("%ld SNPs are included in the multi-SNP SMR test.\n", sub_indx.size());
   if (sub_indx.size() == 1) {
@@ -1877,8 +1875,8 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
         exit(EXIT_FAILURE);
       }
-      for (int j = 0; j < snp4msmr.size(); j++) {
-        setstr = snp4msmr[j] + '\n';
+      for (const auto& j : snp4msmr) {
+        setstr = j + '\n';
         if (fputs_checked(setstr.c_str(), setlst)) {
           printf("ERROR: in writing file %s .\n", setlstfile.c_str());
           exit(EXIT_FAILURE);
@@ -2291,20 +2289,20 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         match_only(snpset[ii], smrwk.rs, matchidx);
         if (refSNP != nullptr && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
 
-        for (int j = 0; j < matchidx.size(); j++) {
-          slctId.push_back(smrwk.curId[matchidx[j]]);
-          slct_bxz.push_back(smrwk.bxz[matchidx[j]]);
-          slct_sexz.push_back(smrwk.sexz[matchidx[j]]);
-          slct_byz.push_back(smrwk.byz[matchidx[j]]);
-          slct_seyz.push_back(smrwk.seyz[matchidx[j]]);
-          slct_snpName.push_back(smrwk.rs[matchidx[j]]);
-          slct_pyz.push_back(smrwk.pyz[matchidx[j]]);
-          slct_zxz.push_back(smrwk.zxz[matchidx[j]]);
-          slct_bpsnp.push_back(smrwk.bpsnp[matchidx[j]]);
-          slct_snpchr.push_back(smrwk.snpchrom[matchidx[j]]);
-          slct_a1.push_back(smrwk.allele1[matchidx[j]]);
-          slct_a2.push_back(smrwk.allele2[matchidx[j]]);
-          slct_freq.push_back(smrwk.freq[matchidx[j]]);
+        for (int j : matchidx) {
+          slctId.push_back(smrwk.curId[j]);
+          slct_bxz.push_back(smrwk.bxz[j]);
+          slct_sexz.push_back(smrwk.sexz[j]);
+          slct_byz.push_back(smrwk.byz[j]);
+          slct_seyz.push_back(smrwk.seyz[j]);
+          slct_snpName.push_back(smrwk.rs[j]);
+          slct_pyz.push_back(smrwk.pyz[j]);
+          slct_zxz.push_back(smrwk.zxz[j]);
+          slct_bpsnp.push_back(smrwk.bpsnp[j]);
+          slct_snpchr.push_back(smrwk.snpchrom[j]);
+          slct_a1.push_back(smrwk.allele1[j]);
+          slct_a2.push_back(smrwk.allele2[j]);
+          slct_freq.push_back(smrwk.freq[j]);
         }
       }
 
@@ -2346,8 +2344,8 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
         exit(EXIT_FAILURE);
       }
-      for (int j = 0; j < snp4msmr.size(); j++) {
-        setstr = snp4msmr[j] + '\n';
+      for (const auto& j : snp4msmr) {
+        setstr = j + '\n';
         if (fputs_checked(setstr.c_str(), setlst)) {
           printf("ERROR: in writing file %s .\n", setlstfile.c_str());
           exit(EXIT_FAILURE);
@@ -2544,8 +2542,8 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
         exit(EXIT_FAILURE);
       }
-      for (int j = 0; j < snp4msmr.size(); j++) {
-        setstr = snp4msmr[j] + '\n';
+      for (const auto& j : snp4msmr) {
+        setstr = j + '\n';
         if (fputs_checked(setstr.c_str(), setlst)) {
           printf("ERROR: in writing file %s .\n", setlstfile.c_str());
           exit(EXIT_FAILURE);
@@ -2843,21 +2841,21 @@ void combine_esi(std::vector<smr_snpinfo>& snpinfo, std::vector<std::string>& be
   std::vector<smr_snpinfo> snpinfo_adj;
   snpinfo_adj.resize(in_map.size());
   int ids = 0;
-  for (int i = 0; i < snpinfo.size(); i++) {
-    iter = in_map.find(snpinfo[i].snprs);
+  for (auto& i : snpinfo) {
+    iter = in_map.find(i.snprs);
     if (iter != in_map.end()) {
-      snpinfo_adj[ids++] = snpinfo[i];
+      snpinfo_adj[ids++] = i;
     } else {
-      std::string snpstr = std::string(snpinfo[i].snprs) + '\n';
+      std::string snpstr = std::string(i.snprs) + '\n';
       if (fputs_checked(snpstr.c_str(), failfptr)) {
         printf("ERROR: in writing file %s .\n", failName.c_str());
         exit(EXIT_FAILURE);
       }
-      if (snpinfo[i].a1) free2(&snpinfo[i].a1);
-      if (snpinfo[i].a2) free2(&snpinfo[i].a2);
-      if (snpinfo[i].snprs) free2(&snpinfo[i].snprs);
-      if (snpinfo[i].rstr) free2(&snpinfo[i].rstr);
-      if (snpinfo[i].revs) free2(&snpinfo[i].revs);
+      if (i.a1) free2(&i.a1);
+      if (i.a2) free2(&i.a2);
+      if (i.snprs) free2(&i.snprs);
+      if (i.rstr) free2(&i.rstr);
+      if (i.revs) free2(&i.revs);
     }
   }
   snpinfo.swap(snpinfo_adj);
@@ -2889,8 +2887,8 @@ void check_besds_format(std::vector<std::string>& besds, std::vector<int>& forma
   format.clear();
   smpsize.clear();
   std::vector<int> headers;
-  for (int i = 0; i < besds.size(); i++) {
-    std::string tmpstr = besds[i] + ".besd";
+  for (const auto& besd : besds) {
+    std::string tmpstr = besd + ".besd";
     memcpy(inputname, tmpstr.c_str(), tmpstr.length() + 1);
     get_BesdHeaders(inputname, headers);
     format.push_back(headers[0]);
@@ -2911,7 +2909,7 @@ void extract_prb_sparse(FILE* fptr, std::uint64_t pid, std::uint64_t probnum, st
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       fread(indicators, sizeof(int), (RESERVEDUNITS - 1), fptr);
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -2955,7 +2953,7 @@ void extract_prb_dense(FILE* fptr, std::uint64_t pid, std::uint64_t epinum, std:
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       fread(indicators, sizeof(int), (RESERVEDUNITS - 1), fptr);
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -3168,8 +3166,8 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::vector<int> format, smpsize;
   check_besds_format(besds, format, smpsize);
   int label = -1;
-  for (int i = 0; i < format.size(); i++) {
-    if (format[i] == DENSE_FILE_TYPE_1 || format[i] == DENSE_FILE_TYPE_3) {
+  for (int i : format) {
+    if (i == DENSE_FILE_TYPE_1 || i == DENSE_FILE_TYPE_3) {
       if (label == -1) {
         label = 0;
       } else if (label == 1) {
@@ -3177,7 +3175,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
         break;
       }
 
-    } else if (format[i] == SPARSE_FILE_TYPE_3F || format[i] == SPARSE_FILE_TYPE_3) {
+    } else if (i == SPARSE_FILE_TYPE_3F || i == SPARSE_FILE_TYPE_3) {
       if (label == -1) {
         label = 1;
       } else if (label == 0) {
@@ -3216,15 +3214,14 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::string epiName = std::string(outFileName) + ".epi";
   FILE* efile = fopen(epiName.c_str(), "w");
   if (efile == nullptr) exit(EXIT_FAILURE);
-  for (int i = 0; i < probeinfo.size(); i++) {
+  for (auto& i : probeinfo) {
     std::string chrstr;
-    if (probeinfo[i].probechr == 23) chrstr = "X";
-    else if (probeinfo[i].probechr == 24) chrstr = "Y";
-    else chrstr = atosm(probeinfo[i].probechr);
+    if (i.probechr == 23) chrstr = "X";
+    else if (i.probechr == 24) chrstr = "Y";
+    else chrstr = atosm(i.probechr);
 
-    std::string str = chrstr + '\t' + probeinfo[i].probeId + '\t' + atos(0) + '\t' + atosm(probeinfo[i].bp) + '\t' +
-                      probeinfo[i].genename + '\t' + (probeinfo[i].orien == '*' ? "NA" : atos(probeinfo[i].orien)) +
-                      '\n';
+    std::string str = chrstr + '\t' + i.probeId + '\t' + atos(0) + '\t' + atosm(i.bp) + '\t' + i.genename + '\t' +
+                      (i.orien == '*' ? "NA" : atos(i.orien)) + '\n';
     if (fputs_checked(str.c_str(), efile)) {
       printf("ERROR: writing file %s failed.\n", epiName.c_str());
       exit(EXIT_FAILURE);
@@ -3237,14 +3234,13 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   std::string esiName = std::string(outFileName) + ".esi";
   efile = fopen(esiName.c_str(), "w");
   if (efile == nullptr) exit(EXIT_FAILURE);
-  for (int i = 0; i < snpinfo.size(); i++) {
+  for (auto& i : snpinfo) {
     std::string chrstr;
-    if (snpinfo[i].snpchr == 23) chrstr = "X";
-    else if (snpinfo[i].snpchr == 24) chrstr = "Y";
-    else chrstr = atosm(snpinfo[i].snpchr);
-    std::string str = chrstr + '\t' + snpinfo[i].snprs + '\t' + atos(0) + '\t' + atosm(snpinfo[i].bp) + '\t' +
-                      snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' +
-                      (fabs(snpinfo[i].freq + 9) > 1e-6 ? atos(snpinfo[i].freq) : "NA") + '\n';
+    if (i.snpchr == 23) chrstr = "X";
+    else if (i.snpchr == 24) chrstr = "Y";
+    else chrstr = atosm(i.snpchr);
+    std::string str = chrstr + '\t' + i.snprs + '\t' + atos(0) + '\t' + atosm(i.bp) + '\t' + i.a1 + '\t' + i.a2 + '\t' +
+                      (fabs(i.freq + 9) > 1e-6 ? atos(i.freq) : "NA") + '\n';
     if (fputs_checked(str.c_str(), efile)) {
       printf("ERROR: writing file %s failed.\n", esiName.c_str());
       exit(EXIT_FAILURE);
@@ -3256,7 +3252,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   lookup.resize(besdNum);
   for (int i = 0; i < besdNum; i++) lookup[i].resize(nsnp[i]);
   for (int i = 0; i < besdNum; i++)
-    for (int j = 0; j < lookup[i].size(); j++) lookup[i][j] = -9;
+    for (int& j : lookup[i]) j = -9;
   for (int i = 0; i < metaSNPnum; i++) {
     for (int j = 0; j < besdNum; j++) {
       int tmpval = snpinfo[i].rstr[j];
@@ -3306,13 +3302,13 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
   for (int i = 4; i < nresv; i++) ten_ints[i] = -9;
   fwrite(&ten_ints[0], sizeof(int), nresv, efile);
 
-  float* buffer_beta = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
+  auto* buffer_beta = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
   if (buffer_beta == nullptr) {
     printf("ERROR: memory allocation failed for beta values.\n");
     exit(EXIT_FAILURE);
   }  // probe major
 
-  float* buffer_se = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
+  auto* buffer_se = static_cast<float*>(malloc(sizeof(float) * besdNum * metaSNPnum));
   if (buffer_se == nullptr) {
     printf("ERROR: memory allocation failed for SEs.\n");
     exit(EXIT_FAILURE);
@@ -3452,8 +3448,8 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
       printf("ERROR: open file %s.\n", filename.c_str());
       exit(EXIT_FAILURE);
     }
-    for (int t = 0; t < snpdeficent.size(); t++) {
-      std::string str = snpdeficent[t] + '\n';
+    for (const auto& t : snpdeficent) {
+      std::string str = t + '\n';
       fputs(str.c_str(), tmpfile);
     }
     fclose(tmpfile);
@@ -3466,8 +3462,8 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
       printf("ERROR: open file %s.\n", filename.c_str());
       exit(EXIT_FAILURE);
     }
-    for (int t = 0; t < noninvtb_prbs.size(); t++) {
-      std::string str = noninvtb_prbs[t] + '\n';
+    for (const auto& noninvtb_prb : noninvtb_prbs) {
+      std::string str = noninvtb_prb + '\n';
       fputs(str.c_str(), tmpfile);
     }
     fclose(tmpfile);
@@ -3480,26 +3476,26 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
       printf("ERROR: open file %s.\n", filename.c_str());
       exit(EXIT_FAILURE);
     }
-    for (int t = 0; t < nega_prbs.size(); t++) {
-      std::string str = nega_prbs[t] + '\n';
+    for (const auto& nega_prb : nega_prbs) {
+      std::string str = nega_prb + '\n';
       fputs(str.c_str(), tmpfile);
     }
     fclose(tmpfile);
   }
 
-  for (int i = 0; i < probeinfo.size(); i++) {
-    if (probeinfo[i].genename) free2(&probeinfo[i].genename);
-    if (probeinfo[i].probeId) free2(&probeinfo[i].probeId);
-    if (probeinfo[i].ptr) free2(&probeinfo[i].ptr);
-    if (probeinfo[i].bfilepath) free2(&probeinfo[i].bfilepath);
-    if (probeinfo[i].esdpath) free2(&probeinfo[i].esdpath);
+  for (auto& i : probeinfo) {
+    if (i.genename) free2(&i.genename);
+    if (i.probeId) free2(&i.probeId);
+    if (i.ptr) free2(&i.ptr);
+    if (i.bfilepath) free2(&i.bfilepath);
+    if (i.esdpath) free2(&i.esdpath);
   }
-  for (int i = 0; i < snpinfo.size(); i++) {
-    if (snpinfo[i].a1) free2(&snpinfo[i].a1);
-    if (snpinfo[i].a2) free2(&snpinfo[i].a2);
-    if (snpinfo[i].snprs) free2(&snpinfo[i].snprs);
-    if (snpinfo[i].rstr) free2(&snpinfo[i].rstr);
-    if (snpinfo[i].revs) free2(&snpinfo[i].revs);
+  for (auto& i : snpinfo) {
+    if (i.a1) free2(&i.a1);
+    if (i.a2) free2(&i.a2);
+    if (i.snprs) free2(&i.snprs);
+    if (i.rstr) free2(&i.rstr);
+    if (i.revs) free2(&i.revs);
   }
   for (int i = 0; i < besds.size(); i++) {
     fclose(fptrs[i]);
@@ -3732,7 +3728,7 @@ void update_epifile(char* eqtlFileName, char* s_epiFileName) {
   }
   fclose(epifile);
   write_epi(std::string(eqtlFileName), &eqtlinfo);
-  printf("%d of %llu probes are updated.\n", hit, eqtlinfo._probNum);
+  printf("%d of %llu probes are updated.\n", hit, static_cast<unsigned long long>(eqtlinfo._probNum));
 }
 void update_esifile(char* eqtlFileName, char* s_esiFileName) {
   eqtlInfo eqtlinfo;
@@ -3804,7 +3800,7 @@ void update_esifile(char* eqtlFileName, char* s_esiFileName) {
   }
   fclose(esifile);
   write_esi(std::string(eqtlFileName), &eqtlinfo);
-  printf("%d of %llu SNPs are updated.\n", hit, eqtlinfo._snpNum);
+  printf("%d of %llu SNPs are updated.\n", hit, static_cast<unsigned long long>(eqtlinfo._snpNum));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4219,20 +4215,20 @@ void smr_multipleSNP_for_each_chr(
         match_only(snpset[ii], smrwk.rs, matchidx);
         if (refSNP != nullptr && std::find(matchidx.begin(), matchidx.end(), maxid) == matchidx.end()) continue;
 
-        for (int j = 0; j < matchidx.size(); j++) {
-          slctId.push_back(smrwk.curId[matchidx[j]]);
-          slct_bxz.push_back(smrwk.bxz[matchidx[j]]);
-          slct_sexz.push_back(smrwk.sexz[matchidx[j]]);
-          slct_byz.push_back(smrwk.byz[matchidx[j]]);
-          slct_seyz.push_back(smrwk.seyz[matchidx[j]]);
-          slct_snpName.push_back(smrwk.rs[matchidx[j]]);
-          slct_pyz.push_back(smrwk.pyz[matchidx[j]]);
-          slct_zxz.push_back(smrwk.zxz[matchidx[j]]);
-          slct_bpsnp.push_back(smrwk.bpsnp[matchidx[j]]);
-          slct_snpchr.push_back(smrwk.snpchrom[matchidx[j]]);
-          slct_a1.push_back(smrwk.allele1[matchidx[j]]);
-          slct_a2.push_back(smrwk.allele2[matchidx[j]]);
-          slct_freq.push_back(smrwk.freq[matchidx[j]]);
+        for (int j : matchidx) {
+          slctId.push_back(smrwk.curId[j]);
+          slct_bxz.push_back(smrwk.bxz[j]);
+          slct_sexz.push_back(smrwk.sexz[j]);
+          slct_byz.push_back(smrwk.byz[j]);
+          slct_seyz.push_back(smrwk.seyz[j]);
+          slct_snpName.push_back(smrwk.rs[j]);
+          slct_pyz.push_back(smrwk.pyz[j]);
+          slct_zxz.push_back(smrwk.zxz[j]);
+          slct_bpsnp.push_back(smrwk.bpsnp[j]);
+          slct_snpchr.push_back(smrwk.snpchrom[j]);
+          slct_a1.push_back(smrwk.allele1[j]);
+          slct_a2.push_back(smrwk.allele2[j]);
+          slct_freq.push_back(smrwk.freq[j]);
         }
       }
 
@@ -4274,8 +4270,8 @@ void smr_multipleSNP_for_each_chr(
         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
         exit(EXIT_FAILURE);
       }
-      for (int j = 0; j < snp4msmr.size(); j++) {
-        setstr = snp4msmr[j] + '\n';
+      for (const auto& j : snp4msmr) {
+        setstr = j + '\n';
         if (fputs_checked(setstr.c_str(), setlst)) {
           printf("ERROR: in writing file %s .\n", setlstfile.c_str());
           exit(EXIT_FAILURE);
@@ -4473,8 +4469,8 @@ void smr_multipleSNP_for_each_chr(
         printf("ERROR: in writing file %s .\n", setlstfile.c_str());
         exit(EXIT_FAILURE);
       }
-      for (int j = 0; j < snp4msmr.size(); j++) {
-        setstr = snp4msmr[j] + '\n';
+      for (const auto& j : snp4msmr) {
+        setstr = j + '\n';
         if (fputs_checked(setstr.c_str(), setlst)) {
           printf("ERROR: in writing file %s .\n", setlstfile.c_str());
           exit(EXIT_FAILURE);

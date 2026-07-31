@@ -759,7 +759,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       besd.read(indicators, length);
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -925,12 +925,12 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
 
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
-        std::uint32_t pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
-        std::uint32_t pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
+        auto pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
+        auto pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
         std::uint32_t num = pos1 - pos;
         std::uint32_t real_num = 0;
         for (int j = 0; j < num << 1; j++) {
-          std::uint32_t rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
+          auto rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
 
           std::map<int, int>::iterator iter;
           iter = _incld_id_map.find(rid);
@@ -983,7 +983,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = new char[length];
       besd.read(indicators, length);
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -1036,7 +1036,7 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       }
       besd.read(buffer, colsize);
 
-      std::uint64_t* ptr = reinterpret_cast<std::uint64_t*>(buffer);
+      auto* ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
       eqtlinfo->_cols[0] = *ptr;
@@ -1091,10 +1091,10 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
         memset(val_char_ptr, 0, sizeof(char) * 2 * num * sizeof(float));
         besd.seekg(rowSTART + pos * sizeof(std::uint32_t));
         besd.read(row_char_ptr, 2 * num * sizeof(std::uint32_t));
-        std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
+        auto* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
         besd.seekg(valSTART + pos * sizeof(float));
         besd.read(val_char_ptr, 2 * num * sizeof(float));
-        float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
+        auto* val_ptr = reinterpret_cast<float*>(val_char_ptr);
         for (int j = 0; j < num << 1; j++) {
           std::uint32_t rid = *(row_ptr + j);
 
@@ -1148,9 +1148,9 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       eqtlinfo->_val.resize(valNum);
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      std::uint32_t* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
+      auto* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
-      float* val_ptr = reinterpret_cast<float*>(ptr4B);
+      auto* val_ptr = reinterpret_cast<float*>(ptr4B);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       eqtlinfo->_valNum = valNum;
@@ -1205,8 +1205,8 @@ void filter_probe_null(eqtlInfo* eqtlinfo) {
     if (!(nullprobefile)) {
       printf("Error: Failed to open null probe log file.\n");
     }
-    for (int i = 0, n = nullprobes.size(); i < n; i++) {
-      fputs(nullprobes[i].c_str(), nullprobefile);
+    for (const auto& nullprobe : nullprobes) {
+      fputs(nullprobe.c_str(), nullprobefile);
       fputs("\n", nullprobefile);
     }
     fclose(nullprobefile);
@@ -2305,11 +2305,11 @@ void allele_check(eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp.push_back(etrait->_esi_rs[etrait->_esi_include[i]]);
     StrFunc::match_only(essnp, etsnp, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etsnp[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(etsnp[i]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, etrait->_esi_rs, gdId);
     if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
-    for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etrait->_esi_rs[gdId[i]]);
+    for (int i : gdId) slctSNPs.push_back(etrait->_esi_rs[i]);
   }
 
   // alleles check
@@ -2371,7 +2371,7 @@ void allele_check(gwasData* gdata1, gwasData* gdata2) {
   StrFunc::match_only(gdata2->snpName, gdata1->snpName, gdId);
   if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
 
-  for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata1->snpName[gdId[i]]);
+  for (int i : gdId) slctSNPs.push_back(gdata1->snpName[i]);
 
   // alleles check
   StrFunc::match(slctSNPs, gdata2->snpName, edId);
@@ -2429,7 +2429,7 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < edId.size(); i++) cmmnSNPs[i] = etsnp[edId[i]];
     match_only(cmmnSNPs, essnp, edId);
     if (edId.empty()) throw std::runtime_error("Error: no common SNPs found.");
-    for (int i = 0; i < edId.size(); i++) edId[i] = esdata->_esi_include[edId[i]];
+    for (int& i : edId) i = esdata->_esi_include[i];
     slctSNPs.resize(edId.size());
     for (int i = 0; i < edId.size(); i++) slctSNPs[i] = esdata->_esi_rs[edId[i]];
   } else {
@@ -2709,9 +2709,9 @@ void cor_calc(MatrixXd& LD, MatrixXd& X) {
 void update_geIndx(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
   std::vector<int> tmpIdx1;
   std::vector<int> tmpIdx2;
-  for (int i = 0; i < bdata->_include.size(); i++) {
-    tmpIdx1.push_back(gdata->_include[bdata->_include[i]]);
-    tmpIdx2.push_back(esdata->_esi_include[bdata->_include[i]]);
+  for (int i : bdata->_include) {
+    tmpIdx1.push_back(gdata->_include[i]);
+    tmpIdx2.push_back(esdata->_esi_include[i]);
   }
   gdata->_include.clear();
   esdata->_esi_include.clear();
@@ -3002,9 +3002,9 @@ double freq_check(eqtlInfo* etrait, eqtlInfo* esdata, double& freqthresh, double
 void update_geIndx(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
   std::vector<int> tmpIdx1;
   std::vector<int> tmpIdx2;
-  for (int i = 0; i < bdata->_include.size(); i++) {
-    tmpIdx1.push_back(etrait->_esi_include[bdata->_include[i]]);
-    tmpIdx2.push_back(esdata->_esi_include[bdata->_include[i]]);
+  for (int i : bdata->_include) {
+    tmpIdx1.push_back(etrait->_esi_include[i]);
+    tmpIdx2.push_back(esdata->_esi_include[i]);
   }
   etrait->_esi_include.clear();
   esdata->_esi_include.clear();
@@ -5278,7 +5278,7 @@ void slct_trans_per_prb(std::vector<int>& slct_idx, std::vector<int>& regionChr,
   }
   long transnum = snpNumPerRegion.size();
   long transsnpnum = 0;
-  for (int l = 0; l < snpNumPerRegion.size(); l++) transsnpnum += snpNumPerRegion[l];
+  for (long l : snpNumPerRegion) transsnpnum += l;
 
   // log
   if (snpNumPerRegion.size()) {
@@ -5303,8 +5303,7 @@ int max_zsmr_id(SMRWK* smrwk, double p_smr) {
 
   int id = -9, idzx = -9;
   double mzxz2 = -9, mzxy2 = -9;
-  for (int i = 0; i < z_candid.size(); i++) {
-    int cid = z_candid[i];
+  for (int cid : z_candid) {
     double zxz = smrwk->bxz[cid] / smrwk->sexz[cid];
     double zyz = smrwk->byz[cid] / smrwk->seyz[cid];
     double zxy2 = (zxz * zxz * zyz * zyz) / (zxz * zxz + zyz * zyz);
@@ -5779,7 +5778,7 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
     std::uint64_t bsize = (eqtlinfo._include.size() * eqtlinfo._snpNum << 1);
-    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+    auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     memset(buffer, 0, sizeof(float) * bsize);
     float* ptr = buffer;
     std::uint64_t pro_num = eqtlinfo._include.size();
@@ -5810,12 +5809,12 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     std::uint64_t valNum = eqtlinfo._valNum;
     std::uint64_t bufsize = sizeof(std::uint64_t) + colSize + rowSize + valSize;
 
-    char* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
+    auto* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
     memset(buffer, 0, sizeof(char) * bufsize);
     char* wptr = buffer;
     memcpy(wptr, &valNum, sizeof(std::uint64_t));
     wptr += sizeof(std::uint64_t);
-    std::uint64_t* uptr = reinterpret_cast<std::uint64_t*>(wptr);
+    auto* uptr = reinterpret_cast<std::uint64_t*>(wptr);
     *uptr++ = 0;
     for (int i = 0; i < eqtlinfo._include.size(); i++) {
       *uptr++ = eqtlinfo._cols[(eqtlinfo._include[i] << 1) + 1];
@@ -5836,69 +5835,78 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 
 // sort in ascend order
 int comp(const void* a, const void* b) {
-  if ((*(probeinfolst*)a).probechr != (*(probeinfolst*)b).probechr)
-    return ((*(probeinfolst*)a).probechr > (*(probeinfolst*)b).probechr) ? 1 : -1;
-  if ((*(probeinfolst*)a).bp != (*(probeinfolst*)b).bp)
-    return ((*(probeinfolst*)a).bp > (*(probeinfolst*)b).bp) ? 1 : -1;
+  if ((*reinterpret_cast<const probeinfolst*>(a)).probechr != (*reinterpret_cast<const probeinfolst*>(b)).probechr)
+    return ((*reinterpret_cast<const probeinfolst*>(a)).probechr > (*reinterpret_cast<const probeinfolst*>(b)).probechr)
+               ? 1
+               : -1;
+  if ((*reinterpret_cast<const probeinfolst*>(a)).bp != (*reinterpret_cast<const probeinfolst*>(b)).bp)
+    return ((*reinterpret_cast<const probeinfolst*>(a)).bp > (*reinterpret_cast<const probeinfolst*>(b)).bp) ? 1 : -1;
   return 0;
 }
 
 int comp2(const void* a, const void* b) {
-  if ((*(probeinfolst2*)a).probechr != (*(probeinfolst2*)b).probechr)
-    return ((*(probeinfolst2*)a).probechr > (*(probeinfolst2*)b).probechr) ? 1 : -1;
-  if ((*(probeinfolst2*)a).bp != (*(probeinfolst2*)b).bp)
-    return ((*(probeinfolst2*)a).bp > (*(probeinfolst2*)b).bp) ? 1 : -1;
+  if ((*reinterpret_cast<const probeinfolst2*>(a)).probechr != (*reinterpret_cast<const probeinfolst2*>(b)).probechr)
+    return ((*reinterpret_cast<const probeinfolst2*>(a)).probechr >
+            (*reinterpret_cast<const probeinfolst2*>(b)).probechr)
+               ? 1
+               : -1;
+  if ((*reinterpret_cast<const probeinfolst2*>(a)).bp != (*reinterpret_cast<const probeinfolst2*>(b)).bp)
+    return ((*reinterpret_cast<const probeinfolst2*>(a)).bp > (*reinterpret_cast<const probeinfolst2*>(b)).bp) ? 1 : -1;
   return 0;
 }
 
 int comp_esi(const void* a, const void* b) {
-  if ((*(snpinfolst*)a).snpchr != (*(snpinfolst*)b).snpchr)
-    return ((*(snpinfolst*)a).snpchr > (*(snpinfolst*)b).snpchr) ? 1 : -1;
-  if ((*(snpinfolst*)a).bp != (*(snpinfolst*)b).bp) return ((*(snpinfolst*)a).bp > (*(snpinfolst*)b).bp) ? 1 : -1;
+  if ((*reinterpret_cast<const snpinfolst*>(a)).snpchr != (*reinterpret_cast<const snpinfolst*>(b)).snpchr)
+    return ((*reinterpret_cast<const snpinfolst*>(a)).snpchr > (*reinterpret_cast<const snpinfolst*>(b)).snpchr) ? 1
+                                                                                                                 : -1;
+  if ((*reinterpret_cast<const snpinfolst*>(a)).bp != (*reinterpret_cast<const snpinfolst*>(b)).bp)
+    return ((*reinterpret_cast<const snpinfolst*>(a)).bp > (*reinterpret_cast<const snpinfolst*>(b)).bp) ? 1 : -1;
   return 0;
 }
 
 int comp_i4tran(const void* a, const void* b) {
-  if ((*(info4trans*)a).snpchr != (*(info4trans*)b).snpchr)
-    return ((*(info4trans*)a).snpchr > (*(info4trans*)b).snpchr) ? 1 : -1;
-  if ((*(info4trans*)a).bp != (*(info4trans*)b).bp) return ((*(info4trans*)a).bp > (*(info4trans*)b).bp) ? 1 : -1;
+  if ((*reinterpret_cast<const info4trans*>(a)).snpchr != (*reinterpret_cast<const info4trans*>(b)).snpchr)
+    return ((*reinterpret_cast<const info4trans*>(a)).snpchr > (*reinterpret_cast<const info4trans*>(b)).snpchr) ? 1
+                                                                                                                 : -1;
+  if ((*reinterpret_cast<const info4trans*>(a)).bp != (*reinterpret_cast<const info4trans*>(b)).bp)
+    return ((*reinterpret_cast<const info4trans*>(a)).bp > (*reinterpret_cast<const info4trans*>(b)).bp) ? 1 : -1;
   return 0;
 }
 
 int comp_estn(const void* a, const void* b) {
-  if ((*(snpinfolst*)a).estn == (*(snpinfolst*)b).estn) return 0;
-  return ((*(snpinfolst*)a).estn > (*(snpinfolst*)b).estn) ? 1 : -1;
+  if ((*reinterpret_cast<const snpinfolst*>(a)).estn == (*reinterpret_cast<const snpinfolst*>(b)).estn) return 0;
+  return ((*reinterpret_cast<const snpinfolst*>(a)).estn > (*reinterpret_cast<const snpinfolst*>(b)).estn) ? 1 : -1;
 }
 
 void free_snplist(std::vector<snpinfolst>& a) {
-  for (int i = 0; i < a.size(); i++) {
-    if (a[i].snprs) free2(&a[i].snprs);
-    if (a[i].a1) free2(&a[i].a1);
-    if (a[i].a2) free2(&a[i].a2);
+  for (auto& i : a) {
+    if (i.snprs) free2(&i.snprs);
+    if (i.a1) free2(&i.a1);
+    if (i.a2) free2(&i.a2);
   }
 }
 
 void free_probelist(std::vector<probeinfolst>& a) {
-  for (int i = 0; i < a.size(); i++) {
-    if (a[i].probeId) free2(&a[i].probeId);
-    if (a[i].genename) free2(&a[i].genename);
-    if (a[i].esdpath) free2(&a[i].esdpath);
-    if (a[i].bfilepath) free2(&a[i].bfilepath);
+  for (auto& i : a) {
+    if (i.probeId) free2(&i.probeId);
+    if (i.genename) free2(&i.genename);
+    if (i.esdpath) free2(&i.esdpath);
+    if (i.bfilepath) free2(&i.bfilepath);
   }
 }
 
 void free_snplist(std::vector<info4trans>& a) {
-  for (int i = 0; i < a.size(); i++) {
-    if (a[i].snprs) free2(&a[i].snprs);
-    if (a[i].a1) free2(&a[i].a1);
-    if (a[i].a2) free2(&a[i].a2);
+  for (auto& i : a) {
+    if (i.snprs) free2(&i.snprs);
+    if (i.a1) free2(&i.a1);
+    if (i.a2) free2(&i.a2);
   }
 }
 
 void free_probelist(std::vector<probeinfolst2>& a) {
-  for (int i = 0; i < a.size(); i++) {
-    if (a[i].probeId) free2(&a[i].probeId);
-    if (a[i].genename) free2(&a[i].genename);
+  for (auto& i : a) {
+    if (i.probeId) free2(&i.probeId);
+    if (i.genename) free2(&i.genename);
   }
 }
 
@@ -6145,10 +6153,10 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
       int lowerbounder = (traitbp - outcome_probe_wind) > 0 ? (traitbp - outcome_probe_wind) : 0;
       int upperbounder = traitbp + outcome_probe_wind;
       esdata._include.clear();
-      for (int j = 0; j < includebk.size(); j++) {
-        int bptmp = esdata._epi_bp[includebk[j]];
-        if (esdata._epi_chr[includebk[j]] == traitchr && bptmp >= lowerbounder && bptmp <= upperbounder)
-          esdata._include.push_back(includebk[j]);
+      for (int j : includebk) {
+        int bptmp = esdata._epi_bp[j];
+        if (esdata._epi_chr[j] == traitchr && bptmp >= lowerbounder && bptmp <= upperbounder)
+          esdata._include.push_back(j);
       }
       if (esdata._include.size() == 0) continue;
     }
@@ -6166,20 +6174,20 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
       etraitcount++;
       itemcount += smrrlts.size();
     }
-    for (int j = 0; j < smrrlts.size(); j++) {
-      outstr = smrrlts[j].ProbeID + '\t' + atos(smrrlts[j].ProbeChr) + '\t' + smrrlts[j].Gene + '\t' +
-               atos(smrrlts[j].Probe_bp) + '\t' + traitname + '\t' + atos(traitchr) + '\t' + traitgene + '\t' +
-               atos(traitbp) + '\t' + smrrlts[j].SNP + '\t' + atos(smrrlts[j].SNP_Chr) + '\t' +
-               atos(smrrlts[j].SNP_bp) + '\t' + smrrlts[j].A1 + '\t' + smrrlts[j].A2 + '\t' + atos(smrrlts[j].Freq) +
-               '\t' + atos(smrrlts[j].b_GWAS) + '\t' + atos(smrrlts[j].se_GWAS) + '\t' + dtos(smrrlts[j].p_GWAS) +
-               '\t' + atos(smrrlts[j].b_eQTL) + '\t' + atos(smrrlts[j].se_eQTL) + '\t' + dtos(smrrlts[j].p_eQTL) +
-               '\t' + atos(smrrlts[j].b_SMR) + '\t' + atos(smrrlts[j].se_SMR) + '\t' + dtos(smrrlts[j].p_SMR) + '\t';
+    for (auto& smrrlt : smrrlts) {
+      outstr = smrrlt.ProbeID + '\t' + atos(smrrlt.ProbeChr) + '\t' + smrrlt.Gene + '\t' + atos(smrrlt.Probe_bp) +
+               '\t' + traitname + '\t' + atos(traitchr) + '\t' + traitgene + '\t' + atos(traitbp) + '\t' + smrrlt.SNP +
+               '\t' + atos(smrrlt.SNP_Chr) + '\t' + atos(smrrlt.SNP_bp) + '\t' + smrrlt.A1 + '\t' + smrrlt.A2 + '\t' +
+               atos(smrrlt.Freq) + '\t' + atos(smrrlt.b_GWAS) + '\t' + atos(smrrlt.se_GWAS) + '\t' +
+               dtos(smrrlt.p_GWAS) + '\t' + atos(smrrlt.b_eQTL) + '\t' + atos(smrrlt.se_eQTL) + '\t' +
+               dtos(smrrlt.p_eQTL) + '\t' + atos(smrrlt.b_SMR) + '\t' + atos(smrrlt.se_SMR) + '\t' +
+               dtos(smrrlt.p_SMR) + '\t';
       if (ssmrflag)
-        outstr += dtos(smrrlts[j].p_SSMR) + '\t' + (smrrlts[j].p_HET >= 0 ? dtos(smrrlts[j].p_HET) : "NA") + '\t' +
-                  (smrrlts[j].nsnp > 0 ? atos(smrrlts[j].nsnp + 1) : "NA") + '\n';
+        outstr += dtos(smrrlt.p_SSMR) + '\t' + (smrrlt.p_HET >= 0 ? dtos(smrrlt.p_HET) : "NA") + '\t' +
+                  (smrrlt.nsnp > 0 ? atos(smrrlt.nsnp + 1) : "NA") + '\n';
       else
-        outstr += (smrrlts[j].p_HET >= 0 ? dtos(smrrlts[j].p_HET) : "NA") + '\t' +
-                  (smrrlts[j].nsnp > 0 ? atos(smrrlts[j].nsnp + 1) : "NA") + '\n';
+        outstr += (smrrlt.p_HET >= 0 ? dtos(smrrlt.p_HET) : "NA") + '\t' +
+                  (smrrlt.nsnp > 0 ? atos(smrrlt.nsnp + 1) : "NA") + '\n';
       if (fputs_checked(outstr.c_str(), smr)) {
         printf("ERROR: in writing file %s .\n", smrfile.c_str());
         exit(EXIT_FAILURE);
@@ -6313,7 +6321,7 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
   smrbesd = fopen(esdfile.c_str(), "wb");
   if (eqtlinfo->_valNum == 0) {
     std::uint64_t bsize = (eqtlinfo->_include.size() * eqtlinfo->_snpNum << 1) + 1;
-    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+    auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     memset(buffer, 0, sizeof(float) * bsize);
     float* ptr = buffer;
     *ptr++ = 0.0;
@@ -6332,14 +6340,14 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
     std::uint64_t valNum = eqtlinfo->_valNum;
     std::uint64_t bufsize = sizeof(float) + sizeof(std::uint64_t) + colSize + rowSize + valSize;
 
-    char* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
+    auto* buffer = static_cast<char*>(malloc(sizeof(char) * bufsize));
     memset(buffer, 0, sizeof(char) * bufsize);
     std::uint32_t ftype = SPARSE_FILE_TYPE_3F;
     memcpy(buffer, &ftype, sizeof(std::uint32_t));
     char* wptr = buffer + sizeof(float);
     memcpy(wptr, &valNum, sizeof(std::uint64_t));
     wptr += sizeof(std::uint64_t);
-    std::uint64_t* uptr = reinterpret_cast<std::uint64_t*>(wptr);
+    auto* uptr = reinterpret_cast<std::uint64_t*>(wptr);
     *uptr++ = 0;
     for (int i = 0; i < eqtlinfo->_include.size(); i++) {
       *uptr++ = eqtlinfo->_cols[(eqtlinfo->_include[i] << 1) + 1];
@@ -6378,7 +6386,7 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
   std::vector<std::string> cmmnSymbs;
   match_only(esdata._esi_rs, etrait._esi_rs, idx);
   etrait._esi_include = idx;
-  for (int i = 0; i < idx.size(); i++) cmmnSymbs.push_back(etrait._esi_rs[idx[i]]);
+  for (int i : idx) cmmnSymbs.push_back(etrait._esi_rs[i]);
   idx.clear();
   match_only(cmmnSymbs, esdata._esi_rs, idx);
   esdata._esi_include = idx;
@@ -6389,7 +6397,7 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
   match_only(esdata._epi_prbID, etrait._epi_prbID, idx);
   etrait._include = idx;
   cmmnSymbs.clear();
-  for (int i = 0; i < idx.size(); i++) cmmnSymbs.push_back(etrait._epi_prbID[idx[i]]);
+  for (int i : idx) cmmnSymbs.push_back(etrait._epi_prbID[i]);
   idx.clear();
   match_only(cmmnSymbs, esdata._epi_prbID, idx);
   esdata._include = idx;
@@ -6491,7 +6499,7 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
       }
     }
 
-    for (int j = 0; j < meta_beta.size(); j++) metadata._val.push_back(meta_beta[j]);
+    for (float j : meta_beta) metadata._val.push_back(j);
     for (int j = 0; j < meta_beta.size(); j++) metadata._val.push_back(meta_se[j]);
     for (int j = 0; j < meta_beta.size(); j++) metadata._rowid.push_back(meta_rowid[j]);
     for (int j = 0; j < meta_beta.size(); j++) metadata._rowid.push_back(meta_rowid[j]);
@@ -6522,8 +6530,8 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
     printf("Error: Failed to open unmatchedsnpfile file.\n");
     exit(1);
   }
-  for (auto it = unmatched_rs_map.begin(); it != unmatched_rs_map.end(); ++it) {
-    std::string tmpstr = it->first + '\n';
+  for (auto& it : unmatched_rs_map) {
+    std::string tmpstr = it.first + '\n';
     fputs(tmpstr.c_str(), unmatchedsnpfile);
   }
   fclose(unmatchedsnpfile);
@@ -6669,7 +6677,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
   if (prtscr) std::cout << "Reading eQTL summary data from [" + besdfile + "]." << std::endl;
 
-  std::uint32_t gflag = mapped.read_from<std::uint32_t>(0);
+  auto gflag = mapped.read_from<std::uint32_t>(0);
 
   std::cout << "gflag:" << gflag << std::endl;
 
@@ -6760,7 +6768,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr++;
-      float* val_ptr = reinterpret_cast<float*>(ptr);
+      auto* val_ptr = reinterpret_cast<float*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
       eqtlinfo->_valNum = valNum;
       if (prtscr)
@@ -6773,7 +6781,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       int length = (RESERVEDUNITS - 1) * sizeof(int);
       char* indicators = mapped.offset<char*>(4);
 
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -6912,12 +6920,12 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
 
       for (int i = 0; i < eqtlinfo->_include.size(); i++) {
         unsigned long pid = eqtlinfo->_include[i];
-        std::uint32_t pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
-        std::uint32_t pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
+        auto pos = static_cast<std::uint32_t>(*(ptr + (pid << 1)));
+        auto pos1 = static_cast<std::uint32_t>(*(ptr + (pid << 1) + 1));
         std::uint32_t num = pos1 - pos;
         std::uint32_t real_num = 0;
         for (int j = 0; j < num << 1; j++) {
-          std::uint32_t rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
+          auto rid = static_cast<std::uint32_t>(*(row_ptr + pos + j));
 
           std::map<int, int>::iterator iter;
           iter = _incld_id_map.find(rid);
@@ -6969,7 +6977,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       char* indicators = mapped.offset<char*>(read_offset);
       read_offset += length;
 
-      int* tmp = reinterpret_cast<int*>(indicators);
+      auto* tmp = reinterpret_cast<int*>(indicators);
       int ss = *tmp++;
       if (ss != -9) {
         printf("The sample size is %d.\n", ss);
@@ -7015,7 +7023,7 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
         !sorted) {
       buffer = mapped.offset<char*>(read_offset);
 
-      std::uint64_t* ptr = reinterpret_cast<std::uint64_t*>(buffer);
+      auto* ptr = reinterpret_cast<std::uint64_t*>(buffer);
 
       eqtlinfo->_cols.resize((eqtlinfo->_include.size() << 1) + 1);
       eqtlinfo->_cols[0] = *ptr;
@@ -7057,9 +7065,9 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
         char* row_char_ptr = nullptr;
         char* val_char_ptr = nullptr;
         row_char_ptr = mapped.offset<char*>(rowSTART + pos * sizeof(std::uint32_t));
-        std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
+        auto* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
         val_char_ptr = mapped.offset<char*>(valSTART + pos * sizeof(float));
-        float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
+        auto* val_ptr = reinterpret_cast<float*>(val_char_ptr);
         for (int j = 0; j < num << 1; j++) {
           std::uint32_t rid = *(row_ptr + j);
 
@@ -7093,9 +7101,9 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       eqtlinfo->_val.resize(valNum);
 
       for (std::uint64_t i = 0; i < colNum; i++) eqtlinfo->_cols[i] = *ptr++;
-      std::uint32_t* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
+      auto* ptr4B = reinterpret_cast<std::uint32_t*>(ptr);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_rowid[i] = *ptr4B++;
-      float* val_ptr = reinterpret_cast<float*>(ptr4B);
+      auto* val_ptr = reinterpret_cast<float*>(ptr4B);
       for (std::uint64_t i = 0; i < valNum; i++) eqtlinfo->_val[i] = *val_ptr++;
 
       eqtlinfo->_valNum = valNum;

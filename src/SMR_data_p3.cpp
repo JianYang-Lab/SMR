@@ -79,9 +79,9 @@ void combine_epi(std::vector<probeinfolst2>& probeinfo, std::vector<std::string>
   std::map<std::string, int> prb_map;
   std::map<std::string, int> prbbp_map;
   std::map<std::string, int>::iterator iter;
-  for (int i = 0; i < smasNames.size(); i++) {
+  for (const auto& smasName : smasNames) {
     eqtlInfo etmp;
-    std::string epifile = smasNames[i] + ".epi";
+    std::string epifile = smasName + ".epi";
     read_epifile(&etmp, epifile);
     for (int j = 0; j < etmp._probNum; j++) {
       std::string crsbpstr = etmp._epi_prbID[j] + ":" + atos(etmp._epi_bp[j]);
@@ -107,13 +107,13 @@ void combine_epi(std::vector<probeinfolst2>& probeinfo, std::vector<std::string>
         probinfotmp.beta_se = nullptr;
         probinfotmp.sinfo = nullptr;
         probinfotmp.besdpath.reserve(0x20);
-        probinfotmp.besdpath.push_back(smasNames[i]);
+        probinfotmp.besdpath.push_back(smasName);
         probeinfo.push_back(probinfotmp);
 
       } else {
         iter = prb_map.find(etmp._epi_prbID[j]);
         if (iter != prb_map.end()) {
-          probeinfo[iter->second].besdpath.push_back(smasNames[i]);
+          probeinfo[iter->second].besdpath.push_back(smasName);
         } else {
           printf("ERROR: This would never happen. please help to report this bug.\n");
           exit(EXIT_FAILURE);
@@ -131,9 +131,9 @@ void combine_epi(std::vector<probeinfolst2>& probeinfo, std::vector<std::string>
  */
 std::uint64_t countNotNullNum(std::vector<std::string>& smasNames, int& densefnum, int& sparsefnum) {
   std::uint64_t count = 0;
-  for (int i = 0; i < smasNames.size(); i++) {
+  for (const auto& smasName : smasNames) {
     eqtlInfo etmp;
-    std::string besdfile = smasNames[i] + ".besd";
+    std::string besdfile = smasName + ".besd";
     FILE* fptr = fopen(besdfile.c_str(), "rb");
     if (!fptr) {
       printf("ERROR: Couldn't open file %s\n", besdfile.c_str());
@@ -199,7 +199,7 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
   }
   std::uint32_t ft2save = DENSE_FILE_TYPE_3;
   std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
-  float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+  auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
   if (nullptr == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
@@ -213,8 +213,8 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
     progress(j, dis, epiNum);
     std::string prbname = probeinfo[j].probeId;
     for (int k = 0; k < bsize; k++) buffer[k] = -9;  // init
-    for (int k = 0; k < probeinfo[j].besdpath.size(); k++) {
-      std::string besdfilepre = probeinfo[j].besdpath[k];
+    for (const auto& k : probeinfo[j].besdpath) {
+      std::string besdfilepre = k;
       std::vector<std::string> _rs;
       std::vector<float> _beta;
       std::vector<float> _se;
@@ -224,10 +224,10 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       std::vector<int> _bp;
       std::vector<float> _freq;
 
-      read_epifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
+      read_epifile(&eqtlinfo, std::string(k) + ".epi", prtscr);
       extract_eqtl_single_probe(&eqtlinfo, prbname, prtscr);
-      read_esifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
-      int tmp = shown(std::string(probeinfo[j].besdpath[k]));
+      read_esifile(&eqtlinfo, std::string(k) + ".esi", prtscr);
+      int tmp = shown(std::string(k));
       if (tmp != -9) {
         printf("The sample size is %d.\n", tmp);
         if (ssck == -9) {
@@ -239,7 +239,7 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
           }
         }
       }
-      read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
+      read_besdfile(&eqtlinfo, std::string(k) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
         continue;
@@ -355,15 +355,15 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
 
   std::uint64_t sizeperprb = sizeof(float) * esiNum * 2;
   std::uint64_t bsize = 0x7FFFFFC0;
-  float* buffer = static_cast<float*>(malloc(bsize));
+  auto* buffer = static_cast<float*>(malloc(bsize));
   while (nullptr == buffer && bsize > sizeperprb) {
     buffer = static_cast<float*>(malloc(bsize >>= 1));
   }
   if (nullptr == buffer) {
-    printf("ERROR: Can't malloc the reading buffer for %llu MB.\n", (bsize >> 20));
+    printf("ERROR: Can't malloc the reading buffer for %llu MB.\n", static_cast<unsigned long long>(bsize >> 20));
     exit(EXIT_FAILURE);
   } else {
-    printf("%llu MB memory has been allocated as the reading buffer.\n", (bsize >> 20));
+    printf("%llu MB memory has been allocated as the reading buffer.\n", static_cast<unsigned long long>(bsize >> 20));
   }
   long prbperloop = bsize / sizeperprb;
   bool prtscr = false;
@@ -411,8 +411,8 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       }
     }
 
-    for (int l = 0; l < f2prb.size(); l++) {
-      std::string besdfilepre = f2prb[l].besdpath;
+    for (auto& l : f2prb) {
+      std::string besdfilepre = l.besdpath;
       read_epifile(&eqtlinfo, besdfilepre + ".epi", prtscr);
 
       std::string besdfile = std::string(besdfilepre) + ".besd";
@@ -481,9 +481,10 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         }
 
         std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-        std::uint64_t* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
+        auto* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
         if (nullptr == colbuf) {
-          printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
+          printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+                 static_cast<unsigned long long>(colsize >> 20));
           exit(EXIT_FAILURE);
         }
         if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
@@ -496,8 +497,8 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         valSTART = descriptive * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t) +
                    valNum * sizeof(std::uint32_t);
 
-        for (int m = 0; m < f2prb[l].pid.size(); m++) {
-          long curPrid = j * prbperloop + f2prb[l].pid[m];
+        for (int p : l.pid) {
+          long curPrid = j * prbperloop + p;
           std::string curprb = probeinfo[curPrid].probeId;
           iter = eqtlinfo._probe_name_map.find(curprb);
           if (iter != eqtlinfo._probe_name_map.end()) {
@@ -522,14 +523,14 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
             memset(val_char_ptr, 0, sizeof(char) * 2 * num * sizeof(float));
             fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
             fread(row_char_ptr, sizeof(std::uint32_t), 2 * num, fptr);
-            std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
+            auto* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
             fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
             fread(val_char_ptr, sizeof(float), 2 * num, fptr);
-            float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
+            auto* val_ptr = reinterpret_cast<float*>(val_char_ptr);
             for (int j = 0; j < num; j++) {
               std::uint32_t rid = *(row_ptr + j);
-              *(buffer + f2prb[l].pid[m] * esiNum * 2 + rid) = *(val_ptr + j);
-              *(buffer + f2prb[l].pid[m] * esiNum * 2 + rid + esiNum) = *(val_ptr + j + num);
+              *(buffer + p * esiNum * 2 + rid) = *(val_ptr + j);
+              *(buffer + p * esiNum * 2 + rid + esiNum) = *(val_ptr + j + num);
             }
 
             free(row_char_ptr);
@@ -566,14 +567,14 @@ void save_besds_dbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
           for (int k = 4; k < RESERVEDUNITS; k++) readint(fptr);
         }
 
-        for (int m = 0; m < f2prb[l].pid.size(); m++) {
-          long curPrid = j * prbperloop + f2prb[l].pid[m];
+        for (int p : l.pid) {
+          long curPrid = j * prbperloop + p;
           std::string curprb = probeinfo[curPrid].probeId;
           iter = eqtlinfo._probe_name_map.find(curprb);
           if (iter != eqtlinfo._probe_name_map.end()) {
             std::uint64_t pid = iter->second;
             fseek(fptr, ((pid << 1) * eqtlinfo._snpNum + descriptive) << 2, SEEK_SET);
-            float* wptr = buffer + f2prb[l].pid[m] * esiNum * 2;
+            float* wptr = buffer + p * esiNum * 2;
             fread(wptr, sizeof(char), eqtlinfo._snpNum << 3, fptr);
           }
         }
@@ -727,9 +728,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       }
 
       std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-      std::uint64_t* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
+      auto* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
       if (nullptr == colbuf) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(colsize >> 20));
         exit(EXIT_FAILURE);
       }
       if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
@@ -762,14 +764,14 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
         std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -841,13 +843,13 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
               }
             }
             long num_new = probeinfo[prbindx].vnum + keepid.size();
-            std::uint32_t* rid_new = static_cast<std::uint32_t*>(malloc(num_new * 2 * sizeof(std::uint32_t)));
+            auto* rid_new = static_cast<std::uint32_t*>(malloc(num_new * 2 * sizeof(std::uint32_t)));
             if (nullptr == rid_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
             }
             memset(rid_new, 0, num_new * 2 * sizeof(std::uint32_t));
-            float* betase_new = static_cast<float*>(malloc(num_new * 2 * sizeof(float)));
+            auto* betase_new = static_cast<float*>(malloc(num_new * 2 * sizeof(float)));
             if (nullptr == betase_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
@@ -924,9 +926,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         for (int k = 4; k < RESERVEDUNITS; k++) readint(fptr);
       }
 
-      float* tmpbetase = static_cast<float*>(malloc(sizeof(float) * etmp._snpNum << 1));
+      auto* tmpbetase = static_cast<float*>(malloc(sizeof(float) * etmp._snpNum << 1));
       if (nullptr == tmpbetase) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (etmp._snpNum >> 17));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(etmp._snpNum >> 17));
         exit(EXIT_FAILURE);
       }
 
@@ -952,14 +955,14 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         for (int k = 0; k < etmp._snpNum; k++)
           if (tmpbetase[etmp._snpNum + k] + 9 > 1e-6) realnum++;
         if (realnum > 0) {
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(realnum * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(realnum * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, realnum * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(realnum * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(realnum * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -1037,13 +1040,13 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
               }
             }
             long num_new = probeinfo[prbindx].vnum + keepid.size();
-            std::uint32_t* rid_new = static_cast<std::uint32_t*>(malloc(num_new * 2 * sizeof(std::uint32_t)));
+            auto* rid_new = static_cast<std::uint32_t*>(malloc(num_new * 2 * sizeof(std::uint32_t)));
             if (nullptr == rid_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
             }
             memset(rid_new, 0, num_new * 2 * sizeof(std::uint32_t));
-            float* betase_new = static_cast<float*>(malloc(num_new * 2 * sizeof(float)));
+            auto* betase_new = static_cast<float*>(malloc(num_new * 2 * sizeof(float)));
             if (nullptr == betase_new) {
               printf("ERROR: Memory allocation error when when merging data of probe %s.\n", curprb.c_str());
               exit(EXIT_FAILURE);
@@ -1242,9 +1245,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
       }
 
       std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-      std::uint64_t* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
+      auto* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
       if (nullptr == colbuf) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(colsize >> 20));
         exit(EXIT_FAILURE);
       }
       if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
@@ -1279,14 +1283,14 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
         std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -1337,9 +1341,10 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         for (int k = 4; k < RESERVEDUNITS; k++) readint(fptr);
       }
 
-      float* tmpbetase = static_cast<float*>(malloc(sizeof(float) * etmp._snpNum << 1));
+      auto* tmpbetase = static_cast<float*>(malloc(sizeof(float) * etmp._snpNum << 1));
       if (nullptr == tmpbetase) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (etmp._snpNum >> 17));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(etmp._snpNum >> 17));
         exit(EXIT_FAILURE);
       }
 
@@ -1374,14 +1379,14 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         for (int k = 0; k < etmp._snpNum; k++)
           if (fabs(tmpbetase[etmp._snpNum + k] + 9) > 1e-6) realnum++;
         probeinfo[prbindx].vnum = realnum;
-        std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(realnum * 2 * sizeof(std::uint32_t)));
+        auto* ridbuff = static_cast<std::uint32_t*>(malloc(realnum * 2 * sizeof(std::uint32_t)));
         if (nullptr == ridbuff) {
           printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                  besdfile.c_str());
           exit(EXIT_FAILURE);
         }
         memset(ridbuff, 0, realnum * 2 * sizeof(std::uint32_t));
-        float* betasebuff = static_cast<float*>(malloc(realnum * 2 * sizeof(float)));
+        auto* betasebuff = static_cast<float*>(malloc(realnum * 2 * sizeof(float)));
         if (nullptr == betasebuff) {
           printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                  besdfile.c_str());
@@ -1539,11 +1544,11 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
     snpinfo.clear();
     std::map<std::string, int> snp_map;
     long snpmapsize = 0;
-    for (int k = 0; k < probeinfo[j].besdpath.size(); k++) {
-      read_epifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".epi", prtscr);
+    for (const auto& k : probeinfo[j].besdpath) {
+      read_epifile(&eqtlinfo, std::string(k) + ".epi", prtscr);
       extract_eqtl_single_probe(&eqtlinfo, prbname, prtscr);
-      read_esifile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".esi", prtscr);
-      int tmp = shown(std::string(probeinfo[j].besdpath[k]));
+      read_esifile(&eqtlinfo, std::string(k) + ".esi", prtscr);
+      int tmp = shown(std::string(k));
       if (tmp != -9) {
         printf("The sample size is %d.\n", tmp);
         if (ssck == -9) {
@@ -1556,7 +1561,7 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         }
       }
 
-      read_besdfile(&eqtlinfo, std::string(probeinfo[j].besdpath[k]) + ".besd", prtscr);
+      read_besdfile(&eqtlinfo, std::string(k) + ".besd", prtscr);
 
       if (eqtlinfo._rowid.empty() && eqtlinfo._bxz.empty()) {
         continue;
@@ -1837,9 +1842,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
       }
 
       std::uint64_t colsize = colNum * sizeof(std::uint64_t);
-      std::uint64_t* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
+      auto* colbuf = static_cast<std::uint64_t*>(malloc(colsize));
       if (nullptr == colbuf) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (colsize >> 20));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(colsize >> 20));
         exit(EXIT_FAILURE);
       }
       if (fread(colbuf, sizeof(std::uint64_t), colNum, fptr) != colNum) {
@@ -1875,14 +1881,14 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         std::uint64_t pos1 = *(ptr + (j << 1) + 1);  // SE START
         std::uint64_t num = pos1 - pos;
         if (num > 0) {
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(num * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, num * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(num * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when reading the probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -1932,14 +1938,14 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
                               false);  // slct_idx with no order if there are trans-rgeions
           std::stable_sort(slct_idx.begin(), slct_idx.end());
           free2(&prbifo.probeId);
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(slct_idx.size() * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(slct_idx.size() * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(slct_idx.size() * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(slct_idx.size() * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -1993,9 +1999,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         for (int k = 4; k < RESERVEDUNITS; k++) readint(fptr);
       }
 
-      float* tmpbetase = static_cast<float*>(malloc(sizeof(float) * eqtlinfo._snpNum << 1));
+      auto* tmpbetase = static_cast<float*>(malloc(sizeof(float) * eqtlinfo._snpNum << 1));
       if (nullptr == tmpbetase) {
-        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n", (eqtlinfo._snpNum >> 17));
+        printf("ERROR: Can't malloc the reading cols buffer for %llu MB.\n",
+               static_cast<unsigned long long>(eqtlinfo._snpNum >> 17));
         exit(EXIT_FAILURE);
       }
 
@@ -2053,14 +2060,14 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
                               false);  // slct_idx with no order if there are trans-rgeions
           std::stable_sort(slct_idx.begin(), slct_idx.end());
           free2(&prbifo.probeId);
-          std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(slct_idx.size() * 2 * sizeof(std::uint32_t)));
+          auto* ridbuff = static_cast<std::uint32_t*>(malloc(slct_idx.size() * 2 * sizeof(std::uint32_t)));
           if (nullptr == ridbuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
             exit(EXIT_FAILURE);
           }
           memset(ridbuff, 0, slct_idx.size() * 2 * sizeof(std::uint32_t));
-          float* betasebuff = static_cast<float*>(malloc(slct_idx.size() * 2 * sizeof(float)));
+          auto* betasebuff = static_cast<float*>(malloc(slct_idx.size() * 2 * sizeof(float)));
           if (nullptr == betasebuff) {
             printf("ERROR: Memory allocation error when when dealing with probe %s in the file %s.\n", curprb.c_str(),
                    besdfile.c_str());
@@ -2317,10 +2324,10 @@ void get_snpinfo_cur_prb_sparse(std::vector<snpinfolst>& snpinfo, FILE* fptr, st
   fseek(fptr, rowSTART + pos * sizeof(std::uint32_t), SEEK_SET);
   fread(row_char_ptr, sizeof(std::uint32_t), 2 * num, fptr);
 
-  std::uint32_t* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
+  auto* row_ptr = reinterpret_cast<std::uint32_t*>(row_char_ptr);
   fseek(fptr, valSTART + pos * sizeof(float), SEEK_SET);
   fread(val_char_ptr, sizeof(float), 2 * num, fptr);
-  float* val_ptr = reinterpret_cast<float*>(val_char_ptr);
+  auto* val_ptr = reinterpret_cast<float*>(val_char_ptr);
   for (int j = 0; j < num; j++) {
     snpinfolst snpinfotmp;
     std::uint32_t rid = *(row_ptr + j);
@@ -2749,7 +2756,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       fseek(fptr, ((pid << 1) * etmp._snpNum + descriptive) << 2, SEEK_SET);
       memset(buffer, 0, sizeof(char) * etmp._snpNum << 3);
       fread(buffer, sizeof(char), etmp._snpNum << 3, fptr);
-      float* ft = reinterpret_cast<float*>(buffer);
+      auto* ft = reinterpret_cast<float*>(buffer);
       float* se_ptr = ft + etmp._snpNum;
       for (int j = 0; j < etmp._esi_include.size(); j++) {
         float se = *(se_ptr + etmp._esi_include[j]);
@@ -2821,8 +2828,8 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
       std::vector<float> suminfo;  // maxn,minn,avgn,mediann,sdn,ttnum,rmnum
       qc(snpinfo, &prbifo, qc_mtd, z_thresh, suminfo, outlierfptr);
       logstr = prbname;
-      for (int j = 0; j < suminfo.size(); j++) {
-        logstr += '\t' + atos(suminfo[j]);
+      for (float j : suminfo) {
+        logstr += '\t' + atos(j);
       }
       logstr += '\n';
       fputs(logstr.c_str(), qcsryfptr);

@@ -32,14 +32,14 @@ class MappedFile {
     return *reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(addr_) + offset);
   }
 
-  bool is_end(size_t offset) const { return offset >= size_; }
+  [[nodiscard]] bool is_end(size_t offset) const { return offset >= size_; }
   size_t remain_size(size_t offset) {
     if (is_end(offset)) return 0;
     return size_ - offset;
   }
 
   size_t size() { return size_; }
-  const std::string& filename() const { return filename_; }
+  [[nodiscard]] const std::string& filename() const { return filename_; }
 
   void unmap() {
     munmap(addr_, size_);

@@ -626,8 +626,8 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
                  pmecs, minCor, prb_snp, targetLstFlg);
   std::vector<int> egstart;
   std::vector<int> egend;
-  for (int i = 0; i < smrrlts.size(); i++) {
-    iter = gene_anno_map.find(smrrlts[i].Gene);
+  for (auto& smrrlt : smrrlts) {
+    iter = gene_anno_map.find(smrrlt.Gene);
     if (iter != gene_anno_map.end()) {
       egstart.push_back(gene_anno_start[iter->second]);
       egend.push_back(gene_anno_end[iter->second]);
@@ -673,8 +673,8 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
                  pmecs, minCor, prb_snp, targetLstFlg);
   std::vector<int> mgstart;
   std::vector<int> mgend;
-  for (int i = 0; i < msmrrlts.size(); i++) {
-    iter = gene_anno_map.find(msmrrlts[i].Gene.substr(0, msmrrlts[i].Gene.length() - 1));
+  for (auto& msmrrlt : msmrrlts) {
+    iter = gene_anno_map.find(msmrrlt.Gene.substr(0, msmrrlt.Gene.length() - 1));
     if (iter != gene_anno_map.end()) {
       mgstart.push_back(gene_anno_start[iter->second]);
       mgend.push_back(gene_anno_end[iter->second]);
@@ -739,8 +739,8 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
                  opt_hetero, sampleoverlap, pmecs, minCor);
   std::vector<int> e2mgstart;
   std::vector<int> e2mgend;
-  for (int i = 0; i < e2msmrrlts.size(); i++) {
-    iter = gene_anno_map.find(e2msmrrlts[i].Gene.substr(0, e2msmrrlts[i].Gene.length() - 1));
+  for (auto& e2msmrrlt : e2msmrrlts) {
+    iter = gene_anno_map.find(e2msmrrlt.Gene.substr(0, e2msmrrlt.Gene.length() - 1));
     if (iter != gene_anno_map.end()) {
       e2mgstart.push_back(gene_anno_start[iter->second]);
       e2mgend.push_back(gene_anno_end[iter->second]);
@@ -791,8 +791,8 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
       "%f.\n",
       out_epi_name_m.size(), threshpsmrest, threshphet);
   std::vector<int> minclude;
-  for (int i = 0; i < out_epi_name_m.size(); i++) {
-    iter = mdata._probe_name_map.find(out_epi_name_m[i]);
+  for (const auto& i : out_epi_name_m) {
+    iter = mdata._probe_name_map.find(i);
     if (iter != mdata._probe_name_map.end()) {
       minclude.push_back(iter->second);
     } else {
@@ -885,9 +885,9 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
   for (std::uint32_t ii = 0; ii < ldprb.size(); ii++) {
     std::string curprb = ldprb[ii];
     int mpid = -9;
-    for (int j = 0; j < out_epi_id_m.size(); j++) {
-      if (mdata._epi_prbID[out_epi_id_m[j]] == curprb) {
-        mpid = out_epi_id_m[j];
+    for (int j : out_epi_id_m) {
+      if (mdata._epi_prbID[j] == curprb) {
+        mpid = j;
         break;
       }
     }
@@ -930,9 +930,9 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
   // eQTL info
   printf("\nRetrieving eQTL summary information from plot region...\n");
   std::vector<std::string> out_epi_name;
-  for (int i = 0; i < smrrlts.size(); i++) {
-    if (smrrlts[i].p_HET >= threshphet) {
-      out_epi_name.push_back(smrrlts[i].ProbeID);
+  for (auto& smrrlt : smrrlts) {
+    if (smrrlt.p_HET >= threshphet) {
+      out_epi_name.push_back(smrrlt.ProbeID);
     }
   }
   printf(
@@ -940,8 +940,8 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
       "%f.\n",
       out_epi_name.size(), threshpsmrest, threshphet);
   std::vector<int> include;
-  for (int i = 0; i < out_epi_name.size(); i++) {
-    iter = edata._probe_name_map.find(out_epi_name[i]);
+  for (const auto& i : out_epi_name) {
+    iter = edata._probe_name_map.find(i);
     if (iter != edata._probe_name_map.end()) {
       include.push_back(iter->second);
     } else {
@@ -1200,9 +1200,9 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
     printf("ERROR: in writing file %s .\n", plot_path.c_str());
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < gidx.size(); i++) {
-    outstr = atos(gene_anno_chr[gidx[i]]) + ' ' + atos(gene_anno_start[gidx[i]]) + ' ' + atos(gene_anno_end[gidx[i]]) +
-             ' ' + gene_anno_genename[gidx[i]] + ' ' + strand[gidx[i]] + '\n';
+  for (int i : gidx) {
+    outstr = atos(gene_anno_chr[i]) + ' ' + atos(gene_anno_start[i]) + ' ' + atos(gene_anno_end[i]) + ' ' +
+             gene_anno_genename[i] + ' ' + strand[i] + '\n';
     if (fputs_checked(outstr.c_str(), plotfile)) {
       printf("ERROR: in writing file %s .\n", plot_path.c_str());
       exit(EXIT_FAILURE);
@@ -1360,8 +1360,8 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
                  opt_hetero, sampleoverlap, pmecs, minCor);
   std::vector<int> egstart;
   std::vector<int> egend;
-  for (int i = 0; i < smrrlts.size(); i++) {
-    iter = gene_anno_map.find(smrrlts[i].Gene);
+  for (auto& smrrlt : smrrlts) {
+    iter = gene_anno_map.find(smrrlt.Gene);
     if (iter != gene_anno_map.end()) {
       egstart.push_back(gene_anno_start[iter->second]);
       egend.push_back(gene_anno_end[iter->second]);
@@ -1387,10 +1387,10 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
   // eQTL info
   printf("\nRetrieving eQTL summary information from plot region...\n");
   std::vector<std::string> out_epi_name;
-  for (int i = 0; i < smrrlts.size(); i++) {
+  for (auto& smrrlt : smrrlts) {
     // output all the eQTL that passed a threshold.
-    if (threshphet == 0 || smrrlts[i].p_HET - threshphet >= 0) {
-      out_epi_name.push_back(smrrlts[i].ProbeID);
+    if (threshphet == 0 || smrrlt.p_HET - threshphet >= 0) {
+      out_epi_name.push_back(smrrlt.ProbeID);
     }
   }
   printf(
@@ -1398,8 +1398,8 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
       "%f.\n",
       out_epi_name.size(), threshpsmrest, threshphet);
   std::vector<int> include;
-  for (int i = 0; i < out_epi_name.size(); i++) {
-    iter = edata._probe_name_map.find(out_epi_name[i]);
+  for (const auto& i : out_epi_name) {
+    iter = edata._probe_name_map.find(i);
     if (iter != edata._probe_name_map.end()) {
       include.push_back(iter->second);
     } else {
@@ -1640,9 +1640,9 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
       printf("ERROR: in writing file %s .\n", plot_path.c_str());
       exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < gidx.size(); i++) {
-      outstr = atos(gene_anno_chr[gidx[i]]) + ' ' + atos(gene_anno_start[gidx[i]]) + ' ' +
-               atos(gene_anno_end[gidx[i]]) + ' ' + gene_anno_genename[gidx[i]] + ' ' + strand[gidx[i]] + '\n';
+    for (int i : gidx) {
+      outstr = atos(gene_anno_chr[i]) + ' ' + atos(gene_anno_start[i]) + ' ' + atos(gene_anno_end[i]) + ' ' +
+               gene_anno_genename[i] + ' ' + strand[i] + '\n';
       if (fputs_checked(outstr.c_str(), plotfile)) {
         printf("ERROR: in writing file %s .\n", plot_path.c_str());
         exit(EXIT_FAILURE);

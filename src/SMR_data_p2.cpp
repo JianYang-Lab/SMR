@@ -1468,7 +1468,7 @@ void save_txts_dbesd(char* outFileName, long esiNum, long epiNum, std::vector<in
   fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
   std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
-  float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+  auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
   if (nullptr == buffer) {
     printf("ERROR: failed to allocate write buffer for file %s.\n", esdfile.c_str());
     exit(EXIT_FAILURE);
@@ -1871,7 +1871,7 @@ void slct_sparse_per_prb(std::vector<int>& slct_idx, probeinfolst* prbifo, std::
   long transnum = nsnp.size();
   long transsnpnum = 0;
   long othersnpnum = other_idx.size();
-  for (int l = 0; l < nsnp.size(); l++) transsnpnum += nsnp[l];
+  for (unsigned long l : nsnp) transsnpnum += l;
   if (slct_idx.size() - cissnpnum - transsnpnum - othersnpnum != 0) {
     printf("Something is wrong with this selection methold. Please report this bug.\n");
     exit(EXIT_FAILURE);
@@ -2057,10 +2057,10 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
     cols[(j << 1) + 1] = real_num + cols[j << 1];
     cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
 
-    for (int k = 0; k < snpinfo.size(); k++) {
-      if (fformat != 1) delete[] (snpinfo[k].a1);
-      if (fformat != 1) delete[] (snpinfo[k].a2);
-      delete[] (snpinfo[k].snprs);
+    for (auto& k : snpinfo) {
+      if (fformat != 1) delete[] (k.a1);
+      if (fformat != 1) delete[] (k.a2);
+      delete[] (k.snprs);
     }
   }
   std::uint64_t valNum = val.size();
@@ -2491,7 +2491,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
     std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
-    float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+    auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
     if (nullptr == buffer) {
       fprintf(stderr, "Malloc failed\n");
       exit(-1);
@@ -2944,7 +2944,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       fwrite(&ten_ints[0], sizeof(int), RESERVEDUNITS, smr1);
 
       std::uint64_t bsize = static_cast<std::uint64_t>(esiNum) << 1;
-      float* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
+      auto* buffer = static_cast<float*>(malloc(sizeof(float) * bsize));
       if (nullptr == buffer) {
         fprintf(stderr, "Malloc failed\n");
         exit(-1);

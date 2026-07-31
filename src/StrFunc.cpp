@@ -26,15 +26,15 @@ int StrFunc::split_string(const std::string& str, std::vector<std::string>& out_
   std::string::size_type pos;
 
   // Remove seperators
-  for (size_t i = 0; i < separators.size(); i++) {
-    pos = symbol_pool.find(separators[i]);
+  for (char separator : separators) {
+    pos = symbol_pool.find(separator);
     if (pos != std::string::npos) symbol_pool.erase(symbol_pool.begin() + pos);
   }
 
-  for (size_t i = 0; i < str.size(); i++) {
-    if (symbol_pool.find(str[i]) != std::string::npos) {
+  for (char i : str) {
+    if (symbol_pool.find(i) != std::string::npos) {
       if (!look) look = true;
-      str_buf += str[i];
+      str_buf += i;
     } else {
       if (look) {
         look = false;

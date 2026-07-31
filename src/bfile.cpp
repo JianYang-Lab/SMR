@@ -708,7 +708,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     }
   }
   if (vc != valnum) {
-    printf("Error: predicted number vs observed number: %ld, %llu.\n", vc, valnum);
+    printf("Error: predicted number vs observed number: %ld, %llu.\n", vc, static_cast<unsigned long long>(valnum));
     printf("Please repot this bug.\n");
     exit(EXIT_FAILURE);
   }
@@ -1116,7 +1116,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
   fputs(tmpstr.c_str(), outfile);
   std::uint64_t valSTART = RESERVEDUNITS * sizeof(int) + sizeof(std::uint64_t) + colNum * sizeof(std::uint64_t);
   long wcount = 0;
-  float* buffer = static_cast<float*>(malloc(sizeof(float) * maxnum));
+  auto* buffer = static_cast<float*>(malloc(sizeof(float) * maxnum));
   if (buffer == nullptr) {
     printf("ERROR: memory allocation failed to read %s.\n", inputname);
     exit(EXIT_FAILURE);

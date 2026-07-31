@@ -167,7 +167,7 @@ void CommFunc::getRank_norep(std::vector<int>& a, std::vector<int>& b) {
 
 void CommFunc::getUnique(std::vector<std::uint32_t>& a) {
   std::sort(a.begin(), a.end());
-  std::vector<std::uint32_t>::iterator it = std::unique(a.begin(), a.end());
+  auto it = std::unique(a.begin(), a.end());
   a.erase(it, a.end());
 }
 

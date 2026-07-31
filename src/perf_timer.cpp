@@ -9,11 +9,8 @@
 #include <sys/resource.h>
 
 /// PerfTimer
-PerfTimer::PerfTimer(const std::string& name)
-    : name_(name),
-      start_time_(std::chrono::high_resolution_clock::now()),
-      elapsed_time_(start_time_),
-      stopped_(false) {}
+PerfTimer::PerfTimer(std::string name)
+    : name_(std::move(name)), start_time_(std::chrono::high_resolution_clock::now()), elapsed_time_(start_time_) {}
 
 PerfTimer::~PerfTimer() {
   if (!stopped_) {

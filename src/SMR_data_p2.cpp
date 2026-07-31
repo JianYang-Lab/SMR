@@ -1685,7 +1685,7 @@ void save_full_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
     }
     std::uint64_t real_num = tmpse.size();
     cols[(j << 1) + 1] = real_num + cols[j << 1];
-    cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+    cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
   }
   std::uint64_t valNum = val.size();
   fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
@@ -2052,7 +2052,7 @@ void save_slct_txts_sbesd(char* outFileName, long esiNum, long epiNum, std::vect
     }
     std::uint64_t real_num = tmpse.size();
     cols[(j << 1) + 1] = real_num + cols[j << 1];
-    cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+    cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
 
     for (int k = 0; k < snpinfo.size(); k++) {
       if (fformat != 1) delete[] (snpinfo[k].a1);
@@ -2350,7 +2350,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
       iter = esi_map.find(vs_buf[rspos]);
       if (iter == esi_map.end()) {
         esi_map.insert(std::pair<std::string, int>(vs_buf[rspos].c_str(), esiNum));
-        snps.push_back(vs_buf[rspos].c_str());
+        snps.emplace_back(vs_buf[rspos].c_str());
         if (rschrpos >= 0) {
           std::string chrstrtmp = vs_buf[rschrpos];
           if (has_prefix(vs_buf[rschrpos], "chr") || has_prefix(vs_buf[rschrpos], "CHR")) chrstrtmp.erase(0, 3);
@@ -2390,7 +2390,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
         }
       } else {
         epi_map.insert(std::pair<std::string, int>(vs_buf[prbpos], epiNum));
-        prbs.push_back(vs_buf[prbpos].c_str());
+        prbs.emplace_back(vs_buf[prbpos].c_str());
         if (prbchrpos >= 0) {
           std::string chrstrtmp = vs_buf[prbchrpos];
           if (has_prefix(vs_buf[prbchrpos], "chr") || has_prefix(vs_buf[prbchrpos], "CHR")) chrstrtmp.erase(0, 3);
@@ -2400,7 +2400,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
           prbbp.push_back((atoi(vs_buf[prbbppos].c_str()) + atoi(vs_buf[prbbppos + 1].c_str())) / 2);
         else prbbp.push_back(-9);
         if (prbstrandpos >= 0) prbstrand.push_back(vs_buf[prbstrandpos]);
-        else prbstrand.push_back("NA");
+        else prbstrand.emplace_back("NA");
         std::vector<std::uint32_t> rsidtmp;
         rsidtmp.push_back(rsid);
         _ttl_rsid.push_back(rsidtmp);
@@ -2540,7 +2540,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
     for (int j = 0; j < epiNum; j++) {
       std::uint64_t real_num = _ttl_beta[j].size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
-      cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+      cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
       valNum += real_num * 2;
     }
     fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);
@@ -2800,7 +2800,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
         exit(EXIT_FAILURE);
       }
 
-      _ttl_rs[idx].push_back(vs_buf[0].c_str());
+      _ttl_rs[idx].emplace_back(vs_buf[0].c_str());
       _ttl_beta[idx].push_back(atof(vs_buf[11].c_str()));
       if (vs_buf[12] != "NA") {
         _ttl_se[idx].push_back(atof(vs_buf[12].c_str()));
@@ -2810,8 +2810,8 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
         _ttl_se[idx].push_back(-9);
       }
       if (!save_dense_flag) {
-        _ttl_a1[idx].push_back(vs_buf[3].c_str());
-        _ttl_a2[idx].push_back(vs_buf[4].c_str());
+        _ttl_a1[idx].emplace_back(vs_buf[3].c_str());
+        _ttl_a2[idx].emplace_back(vs_buf[4].c_str());
         _ttl_chr[idx].push_back(tmpchr);
         _ttl_bp[idx].push_back(atoi(vs_buf[2].c_str()));
       }
@@ -2834,7 +2834,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       prbiflst.push_back(tmpprbinfo);
 
       std::vector<std::string> rstmp;
-      rstmp.push_back(vs_buf[0].c_str());
+      rstmp.emplace_back(vs_buf[0].c_str());
       _ttl_rs.push_back(rstmp);
 
       std::vector<float> betatmp;
@@ -2853,10 +2853,10 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       _ttl_se.push_back(setmp);
       if (!save_dense_flag) {
         std::vector<std::string> a1tmp;
-        a1tmp.push_back(vs_buf[3].c_str());
+        a1tmp.emplace_back(vs_buf[3].c_str());
         _ttl_a1.push_back(a1tmp);
         std::vector<std::string> a2tmp;
-        a2tmp.push_back(vs_buf[4].c_str());
+        a2tmp.emplace_back(vs_buf[4].c_str());
         _ttl_a2.push_back(a2tmp);
         std::vector<int> chrtmp;
         chrtmp.push_back(tmpchr);
@@ -3022,7 +3022,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
         int pkey = prbiflst[j].gd;
         std::uint64_t real_num = _ttl_beta[pkey].size();
         cols[(j << 1) + 1] = real_num + cols[j << 1];
-        cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+        cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
         valNum += real_num * 2;
       }
       fwrite(&valNum, sizeof(std::uint64_t), 1, smr1);             // write ValNum number of (Beta + SE)
@@ -3207,7 +3207,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
       // Store Beta SE and SNP index offset to cols
       std::uint64_t real_num = tmpse.size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
-      cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+      cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
 
       free_snplist(snpinfoperprb);
     }

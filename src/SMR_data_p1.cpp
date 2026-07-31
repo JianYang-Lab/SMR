@@ -16,6 +16,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 #include "CommFunc.hpp"
 #include "StatFunc.hpp"
@@ -189,7 +190,7 @@ void read_probevarfile(eqtlInfo* eqtlinfo, std::string vpFileName) {
     if (tbuf[0] != '\0') {
       std::istringstream iss(tbuf);
       iss >> tmpStr;
-      tmp_prbid.push_back(tmpStr.c_str());
+      tmp_prbid.emplace_back(tmpStr.c_str());
       iss >> tmpStr;
       tmp_var.push_back(atof(tmpStr.c_str()));
       lineNum++;
@@ -626,7 +627,7 @@ void read_gene_anno(char* geneAnnoName, std::vector<int>& chr, std::vector<std::
       iss >> tmpStr;  // end
       end.push_back(atoi(tmpStr.c_str()));
       iss >> tmpStr;  // gene
-      genename.push_back(tmpStr.c_str());
+      genename.emplace_back(tmpStr.c_str());
       lineNum++;
     }
   }
@@ -672,8 +673,8 @@ void read_gene_anno_strand(char* geneAnnoName, std::vector<int>& chr, std::vecto
       chr.push_back(tmpchr);
       start.push_back(atoi(vs_buf[1].c_str()));
       end.push_back(atoi(vs_buf[2].c_str()));
-      genename.push_back(vs_buf[3].c_str());
-      if (col_num == 5) strand.push_back(vs_buf[4].c_str());
+      genename.emplace_back(vs_buf[3].c_str());
+      if (col_num == 5) strand.emplace_back(vs_buf[4].c_str());
       lineNum++;
     }
   }
@@ -877,7 +878,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
           if (fabs(esdata._sexz[i][j] + 9) > 1e-6) {
             int snpbp = esdata._esi_bp[j];
             int snpchr = esdata._esi_chr[j];
-            if (snpchr == probechr && fabs(probebp - snpbp) <= cis_itvl_bp) {
+            if (snpchr == probechr && std::abs(probebp - snpbp) <= cis_itvl_bp) {
               tmpminBP = snpbp < tmpminBP ? snpbp : tmpminBP;
               tmpmaxBP = snpbp > tmpmaxBP ? snpbp : tmpmaxBP;
               bxz.push_back(esdata._bxz[i][j]);
@@ -909,7 +910,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
           int snpbp = esdata._esi_bp[ge_rowid];
           int snpchr = esdata._esi_chr[ge_rowid];
 
-          if (snpchr == probechr && fabs(probebp - snpbp) <= cis_itvl_bp) {
+          if (snpchr == probechr && std::abs(probebp - snpbp) <= cis_itvl_bp) {
             tmpminBP = snpbp < tmpminBP ? snpbp : tmpminBP;
             tmpmaxBP = snpbp > tmpmaxBP ? snpbp : tmpmaxBP;
             bxz.push_back(esdata._val[beta_start + j]);
@@ -1956,7 +1957,7 @@ void ssmr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bda
       currlt.p_SSMR = set_pval_smr;
       currlt.p_HET = pdev;
       currlt.nsnp = static_cast<int>(nsnp);
-      smrrlts.push_back(currlt);
+      smrrlts.push_back(std::move(currlt));
     }
   }
   if (outFileName != nullptr) {
@@ -3397,13 +3398,13 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
         std::vector<int> noninvertible, negativedeno;
         bool mecsflag =
             mecs_per_prob(buffer_beta, buffer_se, metaSNPnum, cohortnum, pthresh, noninvertible, negativedeno, nmecs);
-        if (!mecsflag) snpdeficent.push_back(probeinfo[i].probeId);
+        if (!mecsflag) snpdeficent.emplace_back(probeinfo[i].probeId);
         else {
           if (noninvertible.size() > 0) {
-            noninvtb_prbs.push_back(probeinfo[i].probeId);
+            noninvtb_prbs.emplace_back(probeinfo[i].probeId);
           }
           if (negativedeno.size() > 0) {
-            nega_prbs.push_back(probeinfo[i].probeId);
+            nega_prbs.emplace_back(probeinfo[i].probeId);
           }
         }
       } else {
@@ -3428,7 +3429,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
     }
     std::uint64_t real_num = tmpse.size();
     cols[(i << 1) + 1] = real_num + cols[i << 1];
-    cols[i + 1 << 1] = (real_num << 1) + cols[i << 1];
+    cols[(i + 1) << 1] = (real_num << 1) + cols[i << 1];
   }
 
   std::uint64_t valNum = val.size();

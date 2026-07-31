@@ -11,23 +11,26 @@
 #ifndef _COMMFUNC_H
 #define _COMMFUNC_H
 
+#include <cstddef>
+#include <cstdint>
+
 #if defined _WIN64 || defined _WIN32
-  #define MAX_LINE_SIZE 0x10000
+constexpr std::size_t MAX_LINE_SIZE = 0x10000;
 #else
-  #define MAX_LINE_SIZE 0x80000
+constexpr std::size_t MAX_LINE_SIZE = 0x80000;
 #endif
 
 // clang-format off
 // uint32 + floats
-#define DENSE_FILE_TYPE_1 0
+constexpr std::uint32_t DENSE_FILE_TYPE_1 = 0;
 // uint32 + uint64_t + uint64_ts + uint32_ts + floats
-#define SPARSE_FILE_TYPE_3F 0x40400000
+constexpr std::uint32_t SPARSE_FILE_TYPE_3F = 0x40400000;
 // 16*uint32s + uint64_t + uint64_ts + uint32_ts + floats (indicator+samplesize+snpnumber+probenumber+ 6*-9s +valnumber+cols+rowids+betases) [default]
-#define SPARSE_FILE_TYPE_3 3
+constexpr std::uint32_t SPARSE_FILE_TYPE_3 = 3;
 // 16*uint32s + floats (indicator+samplesize+snpnumber+probenumber+ 6*-9s + values) [default]
-#define DENSE_FILE_TYPE_3 5
-#define RESERVEDUNITS 16
-#define FNAMESIZE 4096
+constexpr std::uint32_t DENSE_FILE_TYPE_3 = 5;
+constexpr int RESERVEDUNITS = 16;
+constexpr std::size_t FNAMESIZE = 4096;
 
 // clang-format on
 

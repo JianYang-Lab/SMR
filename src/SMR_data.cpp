@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <fmt/base.h>
@@ -4146,7 +4147,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
       } else {
         currlt.p_HET = -9;
         currlt.nsnp = -9;
-        smrrlts.push_back(currlt);
+        smrrlts.push_back(std::move(currlt));
       }
 
     } else {
@@ -4175,7 +4176,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo* bdat
       } else {
         currlt.p_HET = pdev;
         currlt.nsnp = static_cast<int>(nsnp);
-        smrrlts.push_back(currlt);
+        smrrlts.push_back(std::move(currlt));
       }
     }
   }
@@ -4384,7 +4385,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
       } else {
         currlt.p_HET = -9;
         currlt.nsnp = -9;
-        smrrlts.push_back(currlt);
+        smrrlts.push_back(std::move(currlt));
       }
 
     } else {
@@ -4404,7 +4405,7 @@ void smr_heidi_func(std::vector<SMRRLT>& smrrlts, char* outFileName, ldInfo* ldi
       } else {
         currlt.p_HET = pdev;
         currlt.nsnp = static_cast<int>(nsnp);
-        smrrlts.push_back(currlt);
+        smrrlts.push_back(std::move(currlt));
       }
     }
   }
@@ -5053,7 +5054,7 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
         } else {
           currlt.p_HET = -9;
           currlt.nsnp = -9;
-          smrrlts.push_back(currlt);
+          smrrlts.push_back(std::move(currlt));
         }
 
       } else {
@@ -5075,7 +5076,7 @@ void smr_heidi_trans_func(std::vector<SMRRLT>& smrrlts, char* outFileName, bInfo
         } else {
           currlt.p_HET = pdev;
           currlt.nsnp = static_cast<int>(nsnp);
-          smrrlts.push_back(currlt);
+          smrrlts.push_back(std::move(currlt));
         }
       }
     }
@@ -5479,10 +5480,10 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
         smrwk.seyz.push_back(snpinfo[slct_idx[idx]].seyz);
         smrwk.pyz.push_back(snpinfo[slct_idx[idx]].pyz);
         smrwk.curId.push_back(snpinfo[slct_idx[idx]].gd);  // save snp id of the raw datastruct
-        smrwk.rs.push_back(snpinfo[slct_idx[idx]].snprs);
+        smrwk.rs.emplace_back(snpinfo[slct_idx[idx]].snprs);
         smrwk.snpchrom.push_back(snpinfo[slct_idx[idx]].snpchr);
-        smrwk.allele1.push_back(snpinfo[slct_idx[idx]].a1);
-        smrwk.allele2.push_back(snpinfo[slct_idx[idx]].a2);
+        smrwk.allele1.emplace_back(snpinfo[slct_idx[idx]].a1);
+        smrwk.allele2.emplace_back(snpinfo[slct_idx[idx]].a2);
         if ((refSNP != nullptr && snpinfo[slct_idx[idx]].snprs == std::string(refSNP))) maxid = (smrwk.rs.size() - 1);
         smrwk.bpsnp.push_back(snpinfo[slct_idx[idx]].bp);
         smrwk.freq.push_back(snpinfo[slct_idx[idx]].freq);
@@ -5572,7 +5573,7 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
         } else {
           currlt.p_HET = -9;
           currlt.nsnp = -9;
-          smrrlts.push_back(currlt);
+          smrrlts.push_back(std::move(currlt));
         }
 
       } else {
@@ -5594,7 +5595,7 @@ void smr_heidi_trans_region_func(std::vector<SMRRLT>& smrrlts, char* outFileName
         } else {
           currlt.p_HET = pdev;
           currlt.nsnp = static_cast<int>(nsnp);
-          smrrlts.push_back(currlt);
+          smrrlts.push_back(std::move(currlt));
         }
       }
     }

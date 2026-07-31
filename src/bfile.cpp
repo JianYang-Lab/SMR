@@ -789,14 +789,14 @@ void read_ld_esifile(ldInfo* ldinfo, char* esiFileName) {
       }
     }
     to_upper(strlist[4]);
-    ldinfo->_esi_allele1.push_back(strlist[4].c_str());
+    ldinfo->_esi_allele1.emplace_back(strlist[4].c_str());
     if (strlist[5] == "NA" || strlist[5] == "na") {
       if (!allele2warning) {
         allele2warning = true;
       }
     }
     to_upper(strlist[5]);
-    ldinfo->_esi_allele2.push_back(strlist[5].c_str());
+    ldinfo->_esi_allele2.emplace_back(strlist[5].c_str());
     if (strlist.size() == colnum) {
       if (strlist[6] == "NA" || strlist[6] == "na") {
         if (!orienwarning) {

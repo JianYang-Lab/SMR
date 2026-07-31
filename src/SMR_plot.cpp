@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <Eigen/Eigen>
@@ -388,7 +389,7 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
 
       currlt.p_HET = -9;
       currlt.nsnp = -9;
-      smrrlts.push_back(currlt);
+      smrrlts.push_back(std::move(currlt));
 
     } else {
       long nsnp = -9;
@@ -408,7 +409,7 @@ void smr_heidi_plot(std::vector<SMRRLT>& smrrlts, std::vector<int>& ldprbid, std
 
       currlt.p_HET = pdev;
       currlt.nsnp = static_cast<int>(nsnp);
-      smrrlts.push_back(currlt);
+      smrrlts.push_back(std::move(currlt));
     }
   }
 

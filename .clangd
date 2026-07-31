@@ -2,13 +2,11 @@
 # Place this in your project root or ~/.config/clangd/
 
 CompileFlags:
-  # Tells clangd to use GCC's include paths and built-in defines
-  Compiler: g++
   # Use the same C++ standard as your build system (adjust as needed)
   Add:
     - -std=c++17          # or c++20, c++14, etc.
-    - -stdlib=libstdc++   # GNU standard library (Linux default)
     - -D_GNU_SOURCE       # Common Linux feature test macro
+    - -idirafter/usr/lib/gcc/x86_64-pc-linux-gnu/16.1.1/include  # omp.h last-resort (query-driver drops this extracted dir)
 
   # Remove flags that clangd doesn't understand or need
   Remove:

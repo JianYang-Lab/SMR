@@ -1102,7 +1102,7 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
   for (int j = 0; j < epiNum; j++) {
     std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
-    cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+    cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
   std::vector<int> ten_ints(RESERVEDUNITS);
@@ -1371,7 +1371,7 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         fread(tmpbetase, sizeof(float), etmp._snpNum << 1, fptr);
         std::uint64_t realnum = 0;
         for (int k = 0; k < etmp._snpNum; k++)
-          if (fabs(tmpbetase[etmp._snpNum + k] + 9 > 1e-6)) realnum++;
+          if (fabs(tmpbetase[etmp._snpNum + k] + 9) > 1e-6) realnum++;
         probeinfo[prbindx].vnum = realnum;
         std::uint32_t* ridbuff = static_cast<std::uint32_t*>(malloc(realnum * 2 * sizeof(std::uint32_t)));
         if (nullptr == ridbuff) {
@@ -1389,14 +1389,14 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
         memset(betasebuff, 0, realnum * 2 * sizeof(std::uint32_t));
         realnum = 0;
         for (int k = 0; k < etmp._snpNum; k++) {
-          if (fabs(tmpbetase[etmp._snpNum + k] + 9 > 1e-6)) {
+          if (fabs(tmpbetase[etmp._snpNum + k] + 9) > 1e-6) {
             ridbuff[realnum] = k;
             betasebuff[realnum] = tmpbetase[k];
             realnum++;
           }
         }
         for (int k = 0; k < etmp._snpNum; k++) {
-          if (fabs(tmpbetase[etmp._snpNum + k] + 9 > 1e-6)) {
+          if (fabs(tmpbetase[etmp._snpNum + k] + 9) > 1e-6) {
             ridbuff[realnum] = k;
             betasebuff[realnum] = tmpbetase[etmp._snpNum + k];
             realnum++;
@@ -1420,7 +1420,7 @@ void save_besds_sbesd(char* outFileName, std::vector<snpinfolst>& snpinfo, std::
   for (int j = 0; j < epiNum; j++) {
     std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
-    cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+    cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
 
@@ -1681,10 +1681,10 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
       }
       std::uint64_t real_num = tmpse.size();
       cols[(j << 1) + 1] = real_num + cols[j << 1];
-      cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+      cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
     } else {
       cols[(j << 1) + 1] = cols[j << 1];
-      cols[j + 1 << 1] = cols[j << 1];
+      cols[(j + 1) << 1] = cols[j << 1];
     }
     free_snplist(snpinfo);
   }
@@ -2097,7 +2097,7 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
   for (int j = 0; j < epiNum; j++) {
     std::uint64_t real_num = probeinfo[j].vnum;
     cols[(j << 1) + 1] = real_num + cols[j << 1];
-    cols[j + 1 << 1] = (real_num << 1) + cols[j << 1];
+    cols[(j + 1) << 1] = (real_num << 1) + cols[j << 1];
     valNum += real_num * 2;
   }
 
@@ -2427,8 +2427,8 @@ void qc(std::vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int 
   }
   if (lowidx > -1) {
     for (long i = 0; i <= lowidx; i++) {
-      std::string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
-                           snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
+      std::string logstr = std::string(snpinfo[i].snprs) + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) +
+                           '\t' + snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
                            prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
                            prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
                            atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
@@ -2438,8 +2438,8 @@ void qc(std::vector<snpinfolst>& snpinfo, probeinfolst* prbifo, int qc_mtd, int 
   }
   if (upidx < ttlnum) {
     for (long i = ttlnum - 1; i >= upidx; i--) {
-      std::string logstr = snpinfo[i].snprs + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) + '\t' +
-                           snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
+      std::string logstr = std::string(snpinfo[i].snprs) + '\t' + atos(snpinfo[i].snpchr) + '\t' + atos(snpinfo[i].bp) +
+                           '\t' + snpinfo[i].a1 + '\t' + snpinfo[i].a2 + '\t' + atos(snpinfo[i].freq) + '\t' + '\t' +
                            prbifo->probeId + '\t' + atos(prbifo->probechr) + '\t' + atos(prbifo->bp) + '\t' +
                            prbifo->genename + '\t' + prbifo->orien + '\t' + atos(snpinfo[i].beta) + '\t' +
                            atos(snpinfo[i].se) + '\t' + atos(snpinfo[i].estn) + '\n';
@@ -2887,7 +2887,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
     }
     std::uint64_t real_num = tmpse.size();
     cols[(i << 1) + 1] = real_num + cols[i << 1];
-    cols[i + 1 << 1] = (real_num << 1) + cols[i << 1];
+    cols[(i + 1) << 1] = (real_num << 1) + cols[i << 1];
 
     free_snplist(snpinfo);
     free2(&prbifo.probeId);

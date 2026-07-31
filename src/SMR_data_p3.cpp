@@ -1530,14 +1530,9 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
   eqtlInfo eqtlinfo;
 
   for (int j = 0; j < epiNum; j++) {
-    std::cout << eqtlinfo._esi_rs.size() << std::endl;
-    std::cout << eqtlinfo._epi_prbID.size() << std::endl;
-    std::cout << val.size() << std::endl;
-
     progress(j, disp, static_cast<int>(epiNum));
 
     std::string prbname = probeinfo[j].probeId;
-    std::cout << "probe name:" << prbname << std::endl;
     std::vector<std::uint32_t> tmprid;
     std::vector<float> tmpse;
 
@@ -2278,7 +2273,6 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
     else {
       if (sparsefnum == smasNames.size())
         save_besds_sbesd(outFileName, snpinfo, probeinfo, esi_rs, esi_a1, esi_a2, smasNames, addn);
-      else printf("hererheher\n");
       save_slct_besds_sbesd(outFileName, probeinfo, esi_rs, esi_a1, esi_a2, cis_itvl, trans_itvl, transThres, restThres,
                             smasNames, addn);
     }

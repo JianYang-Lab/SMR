@@ -14,6 +14,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -275,7 +276,7 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
 
 void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr) {
   std::ifstream esi(esifile.c_str());
-  if (!esi.is_open()) throw("ERROR: can not open the file [" + esifile + "] to read.");
+  if (!esi.is_open()) throw std::runtime_error("ERROR: can not open the file [" + esifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL SNP information from [" + esifile + "]." << std::endl;
   eqtlinfo->reset_esi();
 
@@ -389,7 +390,7 @@ void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr) {
 // read esifile rows which chr field equal param chr
 void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snpchr, bool prtscr) {
   std::ifstream esi(esifile.c_str());
-  if (!esi.is_open()) throw("ERROR: can not open the file [" + esifile + "] to read.");
+  if (!esi.is_open()) throw std::runtime_error("ERROR: can not open the file [" + esifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL SNP information from [" + esifile + "]." << std::endl;
   eqtlinfo->reset_esi();
 
@@ -515,7 +516,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snp
  */
 void read_epifile(eqtlInfo* eqtlinfo, const std::string& epifile, bool prtscr) {
   std::ifstream epi(epifile.c_str());
-  if (!epi) throw("ERROR: can not open the file [" + epifile + "] to read.");
+  if (!epi) throw std::runtime_error("ERROR: can not open the file [" + epifile + "] to read.");
   if (prtscr) std::cout << "Reading eQTL probe information from [" + epifile + "]." << std::endl;
 
   eqtlinfo->reset_epi();
@@ -625,8 +626,8 @@ int shown(const std::string& besdfile) {
 }
 
 void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr) {
-  if (eqtlinfo->_include.empty()) throw("Error: No probe is retained for analysis.");
-  if (eqtlinfo->_esi_include.empty()) throw("Error: No SNP is retained for analysis.");
+  if (eqtlinfo->_include.empty()) throw std::runtime_error("Error: No probe is retained for analysis.");
+  if (eqtlinfo->_esi_include.empty()) throw std::runtime_error("Error: No SNP is retained for analysis.");
   bool sorted = std::is_sorted(eqtlinfo->_esi_include.begin(), eqtlinfo->_esi_include.end()) &&
                 std::is_sorted(eqtlinfo->_include.begin(), eqtlinfo->_include.end());
 
@@ -703,7 +704,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.insert(std::pair<int, int>(eqtlinfo->_esi_include[i], i));
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 
@@ -916,7 +918,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.insert(std::pair<int, int>(eqtlinfo->_esi_include[i], i));
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 
@@ -1044,7 +1047,8 @@ void read_besdfile(eqtlInfo* eqtlinfo, const std::string& besdfile, bool prtscr)
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.emplace(eqtlinfo->_esi_include[i], i);
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 
@@ -1997,19 +2001,19 @@ void allele_check(bInfo* bdata, gwasData* gdata, eqtlInfo* esdata) {
     for (int i = 0; i < bdata->_include.size(); i++) bsnp.push_back(bdata->_snp_name[bdata->_include[i]]);
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     StrFunc::match_only(bsnp, gdata->snpName, edId);
-    if (edId.empty()) throw("Error: no SNPs in common between reference data and GWAS data.");
+    if (edId.empty()) throw std::runtime_error("Error: no SNPs in common between reference data and GWAS data.");
     for (int i : edId) common_snps.push_back(gdata->snpName[i]);
     StrFunc::match_only(common_snps, essnp, edId);
-    if (edId.empty()) throw("Error: no SNPs in common.");
+    if (edId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int& i : edId) i = esdata->_esi_include[i];
     for (int i : edId) slctSNPs.push_back(esdata->_esi_rs[i]);
   } else {
     StrFunc::match_only(bdata->_snp_name, gdata->snpName, edId);
-    if (edId.empty()) throw("Error: no SNPs in common  between reference data and GWAS data.");
+    if (edId.empty()) throw std::runtime_error("Error: no SNPs in common  between reference data and GWAS data.");
     for (int i : edId) common_snps.push_back(gdata->snpName[i]);
     edId.clear();
     StrFunc::match_only(common_snps, esdata->_esi_rs, edId);
-    if (edId.empty()) throw("Error: no SNPs in common.");
+    if (edId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i : edId) slctSNPs.push_back(esdata->_esi_rs[i]);
   }
 
@@ -2243,11 +2247,11 @@ void allele_check(gwasData* gdata, eqtlInfo* esdata) {
   if (esdata->_esi_include.size() < esdata->_snpNum) {
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     StrFunc::match_only(essnp, gdata->snpName, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i : gdId) slctSNPs.push_back(gdata->snpName[i]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, gdata->snpName, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i : gdId) slctSNPs.push_back(gdata->snpName[i]);
   }
 
@@ -2300,11 +2304,11 @@ void allele_check(eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp.push_back(etrait->_esi_rs[etrait->_esi_include[i]]);
     StrFunc::match_only(essnp, etsnp, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etsnp[gdId[i]]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, etrait->_esi_rs, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etrait->_esi_rs[gdId[i]]);
   }
 
@@ -2365,7 +2369,7 @@ void allele_check(gwasData* gdata1, gwasData* gdata2) {
   std::cout << logstr << std::endl;
 
   StrFunc::match_only(gdata2->snpName, gdata1->snpName, gdId);
-  if (gdId.empty()) throw("Error: no SNPs in common.");
+  if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
 
   for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata1->snpName[gdId[i]]);
 
@@ -2420,22 +2424,22 @@ void allele_check(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp[i] = etrait->_esi_rs[etrait->_esi_include[i]];
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp[i] = esdata->_esi_rs[esdata->_esi_include[i]];
     match_only(bsnp, etsnp, edId);
-    if (edId.empty()) throw("Error: no common SNPs between PLink data and eTrait data.");
+    if (edId.empty()) throw std::runtime_error("Error: no common SNPs between PLink data and eTrait data.");
     cmmnSNPs.resize(edId.size());
     for (int i = 0; i < edId.size(); i++) cmmnSNPs[i] = etsnp[edId[i]];
     match_only(cmmnSNPs, essnp, edId);
-    if (edId.empty()) throw("Error: no common SNPs found.");
+    if (edId.empty()) throw std::runtime_error("Error: no common SNPs found.");
     for (int i = 0; i < edId.size(); i++) edId[i] = esdata->_esi_include[edId[i]];
     slctSNPs.resize(edId.size());
     for (int i = 0; i < edId.size(); i++) slctSNPs[i] = esdata->_esi_rs[edId[i]];
   } else {
     match_only(bdata->_snp_name, etrait->_esi_rs, edId);
-    if (edId.empty()) throw("Error: no common SNPs between PLink data and GWAS data.");
+    if (edId.empty()) throw std::runtime_error("Error: no common SNPs between PLink data and GWAS data.");
     cmmnSNPs.resize(edId.size());
     for (int i = 0; i < edId.size(); i++) cmmnSNPs[i] = etrait->_esi_rs[edId[i]];
     edId.clear();
     match_only(cmmnSNPs, esdata->_esi_rs, edId);
-    if (edId.empty()) throw("Error: no common SNPs found.");
+    if (edId.empty()) throw std::runtime_error("Error: no common SNPs found.");
     slctSNPs.resize(edId.size());
     for (int i = 0; i < edId.size(); i++) slctSNPs[i] = esdata->_esi_rs[edId[i]];
   }
@@ -3010,7 +3014,7 @@ void update_geIndx(bInfo* bdata, eqtlInfo* etrait, eqtlInfo* esdata) {
 
 void read_smaslist(std::vector<std::string>& smasNames, const std::string& eqtlsmaslstName) {
   std::ifstream smas(eqtlsmaslstName.c_str());
-  if (!smas) throw("Error: can not open the file [" + eqtlsmaslstName + "] to read.");
+  if (!smas) throw std::runtime_error("Error: can not open the file [" + eqtlsmaslstName + "] to read.");
   std::cout << "Reading eQTL summary file names from [" + eqtlsmaslstName + "]." << std::endl;
   char buf[MAX_LINE_SIZE];
   std::map<std::string, int> probe_map;
@@ -4449,11 +4453,14 @@ void smr(char* outFileName, char* bFileName, char* bldFileName, char* gwasFileNa
   std::unordered_map<std::string, std::string> prb_snp;
 
   if (!heidioffFlag && bFileName == nullptr && bldFileName == nullptr)
-    throw("ERROR: please input Plink file or LD file for the SMR analysis using the flag --bfile or --bld.");
+    throw std::runtime_error(
+        "ERROR: please input Plink file or LD file for the SMR analysis using the flag --bfile or --bld.");
   if (gwasFileName == nullptr)
-    throw("ERROR: please input GWAS summary data for the SMR analysis using the flag --gwas-summary.");
+    throw std::runtime_error(
+        "ERROR: please input GWAS summary data for the SMR analysis using the flag --gwas-summary.");
   if (eqtlFileName == nullptr)
-    throw("ERROR: please input eQTL summary data for the SMR analysis using the flag --eqtl-summary.");
+    throw std::runtime_error(
+        "ERROR: please input eQTL summary data for the SMR analysis using the flag --eqtl-summary.");
 
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
@@ -5106,11 +5113,11 @@ void smr_trans(char* outFileName, char* bFileName, char* gwasFileName, char* eqt
   bool heidiFlag = false;
 
   if (!heidioffFlag && bFileName == nullptr)
-    throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+    throw std::runtime_error("Error: please input Plink file for SMR analysis by the flag --bfile.");
   if (gwasFileName == nullptr)
-    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+    throw std::runtime_error("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (refSNP != nullptr) heidiFlag = true;
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
@@ -5632,11 +5639,11 @@ void smr_trans_region(char* outFileName, char* bFileName, char* gwasFileName, ch
   bool heidiFlag = false;
 
   if (!heidioffFlag && bFileName == nullptr)
-    throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+    throw std::runtime_error("Error: please input Plink file for SMR analysis by the flag --bfile.");
   if (gwasFileName == nullptr)
-    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+    throw std::runtime_error("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (refSNP != nullptr) heidiFlag = true;
   read_gwas_data(&gdata, gwasFileName);
   read_esifile(&esdata, std::string(eqtlFileName) + ".esi");
@@ -5725,14 +5732,15 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
     }
 
   } else
-    throw("Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.");
+    throw std::runtime_error(
+        "Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.");
 
   filter_probe_null(&eqtlinfo);  // at the same time, reset the vector _include // checked 20171120, filterring
                                  // probe here is right.
   std::cout << "\nsaving eQTL data..." << std::endl;
   std::string esdfile = std::string(outFileName) + ".esi";
   std::ofstream smr(esdfile.c_str());
-  if (!smr) throw("Error: can not open the ESI file " + esdfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the ESI file " + esdfile + " to save!");
   for (int i = 0; i < eqtlinfo._esi_include.size(); i++) {
     smr << eqtlinfo._esi_chr[eqtlinfo._esi_include[i]] << '\t' << eqtlinfo._esi_rs[eqtlinfo._esi_include[i]] << '\t'
         << eqtlinfo._esi_gd[eqtlinfo._esi_include[i]] << '\t' << eqtlinfo._esi_bp[eqtlinfo._esi_include[i]] << '\t'
@@ -5744,7 +5752,7 @@ void make_full_besd(char* outFileName, char* eqtlFileName, char* snplstName, cha
 
   esdfile = std::string(outFileName) + ".epi";
   smr.open(esdfile.c_str());
-  if (!smr) throw("Error: can not open the EPI file " + esdfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the EPI file " + esdfile + " to save!");
   for (int i = 0; i < eqtlinfo._include.size(); i++) {
     smr << eqtlinfo._epi_chr[eqtlinfo._include[i]] << '\t' << eqtlinfo._epi_prbID[eqtlinfo._include[i]] << '\t'
         << eqtlinfo._epi_gd[eqtlinfo._include[i]] << '\t' << eqtlinfo._epi_bp[eqtlinfo._include[i]] << '\t'
@@ -5957,9 +5965,9 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
   bool heidiFlag = false;
 
   if (!heidioffFlag && bFileName == nullptr)
-    throw("Error: please input Plink file for SMR analysis by the flag --bfile.");
+    throw std::runtime_error("Error: please input Plink file for SMR analysis by the flag --bfile.");
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (refSNP != nullptr) heidiFlag = true;
   if (problstName != nullptr)
     std::cout << "WARNING: --extract-probe works when the probes are used as either exposures dataset or outcomes.\n"
@@ -6194,12 +6202,12 @@ void smr_e2e(char* outFileName, char* bFileName, char* eqtlFileName, char* eqtlF
 void update_freq(char* eqtlFileName, char* frqfile) {
   eqtlInfo eqtlinfo;
   if (eqtlFileName == nullptr)
-    throw(
+    throw std::runtime_error(
         "Error: please input eQTL summary data for updating allele frequency information by the flag --eqtl-summary.");
 
   read_esifile(&eqtlinfo, std::string(eqtlFileName) + ".esi");
   std::ifstream frq(frqfile);
-  if (!frq) throw("Error: can not open the file [" + std::string(frqfile) + "] to read.");
+  if (!frq) throw std::runtime_error("Error: can not open the file [" + std::string(frqfile) + "] to read.");
   std::cout << "Reading allele frequency information from [" + std::string(frqfile) + "]." << std::endl;
   FILE* fsnpfptr = fopen((std::string(frqfile) + ".unmatched.snp.list").c_str(), "w");
   if (!(fsnpfptr)) {
@@ -6265,7 +6273,7 @@ void update_freq(char* eqtlFileName, char* frqfile) {
 
   std::string esifile = std::string(eqtlFileName) + ".esi";
   std::ofstream smr(esifile.c_str());
-  if (!smr) throw("Error: can not open the ESI file " + esifile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the ESI file " + esifile + " to save!");
   for (int i = 0; i < eqtlinfo._snpNum; i++) {
     smr << eqtlinfo._esi_chr[i] << '\t' << eqtlinfo._esi_rs[i] << '\t' << eqtlinfo._esi_gd[i] << '\t'
         << eqtlinfo._esi_bp[i] << '\t' << eqtlinfo._esi_allele1[i] << '\t' << eqtlinfo._esi_allele2[i] << '\t'
@@ -6280,7 +6288,7 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
   std::cout << "\nsaving eQTL data..." << std::endl;
   std::string esdfile = std::string(outFileName) + ".esi";
   std::ofstream smr(esdfile.c_str());
-  if (!smr) throw("Error: can not open the ESI file " + esdfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the ESI file " + esdfile + " to save!");
   for (int i = 0; i < eqtlinfo->_snpNum; i++) {
     smr << eqtlinfo->_esi_chr[i] << '\t' << eqtlinfo->_esi_rs[i] << '\t' << eqtlinfo->_esi_gd[i] << '\t'
         << eqtlinfo->_esi_bp[i] << '\t' << eqtlinfo->_esi_allele1[i] << '\t' << eqtlinfo->_esi_allele2[i] << '\t'
@@ -6291,7 +6299,7 @@ void write_besd(std::string outFileName, eqtlInfo* eqtlinfo) {
 
   esdfile = std::string(outFileName) + ".epi";
   smr.open(esdfile.c_str());
-  if (!smr) throw("Error: can not open the EPI file " + esdfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the EPI file " + esdfile + " to save!");
   for (int i = 0; i < eqtlinfo->_include.size(); i++) {
     smr << eqtlinfo->_epi_chr[eqtlinfo->_include[i]] << '\t' << eqtlinfo->_epi_prbID[eqtlinfo->_include[i]] << '\t'
         << eqtlinfo->_epi_gd[eqtlinfo->_include[i]] << '\t' << eqtlinfo->_epi_bp[eqtlinfo->_include[i]] << '\t'
@@ -6359,9 +6367,10 @@ void meta(char* outFileName, char* eqtlFileName, char* eqtlFileName2) {
   eqtlInfo metadata;
 
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (eqtlFileName2 == nullptr)
-    throw("Error: please input another eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error(
+        "Error: please input another eQTL summary data for SMR analysis by the flag --eqtl-summary.");
 
   read_esifile(&etrait, std::string(eqtlFileName) + ".esi");
   read_esifile(&esdata, std::string(eqtlFileName2) + ".esi");
@@ -6639,8 +6648,8 @@ void epi_man(eqtlInfo* eqtlinfo, char* problstName, char* genelistName, int chr,
 }
 
 void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
-  if (eqtlinfo->_include.empty()) throw("Error: No probe is retained for analysis.");
-  if (eqtlinfo->_esi_include.empty()) throw("Error: No SNP is retained for analysis.");
+  if (eqtlinfo->_include.empty()) throw std::runtime_error("Error: No probe is retained for analysis.");
+  if (eqtlinfo->_esi_include.empty()) throw std::runtime_error("Error: No SNP is retained for analysis.");
   bool sorted = std::is_sorted(eqtlinfo->_esi_include.begin(), eqtlinfo->_esi_include.end()) &&
                 std::is_sorted(eqtlinfo->_include.begin(), eqtlinfo->_include.end());
 
@@ -6712,7 +6721,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.emplace(eqtlinfo->_esi_include[i], i);
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 
@@ -6895,7 +6905,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.insert(std::pair<int, int>(eqtlinfo->_esi_include[i], i));
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 
@@ -7015,7 +7026,8 @@ void read_besdfile_mmap(eqtlInfo* eqtlinfo, MappedFile mapped, bool prtscr) {
       for (int i = 0; i < eqtlinfo->_esi_include.size(); i++) {
         _incld_id_map.emplace(eqtlinfo->_esi_include[i], i);
         if (size == _incld_id_map.size())
-          throw("Error: Duplicated SNP IDs found: \"" + eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
+          throw std::runtime_error("Error: Duplicated SNP IDs found: \"" +
+                                   eqtlinfo->_esi_rs[eqtlinfo->_esi_include[i]] + "\".");
         size = _incld_id_map.size();
       }
 

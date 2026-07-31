@@ -35,6 +35,7 @@ Diagnostics:
     Remove:
       - modernize-use-trailing-return-type  # Personal preference
       - cppcoreguidelines-avoid-magic-numbers  # Can be noisy
+      - modernize-avoid-c-arrays  # char buf[N] is fine for this codebase's C-API buffers
     # CheckOptions:
     #   readability-identifier-naming.VariableCase: camelBack
     #   readability-identifier-naming.FunctionCase: CamelCase

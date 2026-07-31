@@ -15,6 +15,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -474,13 +475,17 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
                  double ld_min, bool sampleoverlap, double pmecs, int minCor, char* targetsnpproblstName,
                  double afthresh, double percenthresh, double heidiskipthresh) {
   setNbThreads(thread_num);
-  if (prbname == nullptr) throw("Error: please input probe to plot by the flag --probe.");
-  if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (meqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (prbname == nullptr) throw std::runtime_error("Error: please input probe to plot by the flag --probe.");
+  if (!prbwindFlag) throw std::runtime_error("Error: please input probe window by the flag --probe-wind.");
+  if (bFileName == nullptr) throw std::runtime_error("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr)
+    throw std::runtime_error("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr)
+    throw std::runtime_error("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (meqtlFileName == nullptr)
+    throw std::runtime_error("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr)
+    throw std::runtime_error("Error: please input gene annotation file by the flag --gene-list.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -829,7 +834,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
     }
   } else {
     if (mdata._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.\n");
+      throw std::runtime_error("Error: No data extracted from the input, please check.\n");
     }
 
     for (std::uint32_t i = 0; i < mdata._probNum; i++) {
@@ -981,7 +986,7 @@ void plot_triple(char* outFileName, char* bFileName, char* gwasFileName, char* e
     }
   } else {
     if (edata._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.\n");
+      throw std::runtime_error("Error: No data extracted from the input, please check.\n");
     }
 
     for (std::uint32_t i = 0; i < edata._probNum; i++) {
@@ -1219,12 +1224,16 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
                    double threshpsmrest, bool new_het_mtd, double threshphet, double ld_min, bool sampleoverlap,
                    double pmecs, int minCor, double afthresh, double percenthresh) {
   setNbThreads(thread_num);
-  if (prbname == nullptr) throw("Error: please input probe to plot by the flag --probe.");
-  if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (prbname == nullptr) throw std::runtime_error("Error: please input probe to plot by the flag --probe.");
+  if (!prbwindFlag) throw std::runtime_error("Error: please input probe window by the flag --probe-wind.");
+  if (!heidioffFlag && bFileName == nullptr)
+    throw std::runtime_error("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr)
+    throw std::runtime_error("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr)
+    throw std::runtime_error("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr)
+    throw std::runtime_error("Error: please input gene annotation file by the flag --gene-list.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -1432,7 +1441,7 @@ void plot_newheidi(char* outFileName, char* bFileName, char* gwasFileName, char*
     }
   } else {
     if (edata._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.\n");
+      throw std::runtime_error("Error: No data extracted from the input, please check.\n");
     }
 
     for (std::uint32_t i = 0; i < edata._probNum; i++) {
@@ -1662,7 +1671,8 @@ void count_cis(char* outFileName, char* eqtlFileName, double p_smr, int cis_itvl
     }
 
   } else
-    throw("Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
+    throw std::runtime_error(
+        "Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
 
   std::vector<int> out_esi_id;
   std::vector<int> out_epi_id;
@@ -1710,7 +1720,7 @@ void count_cis(char* outFileName, char* eqtlFileName, double p_smr, int cis_itvl
     }
   } else {
     if (eqtlinfo._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.\n");
+      throw std::runtime_error("Error: No data extracted from the input, please check.\n");
     }
 
     for (std::uint32_t i = 0; i < eqtlinfo._probNum; i++) {
@@ -1757,7 +1767,7 @@ void count_cis(char* outFileName, char* eqtlFileName, double p_smr, int cis_itvl
 
   std::string smrfile = std::string(outFileName) + ".cis.summary.txt";
   std::ofstream smr(smrfile.c_str());
-  if (!smr) throw("Error: can not open the file " + smrfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the file " + smrfile + " to save!");
 
   smr << "Probe" << '\t' << "Probe_Chr" << '\t' << "Probe_bp" << '\t' << "Gene" << '\t' << "Orientation" << '\t'
       << "cis_Chr" << '\t' << "cis_left" << '\t' << "cis_right" << '\t' << "TopSNP" << '\t' << "SNP_Chr" << '\t' << "BP"
@@ -1796,10 +1806,11 @@ void count_trans(char* outFileName, char* eqtlFileName, double transThres, long 
     }
 
   } else
-    throw("Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
+    throw std::runtime_error(
+        "Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
   std::string smrfile = std::string(outFileName) + ".trans.summary.txt";
   std::ofstream smr(smrfile.c_str());
-  if (!smr) throw("Error: can not open the file " + smrfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the file " + smrfile + " to save!");
 
   smr << "Probe" << '\t' << "Probe_Chr" << '\t' << "Probe_bp" << '\t' << "Gene" << '\t' << "Orientation" << '\t'
       << "Trans_Chr" << '\t' << "Trans_left" << '\t' << "Trans_right" << '\t' << "TopSNP" << '\t' << "Chr" << '\t'

@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -1584,7 +1585,7 @@ void save_slct_besds_sbesd(char* outFileName, std::vector<probeinfolst2>& probei
         }
       } else {
         if (eqtlinfo._val.size() == 0) {
-          throw("Error: No data extracted from the input, please check.\n");
+          throw std::runtime_error("Error: No data extracted from the input, please check.\n");
         }
 
         for (std::uint32_t ii = 0; ii < eqtlinfo._probNum; ii++)  // eqtlinfo._probNum should be 1 here
@@ -2161,7 +2162,8 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   for (std::string ss : smasNames) {
     std::cout << ss << std::endl;
   }
-  if (smasNames.size() == 0) throw("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
+  if (smasNames.size() == 0)
+    throw std::runtime_error("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
 
   /*
      read lines of all smas file. and store lines infor into snpinfo std::vector.
@@ -2194,7 +2196,7 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
   printf("\nGenerating the .epi file...\n");
   std::string epifile = std::string(outFileName) + std::string(".epi");
   std::ofstream epi(epifile.c_str());
-  if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
+  if (!epi) throw std::runtime_error("Error: can not open the EPI file " + epifile + " to save!");
 
   for (int j = 0; j < probeinfo.size(); j++) {
     epi << probeinfo[j].probechr << '\t' << probeinfo[j].probeId << '\t' << 0 << '\t' << probeinfo[+j].bp << '\t'
@@ -2221,7 +2223,7 @@ void combineBesd(char* eqtlsmaslstName, char* outFileName, bool save_dense_flag,
 
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("Error: can not open the ESI file to save!");
+  if (!esi) throw std::runtime_error("Error: can not open the ESI file to save!");
   for (long j = 0; j < snpinfo.size(); j++) {
     esi << snpinfo[j].snpchr << '\t' << snpinfo[j].snprs << '\t' << snpinfo[j].gd << '\t' << snpinfo[j].bp << '\t'
         << snpinfo[j].a1 << '\t' << snpinfo[j].a2 << '\t'
@@ -2511,7 +2513,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   printf("\nGenerating the .epi file...\n");
   std::string epifile = std::string(outFileName) + std::string(".epi");
   std::ofstream epi(epifile.c_str());
-  if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
+  if (!epi) throw std::runtime_error("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < etmp._include.size(); j++) {
     epi << etmp._epi_chr[etmp._include[j]] << '\t' << etmp._epi_prbID[etmp._include[j]] << '\t'
         << etmp._epi_gd[etmp._include[j]] << '\t' << etmp._epi_bp[etmp._include[j]] << '\t'
@@ -2527,7 +2529,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   std::vector<std::string> esi_a2(etmp._esi_include.size());
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("Error: can not open the ESI file to save.\n");
+  if (!esi) throw std::runtime_error("Error: can not open the ESI file to save.\n");
   for (long j = 0; j < etmp._esi_include.size(); j++) {
     esi << etmp._esi_chr[etmp._esi_include[j]] << '\t' << etmp._esi_rs[etmp._esi_include[j]] << '\t'
         << etmp._esi_gd[etmp._esi_include[j]] << '\t' << etmp._esi_bp[etmp._esi_include[j]] << '\t'
@@ -2569,7 +2571,7 @@ void make_sparse_besd(char* eqtlFileName, char* outFileName, int cis_itvl, int t
   for (int i = 0; i < etmp._esi_include.size(); i++) {
     _incld_id_map.insert(std::pair<int, int>(etmp._esi_include[i], i));
     if (size == _incld_id_map.size())
-      throw("Error: Duplicated SNP IDs found: \"" + etmp._esi_rs[etmp._esi_include[i]] + "\".");
+      throw std::runtime_error("Error: Duplicated SNP IDs found: \"" + etmp._esi_rs[etmp._esi_include[i]] + "\".");
     size = _incld_id_map.size();
   }
   std::uint32_t filetype = readuint32(fptr);

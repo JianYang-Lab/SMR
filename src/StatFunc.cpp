@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 #include "CommFunc.hpp"
 
@@ -40,7 +41,7 @@ double StatFunc::chi_prob(double df, double chi_sqr_val) { return 1 - StatFunc::
 double StatFunc::gammp(const double a, const double x) {
   double gamser, gammcf, gln;
 
-  if (x < 0.0 || a <= 0.0) throw("Invalid arguments in routine gammp");
+  if (x < 0.0 || a <= 0.0) throw std::runtime_error("Invalid arguments in routine gammp");
 
   if (x < a + 1.0) {
     gser(gamser, a, x, gln);
@@ -59,7 +60,7 @@ void StatFunc::gser(double& gamser, const double a, const double x, double& gln)
 
   gln = gammln(a);
   if (x <= 0.0) {
-    if (x < 0.0) throw("x less than 0 in routine gser");
+    if (x < 0.0) throw std::runtime_error("x less than 0 in routine gser");
     gamser = 0.0;
     return;
   } else {
@@ -74,7 +75,7 @@ void StatFunc::gser(double& gamser, const double a, const double x, double& gln)
         return;
       }
     }
-    throw("a too large, ITMAX too small in routine gser");
+    throw std::runtime_error("a too large, ITMAX too small in routine gser");
     return;
   }
 }
@@ -103,7 +104,7 @@ void StatFunc::gcf(double& gammcf, const double a, const double x, double& gln) 
     h *= del;
     if (CommFunc::Abs(del - 1.0) <= EPS) break;
   }
-  if (i > ITMAX) throw("a too large, ITMAX too small in gcf");
+  if (i > ITMAX) throw std::runtime_error("a too large, ITMAX too small in gcf");
   gammcf = exp(-x + a * log(x) - gln) * h;
 }
 ////////// P-value Calculatiion Functions End ////////////////

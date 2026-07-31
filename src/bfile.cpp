@@ -15,6 +15,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <fmt/base.h>
 #include <Eigen/Eigen>
@@ -29,7 +30,7 @@ namespace SMRDATA {
 void read_famfile(bInfo* bdata, const std::string& famfile) {
   bdata->_autosome_num = 22;
   std::ifstream ifs_fam(famfile.c_str());
-  if (!ifs_fam) throw("Error: can not open the file [" + famfile + "] to read.");
+  if (!ifs_fam) throw std::runtime_error("Error: can not open the file [" + famfile + "] to read.");
   std::cout << "Reading PLINK FAM file from [" + famfile + "]." << std::endl;
 
   std::string buf;
@@ -68,7 +69,8 @@ void read_famfile(bInfo* bdata, const std::string& famfile) {
     bdata->_keep[i] = i;
     bdata->_id_map.emplace(bdata->_fid[i] + ":" + bdata->_pid[i], i);
     if (size == bdata->_id_map.size())
-      throw("Error: Duplicate individual ID found: \"" + bdata->_fid[i] + "\t" + bdata->_pid[i] + "\".");
+      throw std::runtime_error("Error: Duplicate individual ID found: \"" + bdata->_fid[i] + "\t" + bdata->_pid[i] +
+                               "\".");
     size = bdata->_id_map.size();
   }
 }
@@ -167,7 +169,7 @@ void read_bimfile(bInfo* bdata, const std::string& bimfile) {
   double dbuf = 0.0;
   std::string str_buf;
   std::ifstream ifs_bim(bimfile.c_str());
-  if (!ifs_bim) throw("Error: can not open the file [" + bimfile + "] to read.");
+  if (!ifs_bim) throw std::runtime_error("Error: can not open the file [" + bimfile + "] to read.");
   std::cout << "Reading PLINK BIM file from [" + bimfile + "]." << std::endl;
   bdata->_chr.clear();
   bdata->_snp_name.clear();
@@ -237,8 +239,8 @@ void read_bedfile(bInfo* bdata, const std::string& bedfile) {
     else rsnp[i] = 0;
   }
 
-  if (bdata->_include.size() == 0) throw("Error: No SNP is retained for analysis.");
-  if (bdata->_keep.size() == 0) throw("Error: No individual is retained for analysis.");
+  if (bdata->_include.size() == 0) throw std::runtime_error("Error: No SNP is retained for analysis.");
+  if (bdata->_keep.size() == 0) throw std::runtime_error("Error: No individual is retained for analysis.");
 
   // Read bed file
   char ch[1];
@@ -250,12 +252,12 @@ void read_bedfile(bInfo* bdata, const std::string& bedfile) {
     bdata->_snp_2[i].resize(bdata->_keep.size());
   }
   std::fstream BIT(bedfile.c_str(), std::ios::in | std::ios::binary);
-  if (!BIT) throw("Error: can not open the file [" + bedfile + "] to read.");
+  if (!BIT) throw std::runtime_error("Error: can not open the file [" + bedfile + "] to read.");
   std::cout << "Reading PLINK BED file from [" + bedfile + "] in SNP-major format ..." << std::endl;
   unsigned char bed_magic[3] = {0, 0, 0};
   for (i = 0; i < 3; i++) BIT.read(reinterpret_cast<char*>(&bed_magic[i]), 1);
   if (!BIT || bed_magic[0] != 0x6C || bed_magic[1] != 0x1B || bed_magic[2] != 0x01)
-    throw("Error: [" + bedfile + "] is not a valid PLINK BED file in SNP-major format.");
+    throw std::runtime_error("Error: [" + bedfile + "] is not a valid PLINK BED file in SNP-major format.");
   int snp_indx = 0, indi_indx = 0;
   for (j = 0, snp_indx = 0; j < bdata->_snp_num;
        j++) {  // Read genotype in SNP-major mode, 00: homozygote AA; 11: homozygote BB; 01: hetezygote; 10: missing
@@ -265,7 +267,7 @@ void read_bedfile(bInfo* bdata, const std::string& bedfile) {
     }
     for (i = 0, indi_indx = 0; i < bdata->_indi_num;) {
       BIT.read(ch, 1);
-      if (!BIT) throw("Error: problem with the BED file ... has the FAM/BIM file been changed?");
+      if (!BIT) throw std::runtime_error("Error: problem with the BED file ... has the FAM/BIM file been changed?");
       b = ch[0];
       k = 0;
       while (k < 7 && i < bdata->_indi_num) {  // change code: 11 for AA; 00 for BB;
@@ -318,7 +320,7 @@ void extract_region_bp(bInfo* bdata, int chr, int fromkb, int tokb) {
     if (bdata->_chr[j] == chr && bdata->_bp[j] <= tobp && bdata->_bp[j] >= frombp)
       snplist.push_back(bdata->_snp_name[j]);
   }
-  if (snplist.empty()) throw("Error: on SNP found in this region.");
+  if (snplist.empty()) throw std::runtime_error("Error: on SNP found in this region.");
   update_id_map_kp(snplist, bdata->_snp_name_map, bdata->_include);
   std::cout << bdata->_include.size() << " SNPs are extracted from SNP BP: " << fromkb << "Kb" << "to SNP BP: " << tokb
             << "Kb." << std::endl;
@@ -330,7 +332,7 @@ void extract_snp(bInfo* bdata, int chr) {
     int j = bdata->_include[i];
     if (bdata->_chr[j] == chr) snplist.push_back(bdata->_snp_name[j]);
   }
-  if (snplist.empty()) throw("Error: on SNP found in this region.");
+  if (snplist.empty()) throw std::runtime_error("Error: on SNP found in this region.");
   update_id_map_kp(snplist, bdata->_snp_name_map, bdata->_include);
   std::cout << bdata->_include.size() << " SNPs are extracted from chromosome " << chr << "." << std::endl;
 }
@@ -533,7 +535,7 @@ void filter_snp_maf(bInfo* bdata, double maf) {
     bdata->_snp_name_map.insert(*iter);
     bdata->_include.push_back(iter->second);
   }
-  if (bdata->_include.size() == 0) throw("Error: No SNP is retained for analysis.");
+  if (bdata->_include.size() == 0) throw std::runtime_error("Error: No SNP is retained for analysis.");
   else {
     std::stable_sort(bdata->_include.begin(), bdata->_include.end());
     std::cout << "After pruning SNPs with MAF > " << maf << ", there are " << bdata->_include.size() << " SNPs ("
@@ -547,7 +549,7 @@ void ld_calc_o2m(VectorXd& ld_v, long target, const MatrixXd& X, bool centered) 
 
   // Safety: resize output and validate target
   ld_v.resize(size);
-  if (target < 0 || target >= size) throw("target SNP index out of bounds");
+  if (target < 0 || target >= size) throw std::runtime_error("target SNP index out of bounds");
 
   const auto y = X.col(target);
   auto n_d = static_cast<double>(n);
@@ -1184,7 +1186,8 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
 void check_autosome(bInfo* bdata) {
   for (int i = 0; i < bdata->_include.size(); i++) {
     if (bdata->_chr[bdata->_include[i]] > bdata->_autosome_num)
-      throw("Error: this option is for the autosomal SNPs only. Please check the option --autosome.");
+      throw std::runtime_error(
+          "Error: this option is for the autosomal SNPs only. Please check the option --autosome.");
   }
 }
 

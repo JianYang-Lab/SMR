@@ -82,6 +82,9 @@ int main(int argc, char** argv) {
   } catch (const std::string& err_msg) {
     std::cerr << "\n" << err_msg << std::endl;
     return EXIT_FAILURE;
+  } catch (const std::exception& err_msg) {
+    std::cerr << "\n" << err_msg.what() << std::endl;
+    return EXIT_FAILURE;
   } catch (const char* err_msg) {
     std::cerr << "\n" << err_msg << std::endl;
     return EXIT_FAILURE;

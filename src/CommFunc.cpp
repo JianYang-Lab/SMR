@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -63,7 +64,7 @@ void CommFunc::update_id_map_rm(const std::vector<std::string>& id_list, std::un
 
 void CommFunc::read_indi_list(const std::string& indi_list_file, std::vector<std::string>& indi_list) {
   std::ifstream i_indi_list(indi_list_file.c_str());
-  if (!i_indi_list) throw("Error: can not open the file [" + indi_list_file + "] to read.");
+  if (!i_indi_list) throw std::runtime_error("Error: can not open the file [" + indi_list_file + "] to read.");
   std::string str_buf, id_buf;
   indi_list.clear();
   while (i_indi_list) {
@@ -83,7 +84,7 @@ void CommFunc::read_msglist(const std::string& msglistfile, std::vector<std::str
   msglist.clear();
   std::string StrBuf;
   std::ifstream i_msglist(msglistfile.c_str());
-  if (!i_msglist) throw("Error: can not open the file [" + msglistfile + "] to read.");
+  if (!i_msglist) throw std::runtime_error("Error: can not open the file [" + msglistfile + "] to read.");
   std::cout << "Reading a list of " << msg << " from [" + msglistfile + "]." << std::endl;
   while (i_msglist >> StrBuf) {
     msglist.push_back(StrBuf);
@@ -117,7 +118,7 @@ bool CommFunc::FloatEqual(double lhs, double rhs) {
 
 void CommFunc::FileExist(const std::string& filename) {
   std::ifstream ifile(filename.c_str());
-  if (!ifile) throw("Error: can not open the file [" + filename + "] to read.");
+  if (!ifile) throw std::runtime_error("Error: can not open the file [" + filename + "] to read.");
 }
 
 int CommFunc::max_abs_id(std::vector<double>& zsxz) {
@@ -194,28 +195,28 @@ void CommFunc::strcpy2(char** to, const std::string& from) {
 float CommFunc::readfloat(FILE* f) {
   float v;
   if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
-    throw("ERROR: unexpected end of file or read error while reading float data.");
+    throw std::runtime_error("ERROR: unexpected end of file or read error while reading float data.");
   return v;
 }
 
 std::uint64_t CommFunc::readuint64(FILE* f) {
   std::uint64_t v;
   if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
-    throw("ERROR: unexpected end of file or read error while reading uint64 data.");
+    throw std::runtime_error("ERROR: unexpected end of file or read error while reading uint64 data.");
   return v;
 }
 
 std::uint32_t CommFunc::readuint32(FILE* f) {
   std::uint32_t v;
   if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
-    throw("ERROR: unexpected end of file or read error while reading uint32 data.");
+    throw std::runtime_error("ERROR: unexpected end of file or read error while reading uint32 data.");
   return v;
 }
 
 int CommFunc::readint(FILE* f) {
   int v;
   if (fread(reinterpret_cast<void*>(&v), sizeof(v), 1, f) != 1)
-    throw("ERROR: unexpected end of file or read error while reading int data.");
+    throw std::runtime_error("ERROR: unexpected end of file or read error while reading int data.");
   return v;
 }
 

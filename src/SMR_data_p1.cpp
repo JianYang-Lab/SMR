@@ -16,6 +16,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <utility>
 
 #include "CommFunc.hpp"
@@ -113,7 +114,8 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
   std::vector<std::string> smasNames;
   if (eqtlsmaslstName != nullptr) {
     read_smaslist(smasNames, std::string(eqtlsmaslstName));
-    if (smasNames.size() == 0) throw("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
+    if (smasNames.size() == 0)
+      throw std::runtime_error("No eqtl summary file list in [ " + std::string(eqtlsmaslstName) + " ]");
     for (int ii = 0; ii < smasNames.size(); ii++) {
       eqtlInfo eqtlinfo;
       read_esifile(&eqtlinfo, smasNames[ii] + ".esi");
@@ -146,7 +148,7 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
     get_thres_sets(&eqtlinfo, prbIds, beta, se, rs, thres);
 
   } else {
-    throw(
+    throw std::runtime_error(
         "Error: please input eQTL summary data files list or eQTL summary data by the flag --beqtl-summaries or "
         "--beqtl-summary.");
   }
@@ -156,7 +158,7 @@ void est_effect_splsize(char* eqtlsmaslstName, char* eqtlFileName, char* snplstN
 
   std::string tstfile = "tst.top.bse.txt";
   std::ofstream tst(tstfile.c_str());
-  if (!tst) throw("Error: can not open the fam file " + tstfile + " to save!");
+  if (!tst) throw std::runtime_error("Error: can not open the fam file " + tstfile + " to save!");
 
   tst << "Probe" << '\t' << "SNP" << '\t' << "b" << '\t' << "se" << '\n';
 
@@ -177,7 +179,7 @@ void read_probevarfile(eqtlInfo* eqtlinfo, std::string vpFileName) {
 
   std::ifstream flptr;
   flptr.open(vpFileName.c_str());
-  if (!flptr) throw("Error: can not open the file [" + vpFileName + "] to read.");
+  if (!flptr) throw std::runtime_error("Error: can not open the file [" + vpFileName + "] to read.");
 
   char tbuf[MAX_LINE_SIZE];
   int lineNum(0);
@@ -231,7 +233,8 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
     }
 
   } else
-    throw("Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.");
+    throw std::runtime_error(
+        "Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.");
 
   std::vector<int> out_esi_id;
   std::vector<int> out_epi_id;
@@ -255,7 +258,7 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
     }
   } else {
     if (eqtlinfo._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.");
+      throw std::runtime_error("Error: No data extracted from the input, please check.");
     }
 
     for (std::uint32_t i = 0; i < eqtlinfo._probNum; i++) {
@@ -280,7 +283,7 @@ void make_cojo(char* outFileName, char* eqtlFileName, char* snplstName, char* sn
 
   std::string smrfile = std::string(outFileName) + ".raw";
   std::ofstream smr(smrfile.c_str());
-  if (!smr) throw("Error: can not open the fam file " + smrfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the fam file " + smrfile + " to save!");
 
   smr << "ProbeID" << '\t' << "SNP" << '\t' << "Chr" << '\t' << "A1" << '\t' << "A2" << '\t' << "b" << '\t' << "SE"
       << '\t' << "p" << '\n';
@@ -347,7 +350,8 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
       exit(EXIT_FAILURE);
     }
   } else
-    throw("Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
+    throw std::runtime_error(
+        "Error: please input the eQTL summary information for the eQTL data files by the option --beqtl-summary.\n");
 
   std::vector<int> out_esi_id;
   std::vector<int> out_epi_id;
@@ -396,7 +400,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
     }
   } else {
     if (eqtlinfo._val.size() == 0) {
-      throw("Error: No data extracted from the input, please check.\n");
+      throw std::runtime_error("Error: No data extracted from the input, please check.\n");
     }
 
     for (std::uint32_t i = 0; i < eqtlinfo._probNum; i++) {
@@ -443,7 +447,7 @@ void lookup(char* outFileName, char* eqtlFileName, char* snplstName, char* probl
 
   std::string smrfile = std::string(outFileName) + ".txt";
   std::ofstream smr(smrfile.c_str());
-  if (!smr) throw("Error: can not open the file " + smrfile + " to save!");
+  if (!smr) throw std::runtime_error("Error: can not open the file " + smrfile + " to save!");
 
   smr << "SNP" << '\t' << "Chr" << '\t' << "BP" << '\t' << "A1" << '\t' << "A2" << '\t' << "Freq" << '\t' << "Probe"
       << '\t' << "Probe_Chr" << '\t' << "Probe_bp" << '\t' << "Gene" << '\t' << "Orientation" << '\t' << "b" << '\t'
@@ -480,11 +484,11 @@ void rm_unmatched_snp(gwasData* gdata, eqtlInfo* esdata) {
   if (esdata->_esi_include.size() < esdata->_snpNum) {
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     StrFunc::match_only(essnp, gdata->snpName, gdId);
-    if (gdId.empty()) throw("Error: no common SNPs found.");
+    if (gdId.empty()) throw std::runtime_error("Error: no common SNPs found.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata->snpName[gdId[i]]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, gdata->snpName, gdId);
-    if (gdId.empty()) throw("Error: no common SNPs found.");
+    if (gdId.empty()) throw std::runtime_error("Error: no common SNPs found.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(gdata->snpName[gdId[i]]);
   }
 
@@ -543,11 +547,11 @@ void rm_unmatched_snp(eqtlInfo* etrait, eqtlInfo* esdata) {
     for (int i = 0; i < esdata->_esi_include.size(); i++) essnp.push_back(esdata->_esi_rs[esdata->_esi_include[i]]);
     for (int i = 0; i < etrait->_esi_include.size(); i++) etsnp.push_back(etrait->_esi_rs[etrait->_esi_include[i]]);
     match_only(essnp, etsnp, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etsnp[gdId[i]]);
   } else {
     StrFunc::match_only(esdata->_esi_rs, etrait->_esi_rs, gdId);
-    if (gdId.empty()) throw("Error: no SNPs in common.");
+    if (gdId.empty()) throw std::runtime_error("Error: no SNPs in common.");
     for (int i = 0; i < gdId.size(); i++) slctSNPs.push_back(etrait->_esi_rs[gdId[i]]);
   }
 
@@ -606,7 +610,7 @@ void read_gene_anno(char* geneAnnoName, std::vector<int>& chr, std::vector<std::
                     std::vector<int>& start, std::vector<int>& end) {
   std::ifstream flptr;
   flptr.open(geneAnnoName);
-  if (!flptr) throw("Error: can not open the file [" + std::string(geneAnnoName) + "] to read.");
+  if (!flptr) throw std::runtime_error("Error: can not open the file [" + std::string(geneAnnoName) + "] to read.");
 
   std::cout << "Reading gene annotation information from [" + std::string(geneAnnoName) + "]." << std::endl;
 
@@ -639,7 +643,7 @@ void read_gene_anno_strand(char* geneAnnoName, std::vector<int>& chr, std::vecto
                            std::vector<int>& start, std::vector<int>& end, std::vector<std::string>& strand) {
   std::ifstream flptr;
   flptr.open(geneAnnoName);
-  if (!flptr) throw("Error: can not open the file [" + std::string(geneAnnoName) + "] to read.");
+  if (!flptr) throw std::runtime_error("Error: can not open the file [" + std::string(geneAnnoName) + "] to read.");
 
   std::cout << "Reading gene annotation information from [" + std::string(geneAnnoName) + "]." << std::endl;
 
@@ -691,11 +695,15 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
           char* snprs, char* fromsnprs, char* tosnprs, int snpWind, int fromsnpkb, int tosnpkb, bool snpwindFlag,
           bool cis_flag, char* geneAnnoName) {
   setNbThreads(thread_num);
-  if (!prbwindFlag) throw("Error: please input probe window by the flag --probe-wind.");
-  if (!heidioffFlag && bFileName == nullptr) throw("Error: please input Plink file by the flag --bfile.");
-  if (gwasFileName == nullptr) throw("Error: please input GWAS summary data  by the flag --gwas-summary.");
-  if (eqtlFileName == nullptr) throw("Error: please input eQTL summary data  by the flag --eqtl-summary.");
-  if (geneAnnoName == nullptr) throw("Error: please input gene annotation file by the flag --gene-list.");
+  if (!prbwindFlag) throw std::runtime_error("Error: please input probe window by the flag --probe-wind.");
+  if (!heidioffFlag && bFileName == nullptr)
+    throw std::runtime_error("Error: please input Plink file by the flag --bfile.");
+  if (gwasFileName == nullptr)
+    throw std::runtime_error("Error: please input GWAS summary data  by the flag --gwas-summary.");
+  if (eqtlFileName == nullptr)
+    throw std::runtime_error("Error: please input eQTL summary data  by the flag --eqtl-summary.");
+  if (geneAnnoName == nullptr)
+    throw std::runtime_error("Error: please input gene annotation file by the flag --gene-list.");
 
   std::vector<int> gene_anno_chr;
   std::vector<std::string> gene_anno_genename;
@@ -1162,7 +1170,7 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
       }
     } else {
       if (esdata_._val.size() == 0) {
-        throw("Error: No data extracted from the input, please check.\n");
+        throw std::runtime_error("Error: No data extracted from the input, please check.\n");
       }
 
       for (std::uint32_t ii = 0; ii < ldprbid.size(); ii++) {
@@ -1296,12 +1304,12 @@ void plot(char* outFileName, char* bFileName, char* gwasFileName, char* eqtlFile
 void read_geneAnno(std::string gAnno_file, std::vector<std::string>& gene_name, std::vector<int>& gene_chr,
                    std::vector<int>& gene_bp1, std::vector<int>& gene_bp2) {
   std::ifstream in_gAnno(gAnno_file.c_str());
-  if (!in_gAnno) throw("Error: can not open the file [" + gAnno_file + "] to read.");
+  if (!in_gAnno) throw std::runtime_error("Error: can not open the file [" + gAnno_file + "] to read.");
   std::cout << "Reading physical positions of the genes from [" + gAnno_file + "]." << std::endl;
   std::string str_buf;
   std::vector<std::string> vs_buf;
   while (std::getline(in_gAnno, str_buf)) {
-    if (StrFunc::split_string(str_buf, vs_buf) != 4) throw("Error: in line \"" + str_buf + "\".");
+    if (StrFunc::split_string(str_buf, vs_buf) != 4) throw std::runtime_error("Error: in line \"" + str_buf + "\".");
     gene_chr.push_back(atoi(vs_buf[0].c_str()));
     gene_bp1.push_back(atoi(vs_buf[1].c_str()));
     gene_bp2.push_back(atoi(vs_buf[2].c_str()));
@@ -1315,7 +1323,7 @@ void sbat_read_snpset(bInfo* bdata, char* snpset_file, std::vector<std::string>&
                       std::vector<int>& gene_bp1, std::vector<int>& gene_bp2,
                       std::vector<std::vector<std::string>>& snpset) {
   std::ifstream in_snpset(snpset_file);
-  if (!in_snpset) throw("Error: can not open the file [" + std::string(snpset_file) + "] to read.");
+  if (!in_snpset) throw std::runtime_error("Error: can not open the file [" + std::string(snpset_file) + "] to read.");
   std::cout << "\nReading SNP sets from [" + std::string(snpset_file) + "]." << std::endl;
   std::string str_buf;
   std::vector<std::string> vs_buf, snpset_buf, snp_name;
@@ -1990,9 +1998,9 @@ void smr_multipleSNP(char* outFileName, char* bFileName, char* bldFileName, char
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
   if (gwasFileName == nullptr)
-    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+    throw std::runtime_error("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -2646,7 +2654,7 @@ void write_epi(std::string outFileName, eqtlInfo* esdata) {
   printf("\nGenerating the .epi file...\n");
   std::string epifile = std::string(outFileName) + std::string(".epi");
   std::ofstream epi(epifile.c_str());
-  if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
+  if (!epi) throw std::runtime_error("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < esdata->_include.size(); j++) {
     epi << ((esdata->_epi_chr[esdata->_include[j]] == -9) ? "NA" : atos(esdata->_epi_chr[esdata->_include[j]])) << '\t'
         << esdata->_epi_prbID[esdata->_include[j]] << '\t' << esdata->_epi_gd[esdata->_include[j]] << '\t'
@@ -2662,7 +2670,7 @@ void write_esi(std::string outFileName, eqtlInfo* esdata) {
   printf("\nGenerating the .esi file...\n");
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("Error: can not open the ESI file to save!");
+  if (!esi) throw std::runtime_error("Error: can not open the ESI file to save!");
   for (int j = 0; j < esdata->_esi_include.size(); j++) {
     esi << ((esdata->_esi_chr[esdata->_esi_include[j]] == -9) ? "NA" : atos(esdata->_esi_chr[esdata->_esi_include[j]]))
         << '\t' << esdata->_esi_rs[esdata->_esi_include[j]] << '\t' << esdata->_esi_gd[esdata->_esi_include[j]] << '\t'
@@ -3507,7 +3515,7 @@ void meta(char* besdlistFileName, char* outFileName, int meta_mth, double pthres
 
 void read_epi4u(eqtlInfo* eqtlinfo, std::string epifile) {
   std::ifstream epi(epifile.c_str());
-  if (!epi) throw("ERROR: can not open the file [" + epifile + "] to read.");
+  if (!epi) throw std::runtime_error("ERROR: can not open the file [" + epifile + "] to read.");
   std::cout << "Reading eQTL probe information from [" + epifile + "]." << std::endl;
   eqtlinfo->_epi_chr.clear();
   eqtlinfo->_epi_prbID.clear();
@@ -3581,7 +3589,7 @@ void read_epi4u(eqtlInfo* eqtlinfo, std::string epifile) {
 }
 void read_esi4u(eqtlInfo* eqtlinfo, std::string esifile) {
   std::ifstream esi(esifile.c_str());
-  if (!esi) throw("ERROR: can not open the file [" + esifile + "] to read.");
+  if (!esi) throw std::runtime_error("ERROR: can not open the file [" + esifile + "] to read.");
   std::cout << "Reading eQTL SNP information from [" + esifile + "]." << std::endl;
   eqtlinfo->_esi_chr.clear();
   eqtlinfo->_esi_rs.clear();
@@ -3817,9 +3825,11 @@ void smr_multipleSNP_v2(char* outFileName, char* bFileName, char* bldFileName, c
 
   // flags check
   if (gwasFileName == nullptr)
-    throw("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
-  if (qtllistFileName == nullptr) throw("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
-  if (qtl_index == 0) throw("Error: please input eQTL list index for SMR analysis by the flag --eqtl-list-index.");
+    throw std::runtime_error("Error: please input GWAS summary data for SMR analysis by the flag --gwas-summary.");
+  if (qtllistFileName == nullptr)
+    throw std::runtime_error("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
+  if (qtl_index == 0)
+    throw std::runtime_error("Error: please input eQTL list index for SMR analysis by the flag --eqtl-list-index.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -3914,7 +3924,7 @@ void smr_multipleSNP_for_each_chr(
   eqtlInfo esdata;
   double threshold = chi_val(1, p_hetero);
   if (eqtlFileName == nullptr)
-    throw("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
+    throw std::runtime_error("Error: please input eQTL summary data for SMR analysis by the flag --eqtl-summary.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);

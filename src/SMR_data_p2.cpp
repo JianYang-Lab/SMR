@@ -14,6 +14,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <zlib.h>
 
@@ -163,7 +164,7 @@ void read_smr_sa(std::vector<std::string>& rs, std::vector<int>& chr, std::vecto
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL summary data from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -270,7 +271,7 @@ void read_smr_sa(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -439,7 +440,7 @@ void read_plink_qassoc_gz(std::vector<std::string>& rs, std::vector<int>& chr, s
 void read_plink_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::vector<int>& bp,
                        std::vector<float>& beta, std::vector<float>& se, std::string esdpath) {
   std::ifstream flptr(esdpath.c_str());
-  if (!flptr) throw("Error: can not open the file [" + std::string(esdpath) + "] to read.");
+  if (!flptr) throw std::runtime_error("Error: can not open the file [" + std::string(esdpath) + "] to read.");
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
   char buf[MAX_LINE_SIZE];
@@ -515,7 +516,7 @@ void read_plink_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -679,7 +680,7 @@ void read_gemma_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std:
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -781,7 +782,7 @@ void read_bolt_qassoc(std::vector<std::string>& rs, std::vector<int>& chr, std::
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -880,7 +881,7 @@ void read_gemma_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -978,7 +979,7 @@ void read_bolt_qassoc(std::vector<snpinfolst>& snpinfo, std::string esdpath) {
     }
   } else {
     flptr.open(esdpath.c_str());
-    if (!flptr) throw("Error: can not open the file [" + esdpath + "] to read.");
+    if (!flptr) throw std::runtime_error("Error: can not open the file [" + esdpath + "] to read.");
   }
   std::cout << "Reading eQTL information from [" + std::string(esdpath) + "]." << std::endl;
 
@@ -1074,7 +1075,7 @@ void read_mapfile(bInfo* bdata, std::string bimfile) {
   double dbuf = 0.0;
   std::string str_buf;
   std::ifstream Bim(bimfile.c_str());
-  if (!Bim) throw("Error: can not open the file [" + bimfile + "] to read.");
+  if (!Bim) throw std::runtime_error("Error: can not open the file [" + bimfile + "] to read.");
   std::cout << "Reading PLINK BIM file from [" + bimfile + "]." << std::endl;
   bdata->_chr.clear();
   bdata->_snp_name.clear();
@@ -1135,7 +1136,9 @@ std::uint64_t get_esi_info(std::vector<snpinfolst>& snpinfo, probeinfolst** prbi
       }
     } else {
       flptr.open((locinfolst + j)->esdpath);
-      if (!flptr) throw("Error: can not open the file [" + std::string((locinfolst + j)->esdpath) + "] to read.");
+      if (!flptr)
+        throw std::runtime_error("Error: can not open the file [" + std::string((locinfolst + j)->esdpath) +
+                                 "] to read.");
     }
 
     if (gzflag) gzgets(gzfile, buf, MAX_LINE_SIZE);  // head
@@ -2081,7 +2084,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
         "WARNING: --geno-uni is enabled. Please ensure the SNPs and their alleles identical across all the text "
         "files.\n");
   }
-  if (syllabusName == nullptr) throw("Error: please input eQTL file list by the flag --eqtl-flist.");
+  if (syllabusName == nullptr) throw std::runtime_error("Error: please input eQTL file list by the flag --eqtl-flist.");
   int flagcount = 0, fformat = 0;
   if (gctaflag) {
     flagcount++;
@@ -2105,7 +2108,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
     printf("WARNING: THIS OPTION IS ONLY FOR PERSONAL USE. ONLY with --make-besd-dense.\n");
   }
   if (flagcount == 0 || flagcount > 1)
-    throw("ERROR: please verify the file format flags. Only one flag can be specified.\n");
+    throw std::runtime_error("ERROR: please verify the file format flags. Only one flag can be specified.\n");
   std::vector<probeinfolst> prbiflstinfo;
   int esdfileNum = read_probeinfolst(prbiflstinfo, syllabusName);
   probeinfolst* prbiflst = &prbiflstinfo[0];
@@ -2151,7 +2154,7 @@ void make_besd(char* outFileName, char* syllabusName, bool gctaflag, bool plinkf
   std::vector<std::string> esi_a2(esiNum);
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("ERROR: can not open the ESI file to save!");
+  if (!esi) throw std::runtime_error("ERROR: can not open the ESI file to save!");
   for (int j = 0; j < esiNum; j++) {
     esi << snpinfo[j].snpchr << '\t' << snpinfo[j].snprs << '\t' << snpinfo[j].gd << '\t' << snpinfo[j].bp << '\t'
         << snpinfo[j].a1 << '\t' << snpinfo[j].a2 << '\t'
@@ -2443,7 +2446,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
 
   std::string epifile = std::string(outFileName) + std::string(".epi");
   std::ofstream epi(epifile.c_str());
-  if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
+  if (!epi) throw std::runtime_error("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < epiNum; j++) {
     epi << (prbchr[j] > 0 ? atos(prbchr[j]) : "NA") << '\t' << prbs[j] << '\t' << 0 << '\t'
         << (prbchr[j] > 0 ? atos(prbbp[j]) : "NA") << '\t' << "NA" << '\t' << prbstrand[j] << '\n';
@@ -2454,7 +2457,7 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
   printf("\nGenerating the .esi file...\n");
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("Error: can not open the ESI file to save!");
+  if (!esi) throw std::runtime_error("Error: can not open the ESI file to save!");
   esi_map.clear();
   epi_map.clear();
   for (int j = 0; j < esiNum; j++) {
@@ -2882,7 +2885,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   qsort(epiptr, epiNum, sizeof(probeinfolst), comp);  // sort prob information with chrome bp location.
   std::string epifile = std::string(outFileName) + std::string(".epi");
   std::ofstream epi(epifile.c_str());
-  if (!epi) throw("Error: can not open the EPI file " + epifile + " to save!");
+  if (!epi) throw std::runtime_error("Error: can not open the EPI file " + epifile + " to save!");
   for (int j = 0; j < epiNum; j++) {
     epi << (prbiflst[j].probechr == 0 ? "NA" : atos(prbiflst[j].probechr)) << '\t' << prbiflst[j].probeId << '\t' << 0
         << '\t' << (prbiflst[j].bp == 0 ? "NA" : atos(prbiflst[j].bp)) << '\t' << prbiflst[j].genename << '\t'
@@ -2901,7 +2904,7 @@ void make_besd_byQfile(char* qfileName, char* outFileName, bool save_dense_flag,
   esi_map.clear();
   std::string esifile = std::string(outFileName) + std::string(".esi");
   std::ofstream esi(esifile.c_str());
-  if (!esi) throw("Error: can not open the ESI file to save!");
+  if (!esi) throw std::runtime_error("Error: can not open the ESI file to save!");
   for (int j = 0; j < esiNum; j++) {
     esi << (snpiflst[j].snpchr == 0 ? "NA" : atos(snpiflst[j].snpchr)) << '\t' << snpiflst[j].snprs << '\t'
         << snpiflst[j].gd << '\t' << (snpiflst[j].bp == 0 ? "NA" : atos(snpiflst[j].bp)) << '\t' << snpiflst[j].a1

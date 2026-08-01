@@ -661,50 +661,81 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   fwrite(&cols[0], sizeof(std::uint64_t), bdata._include.size() + 1, outfile);
   long window = ldWind * 1000, vc = 0;
   double cr = 0;
-  for (int i = 0; i < bdata._include.size(); i++) {
-    progress(i, cr, static_cast<int>(bdata._include.size()));
-
-    // X shape: individual size * (max snp size within ldwin)
+  const long snp_total = static_cast<long>(bdata._include.size());
+  const long blk = std::min(512L, static_cast<long>(m));
+  MatrixXf C;
+  VectorXf x;
+  VectorXf scratch;
+  // Blocked LD computation: one BLAS-3 gemm per block of SNPs instead of one gemv per SNP.
+  // The rolling window X (indi x m) is read once per block instead of once per SNP.
+  for (long i0 = 0; i0 < snp_total; i0 += blk) {
+    const long b = std::min(blk, snp_total - i0);
     if (X.size() == 0) initX(&bdata, X, m);
-    int start = -9;
-    if (bitmod) start = (i & (m - 1));
-    else start = i % m;
 
-    VectorXf x = X.col(start);
+    const long start0 = bitmod ? (i0 & (m - 1)) : i0;
+    // Snapshot the block's own genotypes (pre-scaled as in the original code)
+    MatrixXf Xb = X.middleCols(start0, b) / (X.rows() - 1);
 
-    int chri = bdata._chr[bdata._include[i]];
-    int bpi = bdata._bp[bdata._include[i]];
+    // C(cur, t) = LD(SNP i0+t, SNP in rolling column cur) for partners in [i0, i0+m)
+    C.noalias() = X.transpose() * Xb;
 
-    VectorXf ldv = X.col(start) / (X.rows() - 1);
-    ldv = X.transpose() * ldv;
-    // ldv是一个snp个数*1的矩阵，表示各个snp和start snp的关系
-    if (ldr2) ldv = ldv.array() * ldv.array();
-    int st = -9, ed = -9;
-    for (int j = 1; j < m && i + j < bdata._include.size(); j++) {
-      int chrj = bdata._chr[bdata._include[i + j]];
-      int bpj = bdata._bp[bdata._include[i + j]];
-      int cur = -9;
-      if (bitmod) cur = ((start + j) & (m - 1));
-      else cur = (start + j) % m;
-      if (chri == chrj && abs(bpj - bpi) <= window) {
-        if (st < 0) st = cur;
-        ed = cur;
-        if (ed == m - 1) {
-          fwrite(&ldv(st), sizeof(float), ed - st + 1, outfile);
-          st = -9;
-          ed = -9;
-        }
-        vc++;
-      } else {
-        // 应该和getMaxNum一样，没有必要再往下执行
-        break;
+    // Rolling updates: decode SNPs [i0+m, i0+b+m) into the rolling window (same order as before)
+    for (long t = 0; t < b; t++) {
+      const long i = i0 + t;
+      if (i + m < snp_total) {
+        if (x.size() == 0) x.resize(X.rows());
+        makex_xVec_subset(&bdata, static_cast<int>(i + m), x, false, true);
+        const long start = bitmod ? (i & (m - 1)) : (i % m);
+        X.col(start) = x;
       }
     }
-    if (ed >= 0 && st >= 0) fwrite(&ldv(st), sizeof(float), ed - st + 1, outfile);
 
-    if (i + m < bdata._include.size()) {
-      makex_xVec_subset(&bdata, i + m, x, false, true);
-      X.col(start) = x;
+    // Partners in [i0+m, i0+m+b): LD from the newly decoded columns
+    MatrixXf C_extra;
+    if (i0 + m < snp_total) C_extra.noalias() = X.middleCols(start0, b).transpose() * Xb;
+
+    if (ldr2) {
+      C = C.array().square();
+      if (C_extra.size() != 0) C_extra = C_extra.array().square();
+    }
+
+    if (scratch.size() == 0) scratch.resize(m);
+    for (long t = 0; t < b; t++) {
+      const long i = i0 + t;
+      int icur = static_cast<int>(i);
+      progress(icur, cr, static_cast<int>(snp_total));
+
+      // Assemble this SNP's ldv exactly as the original code produced it: the rolling
+      // columns from C, with the tail partners (>= i0+m) patched from C_extra
+      float* ldv = scratch.data();
+      memcpy(ldv, C.col(t).data(), m * sizeof(float));
+      if (t > 0 && C_extra.size() != 0) memcpy(ldv + start0, C_extra.col(t).data(), t * sizeof(float));
+
+      const int start = bitmod ? static_cast<int>(i & (m - 1)) : static_cast<int>(i % m);
+      const int chri = bdata._chr[bdata._include[i]];
+      const int bpi = bdata._bp[bdata._include[i]];
+      int st = -9, ed = -9;
+      for (int j = 1; j < m && i + j < snp_total; j++) {
+        int chrj = bdata._chr[bdata._include[i + j]];
+        int bpj = bdata._bp[bdata._include[i + j]];
+        int cur = -9;
+        if (bitmod) cur = ((start + j) & (m - 1));
+        else cur = (start + j) % m;
+        if (chri == chrj && std::abs(bpj - bpi) <= window) {
+          if (st < 0) st = cur;
+          ed = cur;
+          if (ed == m - 1) {
+            fwrite(ldv + st, sizeof(float), ed - st + 1, outfile);
+            st = -9;
+            ed = -9;
+          }
+          vc++;
+        } else {
+          // should be the same as getMaxNum, no need to continue
+          break;
+        }
+      }
+      if (ed >= 0 && st >= 0) fwrite(ldv + st, sizeof(float), ed - st + 1, outfile);
     }
   }
   if (vc != valnum) {

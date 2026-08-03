@@ -66,6 +66,53 @@ The unit costs that remain even at small `m`: per-SNP genotype decode
 
 ## 3. The blocked algorithm (this work)
 
+### 3.0 What `X` contains, and the role of `X.rows() - 1` (worked example)
+
+The rolling buffer `X` holds **standardized genotype columns**, produced by
+`initX()` (initial `m` columns) and `makex_xVec_subset()` (rolling updates):
+
+1. `calcu_mu` computes per-SNP mean dosage `μ_k` over **non-missing** individuals.
+2. Per individual `i` and SNP `k`: dosage `g_i ∈ {0,1,2}` (allele count, flipped
+   to the reference allele: `g_i → 2 - g_i` when `allele1 != ref_A`), then
+   `z_i = g_i - μ_k`; **missing genotypes become `z_i = 0`** (mean imputation).
+3. Each column is scaled by `1/sd_k`, where `sd_k = sqrt(Σ z_i² / (n-1))` is the
+   empirical standard deviation (`n = X.rows()` = kept individuals).
+
+So for SNPs `a` and `b`, the Pearson correlation is
+
+```
+r = Σ_i x_i,a · x_i,b / (n - 1)
+```
+
+because the columns already have `Σ x²/(n-1) = 1`. The original loop divides
+**one** column by `(X.rows() - 1)` *before* the dot product, which produces `r`
+directly; squaring elementwise produces `r²`.
+
+**Example** (2 SNPs, 5 individuals, one missing genotype for SNP A):
+
+```
+individual:        1    2    3    4    5
+SNP A dosage g:    0    1    2    1   NA
+SNP B dosage g:    1    1    2    0    2
+
+μ_A = 4/4 = 1.0            μ_B = 6/5 = 1.2
+z_A = [-1, 0, +1, 0, 0]    z_B = [-0.2, -0.2, +0.8, -1.2, +0.8]   (NA -> 0)
+Σz_A² = 2.0  -> sd_A = sqrt(2.0/4) = 0.7071
+Σz_B² = 2.8  -> sd_B = sqrt(2.8/4) = 0.8367
+
+x_A = [-1.4142, 0, +1.4142, 0, 0]
+x_B = [-0.2390, -0.2390, +0.9565, -1.4348, +0.9565]
+
+Σ x_A·x_B = (-1.4142)(-0.2390) + 0 + (1.4142)(0.9565) + 0 + 0 = 0.6906
+r = 0.6906 / (5 - 1) = 0.1726
+```
+
+Note the convention: the denominator is `n-1` over **all** kept individuals,
+and `μ`, `sd` include mean-imputed zeros — i.e. the GCTA/PLINK-style LD, *not*
+the textbook pairwise-complete correlation (which would give `r = 0.5` here
+using only the 4 complete pairs). The `.bld` values follow the former
+convention consistently.
+
 The computation is restructured to **one BLAS-3 gemm per block of SNPs** instead
 of one BLAS-2 gemv per SNP. `blk = min(512, m)`; SNPs are processed in blocks
 `[i0, i0+b)`.

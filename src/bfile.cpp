@@ -355,7 +355,19 @@ void exclude_snp(bInfo* bdata, const std::string& snplistfile) {
             << bdata->_include.size() << " SNPs remaining." << std::endl;
 }
 
-int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
+// Count, for every SNP i, the number of following SNPs within --ld-wind (ldnum_i), and
+// return m = the smallest power of two strictly greater than max(ldnum_i). m is the width
+// of the rolling genotype window used by ld_report (SNP i's genotype column is i & (m-1)).
+//
+// cols (output): cumulative LD-value counts, cols[i+1] = cols[i] + ldnum_i; SNP i's LD
+// values in the .bld values array occupy [cols[i], cols[i+1]) and cols[snpNum] = valnum.
+//
+// ldWind is in Kb (converted to bp here). SNPs are sorted by (chr, bp), so for SNP i the
+// partners are (partners of SNP i-1 except SNP i itself, all still within the window) plus
+// newly scanned ones beyond the previous window end (c_i): ldnum_i = ldnum_{i-1} - 1 + c_i.
+// The two-pointer scan (loopj only moves forward) makes the total cost O(n + total partners)
+// instead of O(n^2).
+int get_ld_layout(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
   int n = 0, loopj = 0, preldnum = 1;
   long window = ldWind * 1000;
   int maxldnum = 0;
@@ -363,11 +375,11 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
   for (int i = 0; i < bdata->_include.size(); i++) {
     int chri = bdata->_chr[bdata->_include[i]];
     int bpi = bdata->_bp[bdata->_include[i]];
-    int ldnum = 0;
+    int ldnum = 0;  // c_i: partners of SNP i beyond the previous window end loopj
     for (int j = loopj + 1; j < bdata->_include.size(); j++) {
       int chrj = bdata->_chr[bdata->_include[j]];
       int bpj = bdata->_bp[bdata->_include[j]];
-      if (chri == chrj && abs(bpj - bpi) <= window) {
+      if (chri == chrj && std::abs(bpj - bpi) <= window) {
         ldnum++;
         loopj = j;
       } else {
@@ -381,6 +393,7 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
     cols[i + 1] = cols[i] + ldnum;
     if (ldnum > maxldnum) maxldnum = ldnum;
   }
+  // round (max ldnum + 1) up to the next power of two: 2 << n
   ++maxldnum;
   while ((maxldnum >>= 1) != 0) n++;
   maxldnum = 2 << n;
@@ -656,7 +669,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   read_bedfile(&bdata, std::string(bFileName) + ".bed");
   if (bdata._mu.empty()) calcu_mu(&bdata);
   if (maf > 0) filter_snp_maf(&bdata, maf);
-  int m = getMaxNum(&bdata, ldWind, cols);
+  int m = get_ld_layout(&bdata, ldWind, cols);
   if (m == 1) {
     printf("No SNP pair included in %d Kb.\n", ldWind);
     exit(EXIT_FAILURE);
@@ -760,7 +773,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
           }
           vc++;
         } else {
-          // should be the same as getMaxNum, no need to continue
+          // should be the same as get_ld_layout, no need to continue
           break;
         }
       }

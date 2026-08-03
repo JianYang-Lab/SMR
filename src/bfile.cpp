@@ -394,10 +394,12 @@ void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
   const auto& snp_row1 = bdata->_snp_1[snp_idx];
   const auto& snp_row2 = bdata->_snp_2[snp_idx];
   const bool flip = (bdata->_allele2[snp_idx] == bdata->_ref_A[snp_idx]);
+  // For loop over individuals
   for (size_t i = 0; i < bdata->_keep.size(); i++) {
     int indi_idx = bdata->_keep[i];
     auto snp1 = snp_row1[indi_idx];
     auto snp2 = snp_row2[indi_idx];
+    // '10' BED missing code
     if (!snp1 || snp2) {
       f_buf = snp1 + snp2;
       if (flip) f_buf = 2.0 - f_buf;
@@ -406,7 +408,7 @@ void mu_func(bInfo* bdata, int j, const std::vector<double>& fac) {
     }
   }
 
-  if (fcount > 0.0) bdata->_mu[bdata->_include[j]] = mu_acc / fcount;
+  if (fcount > 0.0) bdata->_mu[snp_idx] = mu_acc / fcount;
 }
 
 void calcu_mu(bInfo* bdata, bool ssq_flag) {
@@ -424,8 +426,8 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
 
   #pragma omp parallel for
   for (size_t j = 0; j < bdata->_include.size(); j++) {
-    if (bdata->_chr[bdata->_include[j]] < (bdata->_autosome_num + 1)) mu_func(bdata, j, auto_fac);
-    else if (bdata->_chr[bdata->_include[j]] == (bdata->_autosome_num + 1)) mu_func(bdata, j, xfac);
+    if (bdata->is_autosome(bdata->_chr[bdata->_include[j]])) mu_func(bdata, j, auto_fac);
+    else if (bdata->is_x(bdata->_chr[bdata->_include[j]])) mu_func(bdata, j, xfac);
     else mu_func(bdata, j, fac);
   }
 }
@@ -1216,7 +1218,7 @@ void lookup(char* outFileName, char* bldFileName, char* snplstName, char* snplst
 
 void check_autosome(bInfo* bdata) {
   for (int i = 0; i < bdata->_include.size(); i++) {
-    if (bdata->_chr[bdata->_include[i]] > bdata->_autosome_num)
+    if (!bdata->is_autosome(bdata->_chr[bdata->_include[i]]))
       throw std::runtime_error(
           "Error: this option is for the autosomal SNPs only. Please check the option --autosome.");
   }

@@ -378,7 +378,6 @@ int getMaxNum(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
     // ldnum can be negative here; clamp it to 0
     if (ldnum < 0) ldnum = 0;
     preldnum = ldnum;
-    // 在这里已经是和第i个snp距离小于window的snp数量之和了
     cols[i + 1] = cols[i] + ldnum;
     if (ldnum > maxldnum) maxldnum = ldnum;
   }
@@ -432,30 +431,37 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
   }
 }
 
+// Build a standardized genotype matrix for a subset of SNPs.
+//   For each SNP in snp_indx and each kept individual: z = dosage(g) - mu (missing genotype -> z = 0),
+//   and if divid_by_std the column is further scaled by 1/sd so that sum(z^2)/(n-1) = 1
+//   (the standardized genotypes used for LD / correlation computation).
+//   snp_indx: positions in bdata->_include of the SNPs to build (not raw SNP indices).
+//   Returns false if snp_indx is empty; otherwise fills X (keep.size() x snp_indx.size(),
+//   individuals x SNPs, column-major) and returns true.
 bool make_std_geno_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, bool divid_by_std) {
   if (snp_indx.empty()) return false;
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
   const int n = static_cast<int>(bdata->_keep.size()), m = static_cast<int>(snp_indx.size());
-  std::vector<double> sd_SNP(m);
+  std::vector<double> sd_SNP(m);  // per-SNP sum of squared z, later converted to the 1/sd scale factor
 
   X.resize(n, m);
   for (int j = 0; j < m; j++) {
-    const int snp_idx = bdata->_include[snp_indx[j]];
-    const auto& snp_row1 = bdata->_snp_1[snp_idx];
-    const auto& snp_row2 = bdata->_snp_2[snp_idx];
-    const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);
-    const double mu = bdata->_mu[snp_idx];
-    double sd = 0.0;
+    const int snp_idx = bdata->_include[snp_indx[j]];                        // raw SNP index of the j-th selected SNP
+    const auto& snp_row1 = bdata->_snp_1[snp_idx];                           // packed genotype bitplane 1 for this SNP
+    const auto& snp_row2 = bdata->_snp_2[snp_idx];                           // packed genotype bitplane 2 for this SNP
+    const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);  // count the other allele's dosage
+    const double mu = bdata->_mu[snp_idx];                                   // mean dosage of this SNP
+    double sd = 0.0;                                                         // sum of squared z for this SNP
     for (int i = 0; i < n; i++) {
-      const int indi_idx = bdata->_keep[i];
+      const int indi_idx = bdata->_keep[i];  // raw individual index of the i-th kept individual
       const bool snp1 = snp_row1[indi_idx];
       const bool snp2 = snp_row2[indi_idx];
-      if (!snp1 || snp2) {
-        const int g = snp1 + snp2;
+      if (!snp1 || snp2) {          // genotype present: (snp1,snp2) != (1,0)
+        const int g = snp1 + snp2;  // allele count 0/1/2 (of ref_A after flip)
         X(i, j) = (flip ? 2.0 - g : g) - mu;
       } else {
-        X(i, j) = 0.0;
+        X(i, j) = 0.0;  // missing genotype -> mean-imputed (z = 0)
       }
       sd += X(i, j) * X(i, j);
     }
@@ -467,30 +473,35 @@ bool make_std_geno_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx,
       sd_SNP[j] = sd_SNP[j] / (n - 1.0);
       if (fabs(sd_SNP[j]) < 1.0e-50) sd_SNP[j] = 0.0;
       else sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
+      X.col(j) = X.col(j).array() * sd_SNP[j];
     }
-    for (int j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
   }
 
   return true;
 }
 
+// Build the standardized genotype vector of a single SNP (same construction as make_std_geno_matrix).
+//   j: position in bdata->_include of the SNP (not a raw SNP index).
+//   resize: whether to resize x to keep.size() first.
+//   divid_by_std: scale the result by 1/sd so that sum(z^2)/(n-1) = 1.
+//   Returns nothing; x is filled with the standardized genotypes of the kept individuals (missing -> 0).
 void make_std_geno_vec(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid_by_std) {
   if (resize) x.resize(bdata->_keep.size());
-  const int snp_idx = bdata->_include[j];
-  const auto& snp_row1 = bdata->_snp_1[snp_idx];
-  const auto& snp_row2 = bdata->_snp_2[snp_idx];
-  const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);
-  const double mu = bdata->_mu[snp_idx];
-  double sd_SNP = 0.0;
+  const int snp_idx = bdata->_include[j];                                  // raw SNP index of the selected SNP
+  const auto& snp_row1 = bdata->_snp_1[snp_idx];                           // packed genotype bitplane 1 for this SNP
+  const auto& snp_row2 = bdata->_snp_2[snp_idx];                           // packed genotype bitplane 2 for this SNP
+  const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);  // count the other allele's dosage
+  const double mu = bdata->_mu[snp_idx];                                   // mean dosage of this SNP
+  double sd_SNP = 0.0;                                                     // sum of squared z for this SNP
   for (int i = 0; i < bdata->_keep.size(); i++) {
-    const int indi_idx = bdata->_keep[i];
+    const int indi_idx = bdata->_keep[i];  // raw individual index of the i-th kept individual
     const bool snp1 = snp_row1[indi_idx];
     const bool snp2 = snp_row2[indi_idx];
-    if (!snp1 || snp2) {
-      const int g = snp1 + snp2;
+    if (!snp1 || snp2) {          // genotype present: (snp1,snp2) != (1,0)
+      const int g = snp1 + snp2;  // allele count 0/1/2 (of ref_A after flip)
       x[i] = (flip ? 2.0 - g : g) - mu;
     } else {
-      x[i] = 0.0;
+      x[i] = 0.0;  // missing genotype -> mean-imputed (z = 0)
     }
     sd_SNP += x[i] * x[i];
   }

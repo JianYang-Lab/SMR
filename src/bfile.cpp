@@ -432,51 +432,67 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
   }
 }
 
-bool make_XMat_subset(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, bool divid_by_std) {
+bool make_std_geno_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, bool divid_by_std) {
   if (snp_indx.empty()) return false;
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
-  int i = 0, j = 0, k = 0, n = static_cast<int>(bdata->_keep.size()), m = static_cast<int>(snp_indx.size());
+  const int n = static_cast<int>(bdata->_keep.size()), m = static_cast<int>(snp_indx.size());
   std::vector<double> sd_SNP(m);
 
   X.resize(n, m);
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < m; j++) {
-      k = bdata->_include[snp_indx[j]];
-      if (!bdata->_snp_1[k][bdata->_keep[i]] || bdata->_snp_2[k][bdata->_keep[i]]) {
-        if (bdata->_allele1[k] == bdata->_ref_A[k])
-          X(i, j) = bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]];
-        else X(i, j) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
-        X(i, j) -= bdata->_mu[k];
-      } else X(i, j) = 0.0;
-      sd_SNP[j] += X(i, j) * X(i, j);
+  for (int j = 0; j < m; j++) {
+    const int snp_idx = bdata->_include[snp_indx[j]];
+    const auto& snp_row1 = bdata->_snp_1[snp_idx];
+    const auto& snp_row2 = bdata->_snp_2[snp_idx];
+    const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);
+    const double mu = bdata->_mu[snp_idx];
+    double sd = 0.0;
+    for (int i = 0; i < n; i++) {
+      const int indi_idx = bdata->_keep[i];
+      const bool snp1 = snp_row1[indi_idx];
+      const bool snp2 = snp_row2[indi_idx];
+      if (!snp1 || snp2) {
+        const int g = snp1 + snp2;
+        X(i, j) = (flip ? 2.0 - g : g) - mu;
+      } else {
+        X(i, j) = 0.0;
+      }
+      sd += X(i, j) * X(i, j);
     }
+    sd_SNP[j] = sd;
   }
 
   if (divid_by_std) {
-    for (j = 0; j < m; j++) {
+    for (int j = 0; j < m; j++) {
       sd_SNP[j] = sd_SNP[j] / (n - 1.0);
       if (fabs(sd_SNP[j]) < 1.0e-50) sd_SNP[j] = 0.0;
       else sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
     }
-    for (j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
+    for (int j = 0; j < m; j++) X.col(j) = X.col(j).array() * sd_SNP[j];
   }
 
   return true;
 }
 
-void makex_xVec_subset(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid_by_std) {
+void make_std_geno_vec(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid_by_std) {
   if (resize) x.resize(bdata->_keep.size());
-  int k = bdata->_include[j];
-  double sd_SNP = 0;
+  const int snp_idx = bdata->_include[j];
+  const auto& snp_row1 = bdata->_snp_1[snp_idx];
+  const auto& snp_row2 = bdata->_snp_2[snp_idx];
+  const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);
+  const double mu = bdata->_mu[snp_idx];
+  double sd_SNP = 0.0;
   for (int i = 0; i < bdata->_keep.size(); i++) {
-    if (!bdata->_snp_1[k][bdata->_keep[i]] || bdata->_snp_2[k][bdata->_keep[i]]) {
-      if (bdata->_allele1[k] == bdata->_ref_A[k])
-        x[i] = (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
-      else x(i) = 2.0 - (bdata->_snp_1[k][bdata->_keep[i]] + bdata->_snp_2[k][bdata->_keep[i]]);
-      x(i) -= bdata->_mu[k];
-    } else x(i) = 0.0;
-    sd_SNP += x(i) * x(i);
+    const int indi_idx = bdata->_keep[i];
+    const bool snp1 = snp_row1[indi_idx];
+    const bool snp2 = snp_row2[indi_idx];
+    if (!snp1 || snp2) {
+      const int g = snp1 + snp2;
+      x[i] = (flip ? 2.0 - g : g) - mu;
+    } else {
+      x[i] = 0.0;
+    }
+    sd_SNP += x[i] * x[i];
   }
 
   if (divid_by_std) {
@@ -490,7 +506,7 @@ void makex_xVec_subset(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid
 void initX(bInfo* bdata, MatrixXf& X, long snpnum) {
   std::vector<int> snpids(snpnum);
   for (int i = 0; i < snpnum; i++) snpids[i] = i;
-  make_XMat_subset(bdata, X, snpids, true);
+  make_std_geno_matrix(bdata, X, snpids, true);
 }
 
 void write_smr_esi(char* outFileName, bInfo* binfo) {
@@ -686,7 +702,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
       const long i = i0 + t;
       if (i + m < snp_total) {
         if (x.size() == 0) x.resize(X.rows());
-        makex_xVec_subset(&bdata, static_cast<int>(i + m), x, false, true);
+        make_std_geno_vec(&bdata, static_cast<int>(i + m), x, false, true);
         const long start = bitmod ? (i & (m - 1)) : (i % m);
         X.col(start) = x;
       }
@@ -1354,7 +1370,7 @@ void calcu_ld_blk(bInfo* bdata, std::vector<int>& brk_pnt, std::vector<int>& brk
     std::vector<int> snp_indx(size);
     for (j = brk_pnt[i], k = 0; j <= brk_pnt[i + 1]; j++, k++) snp_indx[k] = j;
     MatrixXf X_sub;
-    make_XMat_subset(bdata, X_sub, snp_indx, true);
+    make_std_geno_matrix(bdata, X_sub, snp_indx, true);
     VectorXf ssx_sqrt_i_sub(size);
     for (j = 0; j < size; j++) {
       ssx_sqrt_i_sub[j] = X_sub.col(j).squaredNorm();

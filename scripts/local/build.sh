@@ -4,7 +4,7 @@ set -euo pipefail
 
 CWD=$(pwd)
 BUILD_TYPE=${BUILD_TYPE:-RelWithDebInfo}
-BUILD_WITH_MKL=${BUILD_WITH_MKL:-ON}
+SMR_BLAS_BACKEND=${SMR_BLAS_BACKEND:-mkl}
 MKL_DIR=${MKL_DIR:-/opt/intel/oneapi/mkl/latest/lib/cmake/mkl}
 fresh_build=""
 cmake_gen=0
@@ -16,7 +16,7 @@ function usage {
     echo "  -g | --generate          : Build with cmake generation";
     echo "  -h | --help              : This message";
     echo "   ";
-    echo "  Environment: BUILD_TYPE (RelWithDebInfo), BUILD_WITH_MKL (ON), MKL_DIR";
+    echo "  Environment: BUILD_TYPE (RelWithDebInfo), SMR_BLAS_BACKEND (mkl|openblas|none), MKL_DIR";
 }
 
 function parse_args {
@@ -54,7 +54,7 @@ function run {
     if [[ $cmake_gen == 1 ]]; then
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
-            -DBUILD_WITH_MKL=${BUILD_WITH_MKL} \
+            -DSMR_BLAS_BACKEND=${SMR_BLAS_BACKEND} \
             -DMKL_DIR="${MKL_DIR}" \
             -B build/${BUILD_TYPE} -S . -G Ninja
     fi

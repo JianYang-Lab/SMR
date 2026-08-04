@@ -43,11 +43,12 @@ cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 Useful CMake options:
 
+- `-DSMR_BLAS_BACKEND=mkl|openblas|none` (default `mkl`): BLAS backend for Eigen. `mkl` uses Intel oneMKL (`-DMKL_DIR=...`/`-DMKL_ROOT=...`); `openblas` uses OpenBLAS for non-Intel systems (AMD etc.) — a system install is used when found (hint with `-DOPENBLAS_ROOT=...`), otherwise OpenBLAS v0.3.30 is fetched and built from source (statically linked, `DYNAMIC_ARCH=ON` for runtime CPU dispatch); `none` uses Eigen's native backend.
 - `-DBUILD_WITH_MKL=ON/OFF` (default ON): accelerate Eigen with Intel oneMKL; falls back to Eigen's native backend if MKL is not found. Use `-DMKL_DIR=...` or `-DMKL_ROOT=...` to point at your oneMKL installation.
 - `-DBUILD_WITH_MIMALLOC=ON/OFF` (default ON): link mimalloc for faster memory allocation.
 - `-DSMR_VERBOSE_CONFIGURE=ON`: print extended CMake configuration diagnostics.
 
-Helper build scripts: `scripts/local/build.sh [-f|--fresh] [-g|--generate]` (Linux/macOS, uses oneMKL) and `scripts/hpc/build.sh` (HPC clusters).
+Helper build scripts: `scripts/local/build.sh [-f|--fresh] [-g|--generate]` (Linux/macOS) and `scripts/hpc/build.sh` (HPC clusters). The scripts accept the `SMR_BLAS_BACKEND` environment variable (default `mkl`), e.g. `SMR_BLAS_BACKEND=openblas ./scripts/local/build.sh -f -g`.
 
 
 ## Usage

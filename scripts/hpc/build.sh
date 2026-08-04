@@ -6,6 +6,7 @@ CWD=$(pwd)
 APP_NAME=smr
 
 BUILD_TYPE=${BUILD_TYPE:-Release}
+SMR_BLAS_BACKEND=${SMR_BLAS_BACKEND:-mkl}
 # MKL shared libraries to bundle into the AppImage; defaults to the module's
 # MKLROOT, falling back to the site oneAPI path.
 MKL_LIBDIR=${MKL_LIBDIR:-${MKLROOT:-/soft/compiler/intel/oneapi-2022.2/mkl/2022.1.0}/lib/intel64}
@@ -22,7 +23,7 @@ function usage {
     echo "  -i | --install           : Install";
     echo "  -h | --help              : This message";
     echo "   ";
-    echo "  Environment: BUILD_TYPE (Release), MKL_LIBDIR (from MKLROOT or site default)";
+    echo "  Environment: BUILD_TYPE (Release), SMR_BLAS_BACKEND (mkl|openblas|none), MKL_LIBDIR (from MKLROOT or site default)";
 }
 
 function parse_args {
@@ -65,7 +66,7 @@ function run {
         cmake ${fresh_build} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
             -DCMAKE_TOOLCHAIN_FILE=cmake/hpc-toolchain.cmake \
             -DCMAKE_INSTALL_PREFIX=${CWD}/build/${BUILD_TYPE}/installed/usr \
-            -DBUILD_WITH_MKL=ON \
+            -DSMR_BLAS_BACKEND=${SMR_BLAS_BACKEND} \
             -B build/${BUILD_TYPE} -S .
     fi
 

@@ -20,11 +20,6 @@ endif()
 option(BUILD_WITH_MIMALLOC "Use mimalloc for improved memory allocation performance" ON)
 
 # ---- Dependencies ----
-include(cmake/SMRMKL.cmake)
-smr_configure_mkl(smr_use_mkl)
-
-find_package(OpenMP REQUIRED)
-
 include(cmake/CPM.cmake)
 set(FETCHCONTENT_QUIET ON)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
@@ -32,6 +27,11 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 # Silence deprecation warnings from third-party projects with old
 # cmake_minimum_required (e.g. Eigen 3.4.0). Only effective on CMake >= 4.0.
 set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+
+include(cmake/SMRBlas.cmake)
+smr_configure_blas(smr_blas_ok)
+
+find_package(OpenMP REQUIRED)
 
 CPMAddPackage(NAME eigen GITHUB_REPOSITORY eigen-mirror/eigen GIT_TAG 3.4.0
               EXCLUDE_FROM_ALL YES SYSTEM YES OPTIONS "BUILD_TESTING OFF" "EIGEN_BUILD_DOC OFF")
@@ -78,8 +78,8 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
     endif()
 endif()
 
-if(smr_use_mkl)
-    smr_target_enable_mkl(${PROJECT_NAME})
+if(smr_blas_ok)
+    smr_target_enable_blas(${PROJECT_NAME})
 endif()
 if(BUILD_WITH_MIMALLOC)
     target_link_libraries(${PROJECT_NAME} mimalloc-static)  # global malloc override at link time
@@ -101,4 +101,4 @@ install(FILES resources/smr.png DESTINATION share/icons/hicolor/256x256/apps)
 install(FILES resources/smr.svg DESTINATION share/icons/hicolor/scalable/apps)
 
 # ---- Summary ----
-message(STATUS "smr ${PROJECT_VERSION} | ${CMAKE_BUILD_TYPE} | MKL: ${smr_use_mkl} | mimalloc: ${BUILD_WITH_MIMALLOC} | arch: ${smr_arch_flag}")
+message(STATUS "smr ${PROJECT_VERSION} | ${CMAKE_BUILD_TYPE} | BLAS: ${SMR_BLAS_BACKEND} | mimalloc: ${BUILD_WITH_MIMALLOC} | arch: ${smr_arch_flag}")

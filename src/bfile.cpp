@@ -359,44 +359,42 @@ void exclude_snp(bInfo* bdata, const std::string& snplistfile) {
 // return m = the smallest power of two strictly greater than max(ldnum_i). m is the width
 // of the rolling genotype window used by ld_report (SNP i's genotype column is i & (m-1)).
 //
+// Because r(i,j) = r(j,i), LD is computed and stored only for pairs with j > i (the upper
+// triangle): each unordered in-window pair appears exactly once, in the earlier SNP's
+// segment; a pair (i, j) with i > j is read back from SNP j's segment.
+//
 // cols (output): cumulative LD-value counts, cols[i+1] = cols[i] + ldnum_i; SNP i's LD
 // values in the .bld values array occupy [cols[i], cols[i+1]) and cols[snpNum] = valnum.
 //
-// ldWind is in Kb (converted to bp here). SNPs are sorted by (chr, bp), so for SNP i the
-// partners are (partners of SNP i-1 except SNP i itself, all still within the window) plus
-// newly scanned ones beyond the previous window end (c_i): ldnum_i = ldnum_{i-1} - 1 + c_i.
-// The two-pointer scan (loopj only moves forward) makes the total cost O(n + total partners)
-// instead of O(n^2).
+// ldWind is in Kb (converted to bp here). SNPs are sorted by (chr, bp). A single forward
+// pointer p tracks the first SNP not within the current window, moving monotonically:
+// for SNP i, ldnum_i = p - i - 1. Cost is O(n + total partners).
 int get_ld_layout(bInfo* bdata, int ldWind, std::vector<std::uint64_t>& cols) {
-  int n = 0, loopj = 0, preldnum = 1;
+  int n = 0, p = 0;
   long window = ldWind * 1000;
   int maxldnum = 0;
-  cols.resize(bdata->_include.size() + 1);
-  for (int i = 0; i < bdata->_include.size(); i++) {
-    int chri = bdata->_chr[bdata->_include[i]];
-    int bpi = bdata->_bp[bdata->_include[i]];
-    int ldnum = 0;  // c_i: partners of SNP i beyond the previous window end loopj
-    for (int j = loopj + 1; j < bdata->_include.size(); j++) {
-      int chrj = bdata->_chr[bdata->_include[j]];
-      int bpj = bdata->_bp[bdata->_include[j]];
-      if (chri == chrj && std::abs(bpj - bpi) <= window) {
-        ldnum++;
-        loopj = j;
-      } else {
-        break;
-      }
+  const int N = bdata->_include.size();
+  cols.resize(N + 1);
+  for (int i = 0; i < N; i++) {
+    const int snpi = bdata->_include[i];  // raw SNP index of the i-th included SNP
+    const int chri = bdata->_chr[snpi];
+    const int bpi = bdata->_bp[snpi];
+    if (p <= i) p = i + 1;
+    while (p < N) {
+      const int snpp = bdata->_include[p];  // raw SNP index of the p-th included SNP
+      const int chrp = bdata->_chr[snpp];
+      const int bpp = bdata->_bp[snpp];
+      if (chrp != chri || bpp - bpi > window) break;
+      p++;
     }
-    ldnum += preldnum - 1;
-    // ldnum can be negative here; clamp it to 0
-    if (ldnum < 0) ldnum = 0;
-    preldnum = ldnum;
+    int ldnum = p - i - 1;
     cols[i + 1] = cols[i] + ldnum;
-    if (ldnum > maxldnum) maxldnum = ldnum;
+    maxldnum = std::max(maxldnum, ldnum);
   }
-  // round (max ldnum + 1) up to the next power of two: 2 << n
+  // round (max ldnum + 1) up to the next power of two: 1 << (n+1)
   ++maxldnum;
   while ((maxldnum >>= 1) != 0) n++;
-  maxldnum = 2 << n;
+  maxldnum = 1 << (n + 1);
   return maxldnum;
 }
 
@@ -652,8 +650,11 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     printf("Please specify --r or --r2 \n");
     exit(EXIT_FAILURE);
   }
+  // bitmod: true while m is a power of two, so rolling columns use the bitmask i & (m-1);
+  // false when m is clamped to the SNP count below, falling back to plain i % m.
   bool bitmod = true;
   bInfo bdata;
+  // Rolling standardized-genotype window (indi x m): column i & (m-1) holds SNP i.
   MatrixXf X;
   std::vector<std::uint64_t> cols;
   std::vector<float> lds;
@@ -705,54 +706,76 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   double cr = 0;
   const long snp_total = static_cast<long>(bdata._include.size());
   const long blk = std::min(512L, static_cast<long>(m));
-  MatrixXf C;
-  VectorXf x;
-  VectorXf scratch;
+  MatrixXf ld_win;  // gemm result: LD of block SNPs vs pre-update window columns (m x b)
+  VectorXf geno;    // buffer for one newly decoded standardized genotype column (step 6)
+  VectorXf ldv;     // per-SNP LD row buffer, indexed by rolling column (m floats, step 9)
   // Blocked LD computation: one BLAS-3 gemm per block of SNPs instead of one gemv per SNP.
   // The rolling window X (indi x m) is read once per block instead of once per SNP.
-  for (long i0 = 0; i0 < snp_total; i0 += blk) {
-    const long b = std::min(blk, snp_total - i0);
+  for (long blk_i = 0; blk_i < snp_total; blk_i += blk) {
+    // Step 1: b = size of this block; the last block may be shorter than blk.
+    const long b = std::min(blk, snp_total - blk_i);
+
+    // Step 2: first iteration only -- decode SNPs [0, m) into the rolling window X
+    // (indi x m), standardized (z = (g - mu)/sd) with missing genotypes set to the mean.
     if (X.size() == 0) initX(&bdata, X, m);
 
-    const long start0 = bitmod ? (i0 & (m - 1)) : i0;
-    // Snapshot the block's own genotypes (pre-scaled as in the original code)
-    MatrixXf Xb = X.middleCols(start0, b) / (X.rows() - 1);
+    // Step 3: blk_col = rolling column where the block's first SNP (blk_i) lives, i.e.
+    // blk_i mod m. When m is a power of two this is the bitmask blk_i & (m-1); otherwise
+    // (m was clamped to snp_total, so blk_i % m == blk_i) it is just blk_i.
+    const long blk_col = bitmod ? (blk_i & (m - 1)) : blk_i;
 
-    // C(cur, t) = LD(SNP i0+t, SNP in rolling column cur) for partners in [i0, i0+m)
-    C.noalias() = X.transpose() * Xb;
+    // Step 4: snapshot the block's own b genotype columns BEFORE the rolling updates in
+    // step 6 overwrite them, pre-divided by (n-1) so the gemms below yield r directly.
+    MatrixXf X_blk = X.middleCols(blk_col, b) / (X.rows() - 1);
 
-    // Rolling updates: decode SNPs [i0+m, i0+b+m) into the rolling window (same order as before)
+    // Step 5: main gemm. ld_win(cur, t) = LD(SNP blk_i+t, rolling column cur) for all m
+    // columns of the pre-update window, i.e. partners in [blk_i, blk_i+m).
+    // One BLAS-3 call per block.
+    ld_win.noalias() = X.transpose() * X_blk;
+
+    // Step 6: rolling updates -- decode SNPs [blk_i+m, blk_i+m+b) into the window,
+    // overwriting the block's old columns in the same order the original per-SNP code
+    // did. This must run AFTER step 5 so ld_win still saw the pre-update window.
     for (long t = 0; t < b; t++) {
-      const long i = i0 + t;
+      const long i = blk_i + t;
       if (i + m < snp_total) {
-        if (x.size() == 0) x.resize(X.rows());
-        make_std_geno_vec(&bdata, static_cast<int>(i + m), x, false, true);
+        if (geno.size() == 0) geno.resize(X.rows());
+        make_std_geno_vec(&bdata, static_cast<int>(i + m), geno, false, true);
         const long start = bitmod ? (i & (m - 1)) : (i % m);
-        X.col(start) = x;
+        X.col(start) = geno;
       }
     }
 
-    // Partners in [i0+m, i0+m+b): LD from the newly decoded columns
-    MatrixXf C_extra;
-    if (i0 + m < snp_total) C_extra.noalias() = X.middleCols(start0, b).transpose() * Xb;
+    // Step 7: tail gemm. The newly decoded SNPs [blk_i+m, blk_i+m+b) are forward partners
+    // of block SNPs but were not in the window when ld_win was computed. ld_tail(s, t) =
+    // LD(SNP blk_i+t, SNP blk_i+m+s). Skipped near the chromosome end (nothing decoded).
+    MatrixXf ld_tail;
+    if (blk_i + m < snp_total) ld_tail.noalias() = X.middleCols(blk_col, b).transpose() * X_blk;
 
+    // Step 8: --r2 reports r^2 instead of r; square both result matrices elementwise.
     if (ldr2) {
-      C = C.array().square();
-      if (C_extra.size() != 0) C_extra = C_extra.array().square();
+      ld_win = ld_win.array().square();
+      if (ld_tail.size() != 0) ld_tail = ld_tail.array().square();
     }
 
-    if (scratch.size() == 0) scratch.resize(m);
+    // Step 9: write phase -- emit each block SNP's forward LD values to the .bld file.
+    if (ldv.size() == 0) ldv.resize(m);
     for (long t = 0; t < b; t++) {
-      const long i = i0 + t;
+      const long i = blk_i + t;
       int icur = static_cast<int>(i);
       progress(icur, cr, static_cast<int>(snp_total));
 
-      // Assemble this SNP's ldv exactly as the original code produced it: the rolling
-      // columns from C, with the tail partners (>= i0+m) patched from C_extra
-      float* ldv = scratch.data();
-      memcpy(ldv, C.col(t).data(), m * sizeof(float));
-      if (t > 0 && C_extra.size() != 0) memcpy(ldv + start0, C_extra.col(t).data(), t * sizeof(float));
+      // Step 9a: assemble SNP i's row indexed by rolling column: all m values from ld_win
+      // (pre-update window), then overwrite the t entries at [blk_col, blk_col+t) with
+      // ld_tail -- partners blk_i+m .. blk_i+m+t-1 that entered the window this block.
+      memcpy(ldv.data(), ld_win.col(t).data(), m * sizeof(float));
+      if (t > 0 && ld_tail.size() != 0) memcpy(ldv.data() + blk_col, ld_tail.col(t).data(), t * sizeof(float));
 
+      // Step 9b: walk forward partners j = 1..m-1 of SNP i. Map partner i+j to its
+      // rolling column cur = (start + j) mod m and collect the maximal contiguous column
+      // run [st, ed]; flush it with one fwrite whenever the run wraps past column m-1
+      // or the window ends. The chr/bp window check matches get_ld_layout exactly, so
+      // the total values written (vc) equals the header's valnum (checked at the end).
       const int start = bitmod ? static_cast<int>(i & (m - 1)) : static_cast<int>(i % m);
       const int chri = bdata._chr[bdata._include[i]];
       const int bpi = bdata._bp[bdata._include[i]];
@@ -767,7 +790,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
           if (st < 0) st = cur;
           ed = cur;
           if (ed == m - 1) {
-            fwrite(ldv + st, sizeof(float), ed - st + 1, outfile);
+            fwrite(ldv.data() + st, sizeof(float), ed - st + 1, outfile);
             st = -9;
             ed = -9;
           }
@@ -777,7 +800,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
           break;
         }
       }
-      if (ed >= 0 && st >= 0) fwrite(ldv + st, sizeof(float), ed - st + 1, outfile);
+      if (ed >= 0 && st >= 0) fwrite(ldv.data() + st, sizeof(float), ed - st + 1, outfile);
     }
   }
   if (vc != valnum) {

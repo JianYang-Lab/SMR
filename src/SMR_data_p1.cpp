@@ -3211,7 +3211,7 @@ void smr_multipleSNP_v2(char* outFileName, char* bFileName, char* bldFileName, c
   if (qtllistFileName == nullptr)
     throw std::runtime_error("Error: please input eQTL list data for SMR analysis by the flag --eqtl-list.");
   if (qtl_index == 0)
-    throw std::runtime_error("Error: please input eQTL list index for SMR analysis by the flag --eqtl-list-index.");
+    throw std::runtime_error("Error: please input eQTL list index for SMR analysis by the flag --beqtl-list-index.");
   if (ld_min > ld_top) {
     printf("ERROR: --ld-min %f is larger than --ld-top %f.\n", ld_min, ld_top);
     exit(EXIT_FAILURE);
@@ -3256,21 +3256,23 @@ void smr_multipleSNP_v2(char* outFileName, char* bFileName, char* bldFileName, c
       besd_mapped = shared_besd_mapped;
     }
 
-    std::string bld_filename(bldFileName);
-    bld_filename += std::to_string(i);
+    std::string bld_filename;
+    if (bldFileName) {
+      bld_filename = std::string(bldFileName) + std::to_string(i);
+    }
 
     std::string out_filename(outFileName);
     out_filename += ("_" + qtl_name + "_chr" + std::to_string(i));
 
     try {
-      smr_multipleSNP_for_each_chr(out_filename.c_str(), bFileName, bld_filename.c_str(), gdata, qtl_basename.c_str(),
-                                   besd_mapped, maf, indilstName, snplstName, problstName, bFlag, p_hetero, ld_top,
-                                   m_hetero, opt_hetero, indilst2remove, snplst2exclde, problst2exclde, p_smr, refSNP,
-                                   heidioffFlag, heidiskipthresh, cis_itvl, genelistName, chr, prbchr, prbname,
-                                   fromprbname, toprbname, prbWind, fromprbkb, toprbkb, prbwindFlag, genename, snpchr,
-                                   snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag,
-                                   setlstName, geneAnnoFileName, expanWind, ld_min, threshpsmrest, sampleoverlap, pmecs,
-                                   minCor, ld_top_multi, afthresh, percenthresh, enableGwasComments);
+      smr_multipleSNP_for_each_chr(
+          out_filename.c_str(), bFileName, bldFileName ? bld_filename.c_str() : nullptr, gdata, qtl_basename.c_str(),
+          besd_mapped, maf, indilstName, snplstName, problstName, bFlag, p_hetero, ld_top, m_hetero, opt_hetero,
+          indilst2remove, snplst2exclde, problst2exclde, p_smr, refSNP, heidioffFlag, heidiskipthresh, cis_itvl,
+          genelistName, chr, prbchr, prbname, fromprbname, toprbname, prbWind, fromprbkb, toprbkb, prbwindFlag,
+          genename, snpchr, snprs, fromsnprs, tosnprs, snpWind, fromsnpkb, tosnpkb, snpwindFlag, cis_flag, setlstName,
+          geneAnnoFileName, expanWind, ld_min, threshpsmrest, sampleoverlap, pmecs, minCor, ld_top_multi, afthresh,
+          percenthresh, enableGwasComments);
     } catch (const std::exception& e) {
       std::cerr << "Error, exception: " << e.what() << std::endl;
     } catch (const char* s) {

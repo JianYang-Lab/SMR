@@ -158,7 +158,7 @@ For each block `[blk_i, blk_i+b)` (`blk_col = blk_i & (m-1)`):
 For `--r2`, squaring is applied to `ld_win` and `ld_tail` once per block,
 identical to the original per-element square.
 
-`bitmod == false` (when `m` is capped at the SNP count) works unchanged: no
+`use_bitmask == false` (when `m` is capped at the SNP count) works unchanged: no
 rolling updates happen, `ld_tail` is empty, all partners come from `ld_win`.
 
 ### Why it is fast

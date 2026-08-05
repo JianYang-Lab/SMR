@@ -650,9 +650,10 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     printf("Please specify --r or --r2 \n");
     exit(EXIT_FAILURE);
   }
-  // bitmod: true while m is a power of two, so rolling columns use the bitmask i & (m-1);
-  // false when m is clamped to the SNP count below, falling back to plain i % m.
-  bool bitmod = true;
+  // use_bitmask: true while m is a power of two, so rolling columns use the bitmask
+  // i & (m-1) for the mod; false when m is clamped to the SNP count below -- then
+  // m == snp_total, every index is already < m, and no mod is needed (identity).
+  bool use_bitmask = true;
   bInfo bdata;
   // Rolling standardized-genotype window (indi x m): column i & (m-1) holds SNP i.
   MatrixXf X;
@@ -677,7 +678,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   }
   if (m > bdata._include.size()) {
     m = static_cast<int>(bdata._include.size());
-    bitmod = false;
+    use_bitmask = false;
   }
 
   write_smr_esi(outFileName, &bdata);
@@ -722,7 +723,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     // Step 3: blk_col = rolling column where the block's first SNP (blk_i) lives, i.e.
     // blk_i mod m. When m is a power of two this is the bitmask blk_i & (m-1); otherwise
     // (m was clamped to snp_total, so blk_i % m == blk_i) it is just blk_i.
-    const long blk_col = bitmod ? (blk_i & (m - 1)) : blk_i;
+    const long blk_col = use_bitmask ? (blk_i & (m - 1)) : blk_i;
 
     // Step 4: snapshot the block's own b genotype columns BEFORE the rolling updates in
     // step 6 overwrite them, pre-divided by (n-1) so the gemms below yield r directly.
@@ -741,7 +742,7 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
       if (i + m < snp_total) {
         if (geno.size() == 0) geno.resize(X.rows());
         make_std_geno_vec(&bdata, static_cast<int>(i + m), geno, false, true);
-        const long start = bitmod ? (i & (m - 1)) : (i % m);
+        const long start = use_bitmask ? (i & (m - 1)) : i;  // !use_bitmask: m == snp_total > i
         X.col(start) = geno;
       }
     }
@@ -776,16 +777,16 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
       // run [st, ed]; flush it with one fwrite whenever the run wraps past column m-1
       // or the window ends. The chr/bp window check matches get_ld_layout exactly, so
       // the total values written (vc) equals the header's valnum (checked at the end).
-      const int start = bitmod ? static_cast<int>(i & (m - 1)) : static_cast<int>(i % m);
+      const int start = use_bitmask ? static_cast<int>(i & (m - 1)) : static_cast<int>(i);
       const int chri = bdata._chr[bdata._include[i]];
       const int bpi = bdata._bp[bdata._include[i]];
       int st = -9, ed = -9;
       for (int j = 1; j < m && i + j < snp_total; j++) {
         int chrj = bdata._chr[bdata._include[i + j]];
         int bpj = bdata._bp[bdata._include[i + j]];
-        int cur = -9;
-        if (bitmod) cur = ((start + j) & (m - 1));
-        else cur = (start + j) % m;
+        // cur = (start + j) mod m. When use_bitmask is false, m == snp_total and the loop
+        // bound i + j < snp_total implies start + j < m, so no wrap can occur.
+        const int cur = use_bitmask ? ((start + j) & (m - 1)) : (start + j);
         if (chri == chrj && std::abs(bpj - bpi) <= window) {
           if (st < 0) st = cur;
           ed = cur;

@@ -9,6 +9,19 @@ Relevant code: `src/bfile.cpp`, function `ld_report()` (and helpers `get_ld_layo
 
 ---
 
+## 0. TL;DR
+
+Read `.fam`/`.bim`/`.bed` → z-score the genotype matrix per SNP
+(`z = (g − μ)/σ`, missing → 0). LD between two SNPs is the Pearson r of their
+z-score columns: `r(i,j) = (z_i · z_j)/(n−1)`. The full `Xᵀ·X` (snp × snp) is
+memory-infeasible and only pairs within `--ld-wind` are needed, so `ld_report`
+keeps a rolling window of `m` SNP columns (ring buffer) and computes one gemm
+per block of ≤512 SNPs: `ld_blk = zwinᵀ · zwin_blk` (block rows × **all** `m`
+window columns — not block × block). Only the banded upper triangle is written
+to `.bld`, per the `cols[]` layout below.
+
+---
+
 ## 1. What `make-bld` produces
 
 `smr --bfile <prefix> --make-bld --r|--r2 --ld-wind <Kb> --out <out>` computes,
@@ -144,7 +157,7 @@ convention consistently.
 
 The computation is restructured to **one BLAS-3 gemm per block of SNPs** instead
 of one BLAS-2 gemv per SNP. `blk = min(512, m)`; SNPs are processed in blocks
-`[blki, blki+b)`.
+`[blki, blki+bsize)`.
 
 ### Correctness constraints
 
@@ -161,34 +174,34 @@ patch had exactly this bug and produced LD values off by ~0.15 on average):
 
 ### The scheme
 
-For each block `[blki, blki+b)` (`blk_col = blki & (m-1)`):
+For each block `[blki, blki+bsize)` (`blk_col = blki & (m-1)`):
 
-1. **Snapshot**: `zwin_blk = zwin.middleCols(blk_col, b) / (zwin.rows() - 1)` — a copy of
+1. **Snapshot**: `zwin_blk = zwin.middleCols(blk_col, bsize) / (zwin.rows() - 1)` — a copy of
    the block's own genotypes, pre-scaled exactly like the original `ldv`.
-2. **ld_win**: `ld_win = zwin.transpose() * zwin_blk` (before any updates). Valid for
+2. **ld_blk**: `ld_blk = zwin.transpose() * zwin_blk` (before any updates). Valid for
    partners `q ∈ [blki, blki+m)`.
 3. **Rolling updates** (unchanged order): decode SNPs `[blki+m, blki+b+m)` into
    the rolling columns.
-4. **ld_tail**: `ld_tail = zwin.middleCols(blk_col, b).transpose() * zwin_blk` — the
+4. **ld_tail**: `ld_tail = zwin.middleCols(blk_col, bsize).transpose() * zwin_blk` — the
    newly decoded columns, valid for partners `q ∈ [blki+m, blki+m+b)`.
 5. **Assemble each SNP's row into the `ldv` buffer** so it is *exactly* what
    the original loop produced:
-   `ldv = ld_win.col(t)` for all `m` entries, then patch the tail
+   `ldv = ld_blk.col(t)` for all `m` entries, then patch the tail
    `ldv[blk_col .. blk_col+t) = ld_tail.col(t)[0..t)`.
 
    The cur-space partition is exact: forward in-block partners map to
-   `[blk_col+t, m)` (ld_win), tail partners `q ≥ blki+m` map to
+   `[blk_col+t, m)` (ld_blk), tail partners `q ≥ blki+m` map to
    `[blk_col, blk_col+t)` (ld_tail); the two ranges never overlap, and the tail
    never exceeds `t` entries because a SNP's band has at most `m-1` partners.
 6. The **band scan and segment writes are byte-for-byte the original logic**
    (same `cur = (start+j) & (m-1)` mapping, same mid-band flush at `ed == m-1`,
    same partner order). `vc == valnum` accounting is unchanged.
 
-For `--r2`, squaring is applied to `ld_win` and `ld_tail` once per block,
+For `--r2`, squaring is applied to `ld_blk` and `ld_tail` once per block,
 identical to the original per-element square.
 
 `use_bitmask == false` (when `m` is capped at the SNP count) works unchanged: no
-rolling updates happen, `ld_tail` is empty, all partners come from `ld_win`.
+rolling updates happen, `ld_tail` is empty, all partners come from `ld_blk`.
 
 ### Why it is fast
 

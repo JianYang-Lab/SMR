@@ -287,7 +287,7 @@ void CommFunc::update_map_rm(const std::vector<std::string>& id_list, std::map<s
   std::stable_sort(keep.begin(), keep.end());
 }
 
-void CommFunc::progress(int& cur, double& disp, int ttl) {
+void CommFunc::progress(int cur, double& disp, int ttl) {
   double desti = 1.0 * cur / (ttl - 1);
   if (desti >= disp) {
     printf("%3.0f%%\r", 100.0 * desti);

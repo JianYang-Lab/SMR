@@ -103,7 +103,7 @@ void update_id_map_rm(const std::vector<std::string>& id_list, std::unordered_ma
                       std::vector<int>& keep);
 void read_indi_list(const std::string& indi_list_file, std::vector<std::string>& indi_list);
 void read_msglist(const std::string& msglistfile, std::vector<std::string>& msglist, const std::string& msg);
-void progress(int& cur, double& disp, int ttl);
+void progress(int cur, double& disp, int ttl);
 }  // namespace CommFunc
 
 #endif

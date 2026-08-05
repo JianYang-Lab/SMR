@@ -5,7 +5,7 @@ was slow on dense SNP panels, and how it was restructured into the current
 blocked (BLAS-3) implementation while preserving output compatibility.
 
 Relevant code: `src/bfile.cpp`, function `ld_report()` (and helpers `get_ld_layout()`,
-`initX()`, `make_std_geno_vec()`).
+`init_zwin()`, `make_geno_zscore_vec()`).
 
 ---
 
@@ -17,14 +17,43 @@ correlation (or squared correlation) between `i` and every following SNP `j`
 within `--ld-wind` kilobases, and writes them to `<out>.bld` (binary) plus
 `<out>.esi` (text SNP information).
 
-`.bld` layout (unchanged by this work):
+`.bld` layout (unchanged by this work), byte offsets from file start:
 
-| field                 | type     | content                                                               |
-|-----------------------|----------|-----------------------------------------------------------------------|
-| 16 × int              | header   | indicator (`r`/`r2`), individual count, SNP count, window Kb, padding |
-| uint64                | `valnum` | total number of LD values                                             |
-| uint64 × (`snpNum+1`) | `cols`   | cumulative value counts per SNP (`cols[i+1] = cols[i] + ldnum_i`)     |
-| float × `valnum`      | values   | LD r (or r²) per SNP pair, ordered by increasing `j`                  |
+| offset              | field                 | content                                                                                            |
+|---------------------|-----------------------|----------------------------------------------------------------------------------------------------|
+| 0                   | 16 × int (64 B)       | header: [0]=0 for `r` / 1 for `r2`, [1]=individual count, [2]=SNP count, [3]=window Kb, [4..15]=-9 |
+| 64                  | uint64                | `valnum` = total number of stored LD values = `cols[snpNum]`                                       |
+| 72                  | uint64 × (`snpNum+1`) | `cols`: cumulative value counts, `cols[i+1] = cols[i] + ldnum_i`, `cols[0] = 0`                    |
+| `72 + 8×(snpNum+1)` | float × `valnum`      | the LD values (this offset is `valSTART` in the reader code)                                       |
+
+**Where is r(i, j)?** Only the strict upper triangle within the window is
+stored — the diagonal r(i, i) is never written (it is 1 by definition; the
+write loop starts at partner offset `j = 1`). SNP `i`'s segment occupies
+`values[cols[i] .. cols[i+1])` and contains, **in increasing partner order**:
+
+```
+values[cols[i] + 0]        = r(i, i+1)
+values[cols[i] + 1]        = r(i, i+2)
+...
+values[cols[i] + ldnum_i-1]= r(i, i+ldnum_i)
+```
+
+so for a pair `(i, j)` with `i < j`:
+
+```
+r(i, j) = values[ cols[i] + (j - i - 1) ]        (valid iff j - i <= ldnum_i)
+byte offset = valSTART + 4 * (cols[i] + j - i - 1)
+```
+
+For `i > j`, read the symmetric entry from SNP `j`'s segment. This is exactly
+what the readers do (`src/bfile.cpp`: single-pair lookup seeks to
+`(cols[sidi] + sid - sidi - 1) * 4 + valSTART`; the whole-segment read maps
+`buffer[j]` to partner `sid + j + 1`).
+
+Example: 5 SNPs, partner counts `ldnum = [2, 1, 2, 0, 0]` →
+`cols = [0, 2, 3, 5, 5, 5]`, `valnum = 5`, and the values array is
+`[r01, r02, r12, r23, r24]`. SNP 2's segment is `values[3..5)` = `[r23, r24]`;
+SNPs 3 and 4 have empty segments.
 
 `get_ld_layout()` precomputes `cols` and returns `m`, the smallest power of two
 greater than the maximum per-SNP partner count. `m` determines the width of the
@@ -32,27 +61,27 @@ genotype buffer.
 
 ## 2. The original algorithm
 
-The original code kept a **rolling genotype window** `X` (individuals × `m`,
+The original code kept a **rolling genotype window** `zwin` (individuals × `m`,
 float). For SNP `i`, its genotype lives in column `i & (m-1)`; the columns hold
 SNPs `[i, i+m)` at any time. Per SNP `i`:
 
 ```cpp
-VectorXf ldv = X.col(start) / (X.rows() - 1);   // start = i & (m-1)
-ldv = X.transpose() * ldv;                       // gemv over the WHOLE X
+VectorXf ldv = zwin.col(start) / (zwin.rows() - 1);   // start = i & (m-1)
+ldv = zwin.transpose() * ldv;                       // gemv over the WHOLE X
 ```
 
 then the in-window band `[st..ed]` was written to the file, and the next
-genotype (SNP `i+m`) was decoded into the freed column (`make_std_geno_vec`).
+genotype (SNP `i+m`) was decoded into the freed column (`make_geno_zscore_vec`).
 LD values are therefore Pearson-style dot products of *centered/standardized*
-genotype columns, produced by `initX()`/`make_std_geno_vec()`.
+genotype columns, produced by `init_zwin()`/`make_geno_zscore_vec()`.
 
 ### Why it is slow at production scale
 
 On the UK Biobank chr1 test panel (**600,843 SNPs × 10,000 individuals**, densest
 4 Mb window = 14,847 SNPs → `m = 16384`):
 
-* `X` = 10,000 × 16,384 floats = **655 MB**.
-* The gemv `X.transpose() * ldv` **re-reads all 655 MB once per SNP**:
+* `zwin` = 10,000 × 16,384 floats = **655 MB**.
+* The gemv `zwin.transpose() * ldv` **re-reads all 655 MB once per SNP**:
   600K × 655 MB ≈ **~400 TB of memory traffic** (hours at tens of GB/s).
 * The flops (~60-200 TF) are secondary; the kernel is a BLAS-2 gemv, which is
   memory-bound and runs at a fraction of peak BLAS-3 throughput.
@@ -61,22 +90,22 @@ On the UK Biobank chr1 test panel (**600,843 SNPs × 10,000 individuals**, dense
   infeasible in practice (many hours).
 
 The unit costs that remain even at small `m`: per-SNP genotype decode
-(`make_std_geno_vec`, bit-unpacking through `vector<bool>` proxies), one-time
+(`make_geno_zscore_vec`, bit-unpacking through `vector<bool>` proxies), one-time
 `calcu_mu`, and the `.bld` writes.
 
 ## 3. The blocked algorithm (this work)
 
-### 3.0 What `X` contains, and the role of `X.rows() - 1` (worked example)
+### 3.0 What `zwin` contains, and the role of `zwin.rows() - 1` (worked example)
 
-The rolling buffer `X` holds **standardized genotype columns**, produced by
-`initX()` (initial `m` columns) and `make_std_geno_vec()` (rolling updates):
+The rolling buffer `zwin` holds **standardized genotype columns**, produced by
+`init_zwin()` (initial `m` columns) and `make_geno_zscore_vec()` (rolling updates):
 
 1. `calcu_mu` computes per-SNP mean dosage `μ_k` over **non-missing** individuals.
 2. Per individual `i` and SNP `k`: dosage `g_i ∈ {0,1,2}` (allele count, flipped
    to the reference allele: `g_i → 2 - g_i` when `allele1 != ref_A`), then
    `z_i = g_i - μ_k`; **missing genotypes become `z_i = 0`** (mean imputation).
 3. Each column is scaled by `1/sd_k`, where `sd_k = sqrt(Σ z_i² / (n-1))` is the
-   empirical standard deviation (`n = X.rows()` = kept individuals).
+   empirical standard deviation (`n = zwin.rows()` = kept individuals).
 
 So for SNPs `a` and `b`, the Pearson correlation is
 
@@ -85,7 +114,7 @@ r = Σ_i x_i,a · x_i,b / (n - 1)
 ```
 
 because the columns already have `Σ x²/(n-1) = 1`. The original loop divides
-**one** column by `(X.rows() - 1)` *before* the dot product, which produces `r`
+**one** column by `(zwin.rows() - 1)` *before* the dot product, which produces `r`
 directly; squaring elementwise produces `r²`.
 
 **Example** (2 SNPs, 5 individuals, one missing genotype for SNP A):
@@ -115,7 +144,7 @@ convention consistently.
 
 The computation is restructured to **one BLAS-3 gemm per block of SNPs** instead
 of one BLAS-2 gemv per SNP. `blk = min(512, m)`; SNPs are processed in blocks
-`[blk_i, blk_i+b)`.
+`[blki, blki+b)`.
 
 ### Correctness constraints
 
@@ -132,23 +161,23 @@ patch had exactly this bug and produced LD values off by ~0.15 on average):
 
 ### The scheme
 
-For each block `[blk_i, blk_i+b)` (`blk_col = blk_i & (m-1)`):
+For each block `[blki, blki+b)` (`blk_col = blki & (m-1)`):
 
-1. **Snapshot**: `X_blk = X.middleCols(blk_col, b) / (X.rows() - 1)` — a copy of
+1. **Snapshot**: `zwin_blk = zwin.middleCols(blk_col, b) / (zwin.rows() - 1)` — a copy of
    the block's own genotypes, pre-scaled exactly like the original `ldv`.
-2. **ld_win**: `ld_win = X.transpose() * X_blk` (before any updates). Valid for
-   partners `q ∈ [blk_i, blk_i+m)`.
-3. **Rolling updates** (unchanged order): decode SNPs `[blk_i+m, blk_i+b+m)` into
+2. **ld_win**: `ld_win = zwin.transpose() * zwin_blk` (before any updates). Valid for
+   partners `q ∈ [blki, blki+m)`.
+3. **Rolling updates** (unchanged order): decode SNPs `[blki+m, blki+b+m)` into
    the rolling columns.
-4. **ld_tail**: `ld_tail = X.middleCols(blk_col, b).transpose() * X_blk` — the
-   newly decoded columns, valid for partners `q ∈ [blk_i+m, blk_i+m+b)`.
+4. **ld_tail**: `ld_tail = zwin.middleCols(blk_col, b).transpose() * zwin_blk` — the
+   newly decoded columns, valid for partners `q ∈ [blki+m, blki+m+b)`.
 5. **Assemble each SNP's row into the `ldv` buffer** so it is *exactly* what
    the original loop produced:
    `ldv = ld_win.col(t)` for all `m` entries, then patch the tail
    `ldv[blk_col .. blk_col+t) = ld_tail.col(t)[0..t)`.
 
    The cur-space partition is exact: forward in-block partners map to
-   `[blk_col+t, m)` (ld_win), tail partners `q ≥ blk_i+m` map to
+   `[blk_col+t, m)` (ld_win), tail partners `q ≥ blki+m` map to
    `[blk_col, blk_col+t)` (ld_tail); the two ranges never overlap, and the tail
    never exceeds `t` entries because a SNP's band has at most `m-1` partners.
 6. The **band scan and segment writes are byte-for-byte the original logic**
@@ -163,7 +192,7 @@ rolling updates happen, `ld_tail` is empty, all partners come from `ld_win`.
 
 ### Why it is fast
 
-* The rolling `X` is now read **once per block of 512 SNPs** instead of once per
+* The rolling `zwin` is now read **once per block of 512 SNPs** instead of once per
   SNP: traffic drops from ~400 TB to ~0.5-1 TB (full panel, `m = 16384`).
 * The kernel is BLAS-3 `sgemm` (MKL, multithreaded) instead of memory-bound
   BLAS-2 `sgemv`: the same ~200 TF of math executes at hundreds of GFLOP/s.
@@ -181,7 +210,7 @@ rolling updates happen, `ld_tail` is empty, all partners come from `ld_win`.
 | Downstream `.smr`       | identical SNP sets (`nsnp_HEIDI` unchanged on all 1523 probes); `p_HEIDI` shifts at 5th-6th significant digit |
 
 The drift comes from summation-order differences between `sgemm` (blocked,
-possibly FMA) and `sgemv` (sequential), and from pre-scaling `X_blk` by `1/(n-1)`
+possibly FMA) and `sgemv` (sequential), and from pre-scaling `zwin_blk` by `1/(n-1)`
 before the product. It is at the level of float rounding error and is
 scientifically irrelevant (typical HEIDI thresholds are 0.01-0.05), but it does
 mean `.bld` files are **not bit-identical** to the old implementation.

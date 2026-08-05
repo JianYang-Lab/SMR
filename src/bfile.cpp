@@ -442,19 +442,20 @@ void calcu_mu(bInfo* bdata, bool ssq_flag) {
   }
 }
 
-// Build a standardized genotype matrix for a subset of SNPs.
+// Build the genotype z-score matrix for a subset of SNPs.
 //   For each SNP in snp_indx and each kept individual: z = dosage(g) - mu (missing genotype -> z = 0),
-//   and if divid_by_std the column is further scaled by 1/sd so that sum(z^2)/(n-1) = 1
-//   (the standardized genotypes used for LD / correlation computation).
+//   then the column is scaled by 1/sd so that sum(z^2)/(n-1) = 1,
+//   i.e. each entry is the per-SNP z-score of the individual's dosage (used for LD / correlation).
 //   snp_indx: positions in bdata->_include of the SNPs to build (not raw SNP indices).
 //   Returns false if snp_indx is empty; otherwise fills X (keep.size() x snp_indx.size(),
 //   individuals x SNPs, column-major) and returns true.
-bool make_std_geno_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx, bool divid_by_std) {
+bool make_geno_zscore_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx) {
   if (snp_indx.empty()) return false;
   if (bdata->_mu.empty()) calcu_mu(bdata);
 
-  const int n = static_cast<int>(bdata->_keep.size()), m = static_cast<int>(snp_indx.size());
-  std::vector<double> sd_SNP(m);  // per-SNP sum of squared z, later converted to the 1/sd scale factor
+  const int n = static_cast<int>(bdata->_keep.size());
+  const int m = static_cast<int>(snp_indx.size());
+  std::vector<double> sd_snp(m);  // per-SNP sum of squared z, later converted to the 1/sd scale factor
 
   X.resize(n, m);
   for (int j = 0; j < m; j++) {
@@ -476,34 +477,31 @@ bool make_std_geno_matrix(bInfo* bdata, MatrixXf& X, std::vector<int>& snp_indx,
       }
       sd += X(i, j) * X(i, j);
     }
-    sd_SNP[j] = sd;
+    sd_snp[j] = sd;
   }
 
-  if (divid_by_std) {
-    for (int j = 0; j < m; j++) {
-      sd_SNP[j] = sd_SNP[j] / (n - 1.0);
-      if (fabs(sd_SNP[j]) < 1.0e-50) sd_SNP[j] = 0.0;
-      else sd_SNP[j] = sqrt(1.0 / sd_SNP[j]);
-      X.col(j) = X.col(j).array() * sd_SNP[j];
-    }
+  for (int j = 0; j < m; j++) {
+    sd_snp[j] = sd_snp[j] / (n - 1.0);
+    if (fabs(sd_snp[j]) < 1.0e-50) sd_snp[j] = 0.0;
+    else sd_snp[j] = sqrt(1.0 / sd_snp[j]);
+    X.col(j) = X.col(j).array() * sd_snp[j];
   }
 
   return true;
 }
 
-// Build the standardized genotype vector of a single SNP (same construction as make_std_geno_matrix).
+// Build the genotype z-score vector of a single SNP (same construction as make_geno_zscore_matrix).
 //   j: position in bdata->_include of the SNP (not a raw SNP index).
 //   resize: whether to resize x to keep.size() first.
-//   divid_by_std: scale the result by 1/sd so that sum(z^2)/(n-1) = 1.
-//   Returns nothing; x is filled with the standardized genotypes of the kept individuals (missing -> 0).
-void make_std_geno_vec(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid_by_std) {
+//   Returns nothing; x is filled with the genotype z-scores of the kept individuals (missing -> 0).
+void make_geno_zscore_vec(bInfo* bdata, int j, VectorXf& x, bool resize) {
   if (resize) x.resize(bdata->_keep.size());
   const int snp_idx = bdata->_include[j];                                  // raw SNP index of the selected SNP
   const auto& snp_row1 = bdata->_snp_1[snp_idx];                           // packed genotype bitplane 1 for this SNP
   const auto& snp_row2 = bdata->_snp_2[snp_idx];                           // packed genotype bitplane 2 for this SNP
   const bool flip = (bdata->_allele1[snp_idx] != bdata->_ref_A[snp_idx]);  // count the other allele's dosage
   const double mu = bdata->_mu[snp_idx];                                   // mean dosage of this SNP
-  double sd_SNP = 0.0;                                                     // sum of squared z for this SNP
+  double sd_snp = 0.0;                                                     // sum of squared z for this SNP
   for (int i = 0; i < bdata->_keep.size(); i++) {
     const int indi_idx = bdata->_keep[i];  // raw individual index of the i-th kept individual
     const bool snp1 = snp_row1[indi_idx];
@@ -514,21 +512,19 @@ void make_std_geno_vec(bInfo* bdata, int j, VectorXf& x, bool resize, bool divid
     } else {
       x[i] = 0.0;  // missing genotype -> mean-imputed (z = 0)
     }
-    sd_SNP += x[i] * x[i];
+    sd_snp += x[i] * x[i];
   }
 
-  if (divid_by_std) {
-    sd_SNP /= (bdata->_keep.size() - 1.0);
-    if (fabs(sd_SNP) < 1.0e-50) sd_SNP = 0.0;
-    else sd_SNP = sqrt(1.0 / sd_SNP);
-    x *= sd_SNP;
-  }
+  sd_snp /= (bdata->_keep.size() - 1.0);
+  if (fabs(sd_snp) < 1.0e-50) sd_snp = 0.0;
+  else sd_snp = sqrt(1.0 / sd_snp);
+  x *= sd_snp;
 }
 
-void initX(bInfo* bdata, MatrixXf& X, long snpnum) {
+void init_zwin(bInfo* bdata, MatrixXf& zwin, long snpnum) {
   std::vector<int> snpids(snpnum);
   for (int i = 0; i < snpnum; i++) snpids[i] = i;
-  make_std_geno_matrix(bdata, X, snpids, true);
+  make_geno_zscore_matrix(bdata, zwin, snpids);
 }
 
 void write_smr_esi(char* outFileName, bInfo* binfo) {
@@ -655,8 +651,8 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   // m == snp_total, every index is already < m, and no mod is needed (identity).
   bool use_bitmask = true;
   bInfo bdata;
-  // Rolling standardized-genotype window (indi x m): column i & (m-1) holds SNP i.
-  MatrixXf X;
+  // Rolling genotype z-score window (indi x m): column i & (m-1) holds SNP i.
+  MatrixXf zwin;
   std::vector<std::uint64_t> cols;
   std::vector<float> lds;
   read_famfile(&bdata, std::string(bFileName) + ".fam");
@@ -708,50 +704,50 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
   const long snp_total = static_cast<long>(bdata._include.size());
   const long blk = std::min(512L, static_cast<long>(m));
   MatrixXf ld_win;  // gemm result: LD of block SNPs vs pre-update window columns (m x b)
-  VectorXf geno;    // buffer for one newly decoded standardized genotype column (step 6)
+  VectorXf geno;    // buffer for one newly decoded genotype z-score column (step 6)
   VectorXf ldv;     // per-SNP LD row buffer, indexed by rolling column (m floats, step 9)
   // Blocked LD computation: one BLAS-3 gemm per block of SNPs instead of one gemv per SNP.
-  // The rolling window X (indi x m) is read once per block instead of once per SNP.
-  for (long blk_i = 0; blk_i < snp_total; blk_i += blk) {
+  // The rolling window zwin (indi x m) is read once per block instead of once per SNP.
+  for (long blki = 0; blki < snp_total; blki += blk) {
     // Step 1: b = size of this block; the last block may be shorter than blk.
-    const long b = std::min(blk, snp_total - blk_i);
+    const long b = std::min(blk, snp_total - blki);
 
-    // Step 2: first iteration only -- decode SNPs [0, m) into the rolling window X
+    // Step 2: first iteration only -- decode SNPs [0, m) into the rolling window zwin
     // (indi x m), standardized (z = (g - mu)/sd) with missing genotypes set to the mean.
-    if (X.size() == 0) initX(&bdata, X, m);
+    if (zwin.size() == 0) init_zwin(&bdata, zwin, m);
 
-    // Step 3: blk_col = rolling column where the block's first SNP (blk_i) lives, i.e.
-    // blk_i mod m. When m is a power of two this is the bitmask blk_i & (m-1); otherwise
-    // (m was clamped to snp_total, so blk_i % m == blk_i) it is just blk_i.
-    const long blk_col = use_bitmask ? (blk_i & (m - 1)) : blk_i;
+    // Step 3: blk_col = rolling column where the block's first SNP (blki) lives, i.e.
+    // blki mod m. When m is a power of two this is the bitmask blki & (m-1); otherwise
+    // (m was clamped to snp_total, so blki % m == blki) it is just blki.
+    const long blk_col = use_bitmask ? (blki & (m - 1)) : blki;
 
     // Step 4: snapshot the block's own b genotype columns BEFORE the rolling updates in
     // step 6 overwrite them, pre-divided by (n-1) so the gemms below yield r directly.
-    MatrixXf X_blk = X.middleCols(blk_col, b) / (X.rows() - 1);
+    MatrixXf zwin_blk = zwin.middleCols(blk_col, b) / (zwin.rows() - 1);
 
-    // Step 5: main gemm. ld_win(cur, t) = LD(SNP blk_i+t, rolling column cur) for all m
-    // columns of the pre-update window, i.e. partners in [blk_i, blk_i+m).
+    // Step 5: main gemm. ld_win(cur, t) = LD(SNP blki+t, rolling column cur) for all m
+    // columns of the pre-update window, i.e. partners in [blki, blki+m).
     // One BLAS-3 call per block.
-    ld_win.noalias() = X.transpose() * X_blk;
+    ld_win.noalias() = zwin.transpose() * zwin_blk;
 
-    // Step 6: rolling updates -- decode SNPs [blk_i+m, blk_i+m+b) into the window,
+    // Step 6: rolling updates -- decode SNPs [blki+m, blki+m+b) into the window,
     // overwriting the block's old columns in the same order the original per-SNP code
     // did. This must run AFTER step 5 so ld_win still saw the pre-update window.
     for (long t = 0; t < b; t++) {
-      const long i = blk_i + t;
+      const long i = blki + t;
       if (i + m < snp_total) {
-        if (geno.size() == 0) geno.resize(X.rows());
-        make_std_geno_vec(&bdata, static_cast<int>(i + m), geno, false, true);
+        if (geno.size() == 0) geno.resize(zwin.rows());
+        make_geno_zscore_vec(&bdata, static_cast<int>(i + m), geno, false);
         const long start = use_bitmask ? (i & (m - 1)) : i;  // !use_bitmask: m == snp_total > i
-        X.col(start) = geno;
+        zwin.col(start) = geno;
       }
     }
 
-    // Step 7: tail gemm. The newly decoded SNPs [blk_i+m, blk_i+m+b) are forward partners
+    // Step 7: tail gemm. The newly decoded SNPs [blki+m, blki+m+b) are forward partners
     // of block SNPs but were not in the window when ld_win was computed. ld_tail(s, t) =
-    // LD(SNP blk_i+t, SNP blk_i+m+s). Skipped near the chromosome end (nothing decoded).
+    // LD(SNP blki+t, SNP blki+m+s). Skipped near the chromosome end (nothing decoded).
     MatrixXf ld_tail;
-    if (blk_i + m < snp_total) ld_tail.noalias() = X.middleCols(blk_col, b).transpose() * X_blk;
+    if (blki + m < snp_total) ld_tail.noalias() = zwin.middleCols(blk_col, b).transpose() * zwin_blk;
 
     // Step 8: --r2 reports r^2 instead of r; square both result matrices elementwise.
     if (ldr2) {
@@ -762,13 +758,13 @@ void ld_report(char* outFileName, char* bFileName, char* indilstName, char* indi
     // Step 9: write phase -- emit each block SNP's forward LD values to the .bld file.
     if (ldv.size() == 0) ldv.resize(m);
     for (long t = 0; t < b; t++) {
-      const long i = blk_i + t;
+      const long i = blki + t;
       int icur = static_cast<int>(i);
       progress(icur, cr, static_cast<int>(snp_total));
 
       // Step 9a: assemble SNP i's row indexed by rolling column: all m values from ld_win
       // (pre-update window), then overwrite the t entries at [blk_col, blk_col+t) with
-      // ld_tail -- partners blk_i+m .. blk_i+m+t-1 that entered the window this block.
+      // ld_tail -- partners blki+m .. blki+m+t-1 that entered the window this block.
       memcpy(ldv.data(), ld_win.col(t).data(), m * sizeof(float));
       if (t > 0 && ld_tail.size() != 0) memcpy(ldv.data() + blk_col, ld_tail.col(t).data(), t * sizeof(float));
 
@@ -1418,7 +1414,7 @@ void calcu_ld_blk(bInfo* bdata, std::vector<int>& brk_pnt, std::vector<int>& brk
     std::vector<int> snp_indx(size);
     for (j = brk_pnt[i], k = 0; j <= brk_pnt[i + 1]; j++, k++) snp_indx[k] = j;
     MatrixXf X_sub;
-    make_std_geno_matrix(bdata, X_sub, snp_indx, true);
+    make_geno_zscore_matrix(bdata, X_sub, snp_indx);
     VectorXf ssx_sqrt_i_sub(size);
     for (j = 0; j < size; j++) {
       ssx_sqrt_i_sub[j] = X_sub.col(j).squaredNorm();

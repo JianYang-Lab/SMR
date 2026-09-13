@@ -174,7 +174,7 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
     exit(EXIT_FAILURE);
   }
   std::vector<std::string> cols;
-  StrFunc::split_string_fast(buf, cols, ", \t\n");
+  StrFunc::split_string(buf, cols, ", \t\n");
   to_upper(cols[0]);
   if (cols[0] != "SNP") {
     printf("ERROR: %s should have headers that start with \"snp\".\n", gwasFileName);
@@ -208,7 +208,7 @@ void read_gwas_data(gwasData* gdata, char* gwasFileName, bool enableGwasComments
     }
 
     cols.clear();
-    int col_num = split_string_fast(buf, cols, ", \t\n");
+    int col_num = split_string(buf, cols, ", \t\n");
     if (col_num != 8) {
       printf("ERROR: column number is not correct in row %d!\n", lineNumWithComments + 2);
       exit(EXIT_FAILURE);
@@ -303,7 +303,7 @@ void read_esifile(eqtlInfo* eqtlinfo, const std::string& esifile, bool prtscr) {
     if (buf[0] == '\0') continue;
 
     cols.clear();
-    int col_num = split_string_fast(buf, cols, ", \t\n");
+    int col_num = split_string(buf, cols, ", \t\n");
 
     if (col_num != 6 && col_num != 7) {
       printf("ERROR: the number of columns is incorrect in row %d!\n", lineNum + 1);
@@ -406,7 +406,7 @@ void read_esifile_by_chr(eqtlInfo* eqtlinfo, const std::string& esifile, int snp
     if (buf[0] == '\0') continue;
 
     cols.clear();
-    int col_num = split_string_fast(buf, cols, ", \t\n");
+    int col_num = split_string(buf, cols, ", \t\n");
 
     if (col_num != 6 && col_num != 7) {
       printf("ERROR: the number of columns is incorrect in row %d!\n", lineNum + 1);
@@ -543,7 +543,7 @@ void read_epifile(eqtlInfo* eqtlinfo, const std::string& epifile, bool prtscr) {
     if (buf[0] == '\0') continue;
 
     cols.clear();
-    int col_num = split_string_fast(buf, cols, ", \t\n");
+    int col_num = split_string(buf, cols, ", \t\n");
     if (col_num < 6) {
       printf("ERROR: the number of columns is incorrect in row %d.\n", rowNum);
       exit(EXIT_FAILURE);
@@ -1805,7 +1805,7 @@ void extract_prob_by_gene(eqtlInfo* eqtlinfo, const std::string& genelistName) {
     }
 
     aliases.clear();
-    if (split_string_fast(gene, aliases) > 1) {
+    if (split_string(gene, aliases) > 1) {
       for (const auto& alias : aliases) {
         if (target_genes.find(alias) != target_genes.end()) {
           new_include.push_back(idx);

@@ -18,77 +18,34 @@
 int StrFunc::split_string(const std::string& str, std::vector<std::string>& out_vec, const std::string& separators) {
   if (str.empty()) return 0;
   out_vec.clear();
+  out_vec.reserve(str.size() / 4);  // heuristic, reduce reallocation
 
-  bool look = false;
-  std::string str_buf;
-  std::string symbol_pool =
-      "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\asdfghjkl;'zxcvbnm,./QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>? \t\n";
-  std::string::size_type pos;
+  // A char is content iff it belongs to the printable-ASCII pool (plus '\t', '\n') and is
+  // not listed in separators; anything else (control chars incl. '\r', DEL, bytes >= 0x80)
+  // acts as a separator, so CRLF-terminated files parse cleanly.
+  bool is_content[256] = {};
+  for (unsigned char c : std::string_view(
+           "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\asdfghjkl;'zxcvbnm,./QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>? \t\n"))
+    is_content[c] = true;
+  for (unsigned char c : separators) is_content[c] = false;
 
-  // Remove seperators
-  for (char separator : separators) {
-    pos = symbol_pool.find(separator);
-    if (pos != std::string::npos) symbol_pool.erase(symbol_pool.begin() + pos);
-  }
-
-  for (char i : str) {
-    if (symbol_pool.find(i) != std::string::npos) {
-      if (!look) look = true;
-      str_buf += i;
-    } else {
-      if (look) {
-        look = false;
-        out_vec.push_back(str_buf);
-        str_buf.erase(str_buf.begin(), str_buf.end());
-      }
-    }
-  }
-  if (look) out_vec.push_back(str_buf);
-
-  return static_cast<int>(out_vec.size());
-}
-
-/// Both `str` and `separators` are consist of ASCII characters.
-int StrFunc::split_string_fast(const std::string& str, std::vector<std::string>& out_vec,
-                               const std::string& separators) {
-  if (str.empty()) return 0;
-  out_vec.clear();
-
-  // heuristic, reduce reallocation
-  out_vec.reserve(str.size() / 4);
-
-  bool is_sep[256] = {};
-  for (unsigned char c : separators) {
-    is_sep[c] = true;
-  }
-
-  // Record the start position and length of each substring
   size_t start_pos = 0;
   size_t len = 0;
-
-  // Traverse the input string
   for (size_t i = 0; i < str.size(); ++i) {
-    // If the current character is a separator, add the previous substring to the output vector
-    if (is_sep[static_cast<unsigned char>(str[i])]) {
+    auto c = static_cast<unsigned char>(str[i]);
+    if (!is_content[c]) {
       if (len > 0) {
         out_vec.emplace_back(str, start_pos, len);
         len = 0;
       }
     } else {
-      // If the current character is not a separator, update the start position and length of the substring
-      if (len == 0) {
-        start_pos = i;
-      }
+      if (len == 0) start_pos = i;
       ++len;
     }
   }
+  if (len > 0) out_vec.emplace_back(str, start_pos, len);
 
-  // Add the last substring
-  if (len > 0) {
-    out_vec.emplace_back(str, start_pos, len);
-  }
-
-  return out_vec.size();
+  return static_cast<int>(out_vec.size());
 }
 
 void StrFunc::to_upper(char* str, int len) {
@@ -99,12 +56,7 @@ void StrFunc::to_upper(char* str, int len) {
 }
 
 // Uppercase ASCII, avoid `std::to_upper` locale table lookup.
-void StrFunc::to_upper(std::string& str) {
-  size_t i = 0;
-  for (i = 0; i < str.size(); i++) {
-    if (str[i] >= 'a' && str[i] <= 'z') str[i] += 'A' - 'a';
-  }
-}
+void StrFunc::to_upper(std::string& str) { to_upper(str.data(), static_cast<int>(str.size())); }
 
 void StrFunc::match(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                     std::vector<int>& VecC) {
@@ -152,7 +104,7 @@ bool StrFunc::has_suffix(const std::string& str, const std::string& suffix) {
 
 void StrFunc::set_intersect(const std::vector<std::string>& VecA, const std::vector<std::string>& VecB,
                             std::vector<std::string>& VecC) {
-  std::unordered_set<std::string> id_set(VecB.begin(), VecB.end());
+  std::unordered_set<std::string_view> id_set(VecB.begin(), VecB.end());
   VecC.clear();
   VecC.reserve(std::min(VecA.size(), VecB.size()));
   for (const auto& value : VecA)

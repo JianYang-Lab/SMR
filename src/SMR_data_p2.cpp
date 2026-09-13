@@ -2327,7 +2327,9 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
       if (vs_buf[betapos] == "NA" || vs_buf[betapos] == "na") {
         continue;
       }
-      if (vs_buf[t_statpos] == "NA" || vs_buf[t_statpos] == "na") {
+      // only the Matrix eQTL format has a t-statistic column (t_statpos); other formats
+      // derive SE from beta and p via adjSE()
+      if (mateqtlflag && (vs_buf[t_statpos] == "NA" || vs_buf[t_statpos] == "na")) {
         printf("WARNING: the t_statpos of the SNP is missing (\"NA\"), this row is omitted.\n");
         printf("%s\n", buf);
         continue;
@@ -2409,7 +2411,6 @@ void make_besd_fmat(char* fmatfileName, char* outFileName, bool mateqtlflag, boo
         _ttl_rsid.push_back(rsidtmp);
         double betatmp = atof(vs_buf[betapos].c_str());
         double ptmp = atof(vs_buf[ppos].c_str());
-        double t_stattmp = atof(vs_buf[t_statpos].c_str());
         std::vector<float> btmp;
         btmp.push_back(betatmp);
         _ttl_beta.push_back(btmp);
